@@ -17,7 +17,9 @@ import { useNavigate } from "react-router-dom";
 import { OrbitProgress } from "react-loading-indicators";
 import { backendUrl } from "../App.jsx";
 import techImage from "../../images/techImage.png";
-// import Faqs from "../components/Faqs.jsx";
+import FAQ from "../components/Faqs.jsx";
+import TEAM from "../components/teamSection.jsx";
+import Footer from "../components/Footer.jsx";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -347,16 +349,12 @@ const LandingPage = () => {
           </button>
         </div>
 
-        <div ref={teamRef} className="py-16 px-4 bg-white">
-          <h2 className="text-3xl font-bold text-center mb-8">Our Team</h2>
-          <p className="text-center text-gray-600">Meet our amazing team...</p>
+        <div ref={teamRef} className="py-5 px-4 bg-white">
+          <TEAM/>
         </div>
 
         <div ref={faqRef} className="py-16 px-4 bg-gray-50">
-          <h2 className="text-3xl font-bold text-center mb-8">FAQs</h2>
-          <p className="text-center text-gray-600">
-            Frequently asked questions...
-          </p>
+         <FAQ/>
         </div>
       </main>
 
@@ -557,6 +555,7 @@ const LandingPage = () => {
           animation: slideUp 0.3s ease-out;
         }
       `}</style>
+      <Footer/>
     </div>
   );
 };
