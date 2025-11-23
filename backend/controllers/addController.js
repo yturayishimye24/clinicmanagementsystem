@@ -98,6 +98,6 @@ export const updatePatient = async (req, res) => {
     res.status(201).json(updatedPatient)
   }
   }catch(error){
-    console.log("Error Updating",error);
+    console.log("Threw an error in updating",error);
   }
 };

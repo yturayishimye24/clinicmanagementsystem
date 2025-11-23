@@ -692,7 +692,7 @@ function CreatePage() {
           }}
         >
           <div
-            className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-auto border border-gray-300"
+            className="bg-white rounded-md max-w-3xl w-full max-h-[90vh] overflow-auto border border-gray-300"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center bg-gray-50">
