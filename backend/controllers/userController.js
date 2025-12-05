@@ -19,7 +19,7 @@ export const loginController = async (req, res) => {
       const isMatch= await bcrypt.compare(password,user.password)
       if(isMatch){
         const token= userToken(user._id,user.role)
-        res.json({success:true,message:"Login successfull!!",token,role:user.role,user:{username:user.username,role:user.role}})
+        res.json({success:true,message:"Login successfull!!",token,role:user.role,username:user.username,role:user.role})
       }else{
         res.json({success:false,message:"Incorrect password"})
       }
