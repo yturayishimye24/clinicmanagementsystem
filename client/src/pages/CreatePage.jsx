@@ -1,32 +1,47 @@
 import React, { useState, useEffect } from "react";
-import { OrbitProgress } from "react-loading-indicators";
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarContent,
+  SidebarTrigger,
+  SidebarInset,
+} from "@/components/ui/sidebar";
+import { ThreeDot } from "react-loading-indicators";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import {
   Users,
-  Activity,
   Calendar,
-  Bell,
-  LogOut,
-  Plus,
-  Search,
-  X,
-  CheckCircle,
-  XCircle,
+  PlusCircle,
+  FileText,
+  TrendingUp,
+  Activity,
+  LayoutDashboard,
+  UserCircle,
+  CalendarDays,
   Clock,
+  Building2,
+  ListChecks,
+  BadgeCheck,
+  MessageSquare,
+  BarChart3,
+  Settings,
+  ChevronDown,
+  ChevronRight,
+  CheckCircle2,
+  X,
   Pill,
-  Home,
+  Ambulance,
   Trash2,
   Edit,
-  Save,
-  TrendingUp,
-  Ambulance,
   Send,
   Package,
-  Filter,
-  Download,
-  Menu,
+  Bell,
+  LogOut,
+  Search,
+  Save,
 } from "lucide-react";
+import techImage from "../../images/techImage.png";
 import {
   BarChart,
   Bar,
@@ -44,6 +59,59 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+const menuItem = (href, Icon, label) => (
+  <a
+    href={href}
+    className="flex items-center gap-3 h-12 px-4 rounded-full bg-gray-300 hover:bg-gray-400 transition-all"
+  >
+    <Icon className="w-5 h-5" />
+    <span className="text-sm font-medium">{label}</span>
+  </a>
+);
+
+const Section = ({ title, isOpen, onToggle, children, Icon }) => (
+  <div>
+    <button
+      onClick={onToggle}
+      className="flex items-center justify-between w-full text-left px-2 py-2 rounded-md hover:bg-gray-200 transition"
+    >
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        <Icon className="w-4 h-4" />
+        {title}
+      </div>
+      {isOpen ? (
+        <ChevronDown className="w-4 h-4" />
+      ) : (
+        <ChevronRight className="w-4 h-4" />
+      )}
+    </button>
+    <div
+      className={`overflow-hidden transition-all duration-300 ${
+        isOpen ? "max-h-96 mt-2" : "max-h-0"
+      }`}
+    >
+      <nav className="space-y-2 pl-4">{children}</nav>
+    </div>
+  </div>
+);
+
+const Toast = ({ message, onClose }) => (
+  <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-slide-down">
+    <div className="flex items-center gap-3 bg-white rounded-lg shadow-lg border border-gray-200 p-4 min-w-[320px]">
+      <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-full flex-shrink-0">
+        <CheckCircle2 className="w-5 h-5 text-green-600" />
+      </div>
+      <p className="text-sm font-medium text-gray-900 flex-1">{message}</p>
+      <button
+        onClick={onClose}
+        className="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+      >
+        <X className="w-5 h-5" />
+      </button>
+    </div>
+  </div>
+);
+
 function NurseDashboard() {
   const navigate = useNavigate();
   const [isHospitalized, setIsHospitalized] = useState([]);
@@ -59,9 +127,10 @@ function NurseDashboard() {
   const [maritalStatus, setMaritalStatus] = useState("");
   const [disease, setDisease] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [openSection, setOpenSection] = useState(null);
   const [formError, setFormError] = useState("");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showToast, setShowToast] = useState(false);
+  const [logging, setLogging] = useState(false);
 
   // Medicine request states
   const [requestType, setRequestType] = useState("Medicine Request");
@@ -99,7 +168,16 @@ function NurseDashboard() {
     },
   ]);
 
-  
+  const toggle = (section) =>
+    setOpenSection(openSection === section ? null : section);
+
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => setShowToast(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -129,13 +207,14 @@ function NurseDashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("name");
-    localStorage.removeItem("role");
-    toast.success("Logged out successfully!");
+    setLogging(true);
+    setShowToast(true);
     setTimeout(() => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("name");
+      localStorage.removeItem("role");
       navigate("/");
-    }, 800);
+    }, 2000);
   };
 
   const handleDelete = async (patientId) => {
@@ -320,28 +399,32 @@ function NurseDashboard() {
       label: "Total Patients",
       value: totalPatients,
       change: "+12%",
-      color: "bg-black",
+      color: "bg-blue-100",
+      iconColor: "text-blue-600",
     },
     {
       icon: Ambulance,
       label: "Hospitalized",
       value: hospitalizedCount,
       change: "Active",
-      color: "bg-red-600",
+      color: "bg-red-100",
+      iconColor: "text-red-600",
     },
     {
-      icon: CheckCircle,
+      icon: CheckCircle2,
       label: "Approved Requests",
       value: approvedRequests,
       change: "This week",
-      color: "bg-green-600",
+      color: "bg-green-100",
+      iconColor: "text-green-600",
     },
     {
       icon: Clock,
       label: "Pending Requests",
       value: pendingRequests,
       change: "Awaiting",
-      color: "bg-amber-600",
+      color: "bg-amber-100",
+      iconColor: "text-amber-600",
     },
   ];
 
@@ -368,189 +451,165 @@ function NurseDashboard() {
     { day: "Sun", patients: 20 },
   ];
 
-  if (loading && patients.length === 0) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50">
-        <OrbitProgress color="#000" size="medium" text="" textColor="" />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
-      {/* Sidebar */}
-      <aside
-        className={`${
-          sidebarOpen ? "w-64" : "w-20"
-        } bg-white border-r border-gray-200 transition-all duration-300 flex flex-col`}
-      >
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-          {sidebarOpen && (
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
-                <Activity className="text-white" size={20} />
-              </div>
-              <div>
-                <h2 className="font-bold text-lg">Clinic</h2>
-                <p className="text-xs text-gray-500">Nurse Panel</p>
-              </div>
-            </div>
-          )}
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition"
-          >
-            <Menu size={20} />
-          </button>
-        </div>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        {showToast && (
+          <Toast
+            message="Logged out successfully!"
+            onClose={() => setShowToast(false)}
+          />
+        )}
+        <Sidebar className="fixed">
+          <SidebarContent className="sidebar-scroll overflow-y-auto max-h-screen px-4 py-4 space-y-1">
+            <Section
+              title="Main"
+              Icon={LayoutDashboard}
+              isOpen={openSection === "main"}
+              onToggle={() => toggle("main")}
+            >
+              {menuItem("/home/dashboard", LayoutDashboard, "Dashboard")}
+            </Section>
 
-        <nav className="flex-1 p-4 space-y-2">
-          {[
-            { id: "dashboard", label: "Dashboard", icon: Home },
-            {
-              id: "patients",
-              label: "Patients",
-              icon: Users,
-              badge: totalPatients,
-            },
-            {
-              id: "requests",
-              label: "My Requests",
-              icon: Package,
-              badge: pendingRequests,
-            },
-            { id: "medicines", label: "Medicines", icon: Pill },
-          ].map((item) => {
-            const Icon = item.icon;
-            return (
+            <Section
+              title="Management"
+              Icon={UserCircle}
+              isOpen={openSection === "management"}
+              onToggle={() => toggle("management")}
+            >
+              {menuItem("/home/patients", UserCircle, "Patients")}
+              {menuItem("/home/scheduling", CalendarDays, "Scheduling")}
+              {menuItem("/home/medicines", Pill, "Medicines")}
+              {menuItem("/home/attendance", Clock, "Attendance")}
+            </Section>
+
+            <Section
+              title="Operations"
+              Icon={ListChecks}
+              isOpen={openSection === "operations"}
+              onToggle={() => toggle("operations")}
+            >
+              {menuItem("/home/requests", Package, "Requests")}
+              {menuItem("/home/tasks", ListChecks, "Tasks")}
+              {menuItem("/home/compliance", BadgeCheck, "Compliance")}
+              {menuItem("/home/communication", MessageSquare, "Communication")}
+            </Section>
+
+            <Section
+              title="System"
+              Icon={Settings}
+              isOpen={openSection === "system"}
+              onToggle={() => toggle("system")}
+            >
+              {menuItem("/home/reports", BarChart3, "Reports")}
+              {menuItem("/home/settings", Settings, "Settings")}
+            </Section>
+
+            <div className="mt-4 pt-4 border-t border-gray-200">
               <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition ${
-                  activeTab === item.id
-                    ? "bg-black text-white shadow-lg"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 h-12 px-4 rounded-full bg-red-500 hover:bg-red-600 text-white font-medium transition-all"
               >
-                <Icon size={20} />
-                {sidebarOpen && (
-                  <>
-                    <span className="flex-1 text-left font-medium">
-                      {item.label}
-                    </span>
-                    {item.badge > 0 && (
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                          activeTab === item.id
-                            ? "bg-white text-black"
-                            : "bg-black text-white"
-                        }`}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </>
+                {logging ? (
+                  <ThreeDot
+                    color="#32cd32"
+                    size={"10"}
+                    text=""
+                    textColor="white"
+                  />
+                ) : (
+                  <h1>Logout</h1>
                 )}
               </button>
-            );
-          })}
-        </nav>
-
-        <div className="p-4 border-t border-gray-200">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition"
-          >
-            <LogOut size={20} />
-            {sidebarOpen && <span className="font-medium">Logout</span>}
-          </button>
-        </div>
-      </aside>
-
-    
-      <main className="flex-1 overflow-y-auto">
-       
-        <header className="bg-white border-b border-gray-200 px-8 py-4 sticky top-0 z-10">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-              </h1>
-              <p className="text-sm text-gray-500 mt-1">
-                Welcome back,{" "}
-                <span className="font-semibold text-black">
-                  {localStorage.getItem("name") || "Nurse"}
-                </span>
-              </p>
             </div>
-            <div className="flex items-center gap-4">
-              <button className="relative p-2.5 hover:bg-gray-100 rounded-xl transition">
-                <Bell size={20} />
-                {pendingRequests > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                    {pendingRequests}
-                  </span>
-                )}
-              </button>
-              <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-                <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white font-bold">
-                  {(localStorage.getItem("name") || "N")
-                    .charAt(0)
-                    .toUpperCase()}
-                </div>
-                <div>
-                  <p className="font-semibold text-sm">
-                    {localStorage.getItem("name") || "Nurse"}
-                  </p>
-                  <p className="text-xs text-white bg-teal-500 px-2 py-0.5 rounded-full inline-block font-medium">
-                    {localStorage.getItem("role") || "nurse"}
-                  </p>
+          </SidebarContent>
+        </Sidebar>
+
+        <SidebarInset className="flex-1">
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 fixed w-full bg-transparent z-999 backdrop-blur-md">
+            <SidebarTrigger />
+            <div className="flex items-center justify-between w-full">
+              <h1 className="text-xl font-semibold">Nurse Panel</h1>
+              <div className="flex items-center gap-4">
+                <button className="relative p-2 hover:bg-gray-100 rounded-lg transition">
+                  <Bell className="w-5 h-5 text-gray-600" />
+                  {pendingRequests > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                      {pendingRequests}
+                    </span>
+                  )}
+                </button>
+                <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
+                  <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    {(localStorage.getItem("name") || "N")
+                      .charAt(0)
+                      .toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">
+                      {localStorage.getItem("name") || "Nurse"}
+                    </p>
+                    <p className="text-xs text-gray-500">Nurse</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        <div className="p-8">
-          {activeTab === "dashboard" && (
-            <div className="space-y-6">
-            
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <main className="p-6 grid lg:grid-cols-[2fr_1fr] gap-6 mt-20 bg-gray-50 md:grid-cols-1 sm:grid-cols-1">
+            <div>
+              <h1 className="font-arial text-3xl font-bold mb-9 md:text-center sm:text-center">
+                Welcome {localStorage.getItem("name") || "Nurse"}
+              </h1>
+              <div className="flex items-center justify-center bg-white rounded-md max-w-[900px] shadow-md p-9 gap-6">
+                <div>
+                  <h1 className="font-bold font-arial">Patient Management Hub</h1>
+                  <p className="text-gray-500 font-sans">
+                    Manage patient records, track medical history,
+                    <br /> and monitor treatment progress in real-time.
+                    <br /> Access critical information with just a few clicks.
+                  </p>
+                  <button 
+                    onClick={() => {
+                      resetForm();
+                      setShowForm(true);
+                    }}
+                    className="text-white bg-green-600 rounded-full btn btn-accent mt-4 px-6 py-2"
+                  >
+                    Add New Patient
+                  </button>
+                </div>
+                <div
+                  style={{ backgroundImage: `url(${techImage})` }}
+                  className="bg-cover bg-center w-full h-64 rounded-lg"
+                ></div>
+              </div>
+
+              <div className="mt-6 grid grid-cols-4 gap-4">
                 {stats.map((stat, index) => {
                   const Icon = stat.icon;
                   return (
-                    <div
-                      key={index}
-                      className="bg-white rounded-2xl p-6 border border-gray-200 hover:shadow-xl transition-all duration-300"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div
-                          className={`${stat.color} p-3 rounded-xl shadow-lg`}
-                        >
-                          <Icon className="text-white" size={24} />
+                    <div key={index} className="bg-white shadow-md rounded-md p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className={`w-12 h-12 ${stat.color} rounded-lg flex items-center justify-center`}>
+                          <Icon className={`w-6 h-6 ${stat.iconColor}`} />
                         </div>
-                        <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gray-100 text-gray-700">
-                          <TrendingUp size={12} className="inline mr-1" />
+                        <span className="text-sm font-semibold text-green-600">
                           {stat.change}
                         </span>
                       </div>
-                      <h3 className="text-3xl font-bold mb-1">{stat.value}</h3>
-                      <p className="text-sm text-gray-600 font-medium">
-                        {stat.label}
-                      </p>
+                      <h3 className="text-2xl font-bold text-gray-800">{stat.value}</h3>
+                      <p className="text-sm text-gray-500">{stat.label}</p>
                     </div>
                   );
                 })}
               </div>
 
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all">
-                  <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-                    <div className="w-1 h-6 bg-black rounded-full"></div>
-                    Weekly Patient Overview
-                  </h3>
-                  <ResponsiveContainer width="100%" height={300}>
+              {/* Charts Section */}
+              <div className="mt-6 grid grid-cols-2 gap-4">
+                <div className="bg-white rounded-md shadow-md p-6">
+                  <h3 className="text-lg font-semibold mb-4">Weekly Patient Overview</h3>
+                  <ResponsiveContainer width="100%" height={200}>
                     <LineChart data={weeklyData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                       <XAxis dataKey="day" stroke="#6b7280" />
@@ -559,20 +618,17 @@ function NurseDashboard() {
                       <Line
                         type="monotone"
                         dataKey="patients"
-                        stroke="#000"
-                        strokeWidth={3}
-                        dot={{ fill: "#000", r: 5 }}
+                        stroke="#3b82f6"
+                        strokeWidth={2}
+                        dot={{ fill: "#3b82f6", r: 4 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all">
-                  <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-                    <div className="w-1 h-6 bg-black rounded-full"></div>
-                    Gender Distribution
-                  </h3>
-                  <ResponsiveContainer width="100%" height={300}>
+                <div className="bg-white rounded-md shadow-md p-6">
+                  <h3 className="text-lg font-semibold mb-4">Gender Distribution</h3>
+                  <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
                       <Pie
                         data={genderData}
@@ -582,7 +638,7 @@ function NurseDashboard() {
                         label={({ name, percent }) =>
                           `${name} ${(percent * 100).toFixed(0)}%`
                         }
-                        outerRadius={100}
+                        outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
                       >
@@ -596,453 +652,300 @@ function NurseDashboard() {
                 </div>
               </div>
 
-              {/* Top Diseases */}
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-                  <div className="w-1 h-6 bg-black rounded-full"></div>
-                  Top 5 Diseases
-                </h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={diseaseData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="name" stroke="#6b7280" />
-                    <YAxis stroke="#6b7280" />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#000" radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "patients" && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
-                <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between mb-6">
-                  <div className="relative flex-1 max-w-md">
-                    <Search
-                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                      size={20}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Search patients by name or disease..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
-                    />
-                  </div>
-                  <div className="flex gap-3">
-                    <button className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition flex items-center gap-2">
-                      <Filter size={18} />
-                      <span className="font-medium">Filter</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        resetForm();
-                        setShowForm(true);
-                      }}
-                      className="px-4 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition flex items-center gap-2 font-medium"
-                    >
-                      <Plus size={18} />
-                      Add Patient
-                    </button>
-                  </div>
+              <div className="bg-white rounded-md shadow-md mt-20 p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h1 className="text-xl font-bold">Current Patients</h1>
+                  <input
+                    type="search"
+                    placeholder="Search patients..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
                 </div>
 
-                {filteredPatients.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b-2 border-gray-200">
-                          <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">
-                            Name
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">
-                            Gender
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">
-                            Date of Birth
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">
-                            Disease
-                          </th>
-                          <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase">
-                            Actions
-                          </th>
+                <div className="max-h-96 overflow-auto border border-gray-200 overflow-y-scroll">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50 sticky top-0 z-10">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Gender
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Disease
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredPatients.map((patient) => (
+                        <tr key={patient._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white font-bold">
+                                {patient.firstName?.charAt(0)}{patient.lastName?.charAt(0)}
+                              </div>
+                              <span className="text-sm font-medium text-gray-900">
+                                {patient.firstName} {patient.lastName}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {patient.gender}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {patient.disease || "Not specified"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              isHospitalized.includes(patient._id)
+                                ? "bg-red-100 text-red-800"
+                                : "bg-green-100 text-green-800"
+                            }`}>
+                              {isHospitalized.includes(patient._id) ? "Hospitalized" : "Active"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleEdit(patient)}
+                                className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1 text-xs"
+                              >
+                                <Edit className="w-3 h-3" />
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDelete(patient._id)}
+                                className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 text-xs"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                Delete
+                              </button>
+                              <button
+                                onClick={() => handleHospitalize(patient._id)}
+                                className={`px-3 py-1 rounded flex items-center gap-1 text-xs ${
+                                  isHospitalized.includes(patient._id)
+                                    ? "bg-amber-100 text-amber-700"
+                                    : "bg-green-100 text-green-700 hover:bg-green-200"
+                                }`}
+                              >
+                                <Ambulance className="w-3 h-3" />
+                                {isHospitalized.includes(patient._id)
+                                  ? "Discharge"
+                                  : "Hospitalize"}
+                              </button>
+                            </div>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {filteredPatients.map((patient) => (
-                          <tr
-                            key={patient._id}
-                            className="hover:bg-gray-50 transition-colors"
-                          >
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                  {patient.firstName.charAt(0)}
-                                  {patient.lastName.charAt(0)}
-                                </div>
-                                <div>
-                                  <p className="font-semibold">
-                                    {patient.firstName} {patient.lastName}
-                                  </p>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-semibold">
-                                {patient.gender}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 text-gray-600">
-                              {new Date(patient.date).toLocaleDateString()}
-                            </td>
-                            <td className="px-6 py-4">
-                              <span className="px-3 py-1 bg-black text-white rounded-full text-xs font-semibold">
-                                {patient.disease}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex gap-2 justify-center">
-                                <button
-                                  onClick={() => handleEdit(patient)}
-                                  className="px-4 py-2 bg-black text-white rounded-xl text-xs flex items-center gap-2 hover:bg-gray-800 transition font-semibold"
-                                >
-                                  <Edit size={14} />
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(patient._id)}
-                                  disabled={loading}
-                                  className="px-4 py-2 bg-white text-red-600 border-2 border-red-300 rounded-xl text-xs flex items-center gap-2 hover:bg-red-600 hover:text-white hover:border-red-600 transition font-semibold"
-                                >
-                                  <Trash2 size={14} />
-                                  Delete
-                                </button>
-                                <button
-                                  onClick={() => handleHospitalize(patient._id)}
-                                  className={`px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition font-semibold ${
-                                    isHospitalized.includes(patient._id)
-                                      ? "bg-amber-100 text-amber-700 border-2 border-amber-300"
-                                      : "bg-red-100 text-red-700 border-2 border-red-300 hover:bg-red-600 hover:text-white"
-                                  }`}
-                                >
-                                  <Ambulance size={14} />
-                                  {isHospitalized.includes(patient._id)
-                                    ? "Hospitalized"
-                                    : "Hospitalize"}
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="py-16 text-center">
-                    <Users size={64} className="mx-auto mb-4 text-gray-400" />
-                    <p className="text-lg font-semibold text-gray-900 mb-2">
-                      No patients found
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Try adjusting your search or add a new patient
-                    </p>
-                  </div>
-                )}
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
-          )}
 
-          {activeTab === "requests" && (
-            <div className="space-y-6">
-              <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-lg font-bold">My Requests</h3>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Track your medicine and equipment requests
-                    </p>
+            <div className="space-y-4">
+              <div className="space-y-4">
+                <div 
+                  onClick={() => setShowRequestForm(true)}
+                  className="bg-white text-gray-700 shadow-lg h-auto p-2 rounded-3xl flex items-center gap-4 hover:shadow-xl transition-shadow cursor-pointer"
+                >
+                  <div className="h-20 w-12 bg-green-200 rounded-l-3xl flex items-center justify-center">
+                    <Send className="w-6 h-6 text-green-700" />
                   </div>
-                  <button
-                    onClick={() => setShowRequestForm(true)}
-                    className="px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition flex items-center gap-2 font-semibold"
-                  >
-                    <Send size={18} />
-                    New Request
-                  </button>
+                  <h3 className="ml-4 font-semibold text-lg">New Request</h3>
                 </div>
 
-                <div className="space-y-4">
-                  {myRequests.map((request) => (
-                    <div
-                      key={request.id}
-                      className="border-2 border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition-all"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-4">
-                            <h4 className="text-lg font-bold">
-                              {request.item}
-                            </h4>
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                request.urgency === "High"
-                                  ? "bg-red-100 text-red-700 border-2 border-red-200"
-                                  : "bg-amber-100 text-amber-700 border-2 border-amber-200"
-                              }`}
-                            >
-                              {request.urgency} Priority
-                            </span>
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                request.status === "pending"
-                                  ? "bg-gray-100 text-gray-700"
-                                  : request.status === "approved"
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-red-100 text-red-700"
-                              }`}
-                            >
-                              {request.status.toUpperCase()}
-                            </span>
-                          </div>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                            <div>
-                              <p className="text-gray-500 mb-1 text-xs font-medium">
-                                Type
-                              </p>
-                              <p className="font-semibold">{request.type}</p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500 mb-1 text-xs font-medium">
-                                Quantity
-                              </p>
-                              <p className="font-semibold">
-                                {request.quantity}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500 mb-1 text-xs font-medium">
-                                Date
-                              </p>
-                              <p className="font-semibold">{request.date}</p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500 mb-1 text-xs font-medium">
-                                Time
-                              </p>
-                              <p className="font-semibold">{request.time}</p>
-                            </div>
-                          </div>
-                          {request.reason && (
-                            <div className="bg-gray-50 p-3 rounded-xl mt-4">
-                              <p className="text-xs font-medium text-gray-500 mb-1">
-                                Reason:
-                              </p>
-                              <p className="text-sm text-gray-700">
-                                {request.reason}
-                              </p>
-                            </div>
-                          )}
+                <div 
+                  onClick={() => {
+                    resetForm();
+                    setShowForm(true);
+                  }}
+                  className="bg-white text-gray-700 shadow-lg h-auto p-2 rounded-3xl flex items-center gap-4 hover:shadow-xl transition-shadow cursor-pointer"
+                >
+                  <div className="h-20 w-12 bg-blue-200 rounded-l-3xl flex items-center justify-center">
+                    <PlusCircle className="w-6 h-6 text-blue-700" />
+                  </div>
+                  <h3 className="ml-4 font-semibold text-lg">Add Patient</h3>
+                </div>
+
+                <div className="bg-white text-gray-700 shadow-lg h-auto p-2 rounded-3xl flex items-center gap-4 hover:shadow-xl transition-shadow cursor-pointer">
+                  <div className="h-20 w-12 bg-purple-200 rounded-l-3xl flex items-center justify-center">
+                    <FileText className="w-6 h-6 text-purple-700" />
+                  </div>
+                  <h3 className="ml-4 font-semibold text-lg">View Reports</h3>
+                </div>
+
+                <div className="bg-white text-gray-700 shadow-lg h-auto p-2 rounded-3xl flex items-center gap-4 hover:shadow-xl transition-shadow cursor-pointer">
+                  <div className="h-20 w-12 bg-orange-200 rounded-l-3xl flex items-center justify-center">
+                    <TrendingUp className="w-6 h-6 text-orange-700" />
+                  </div>
+                  <h3 className="ml-4 font-semibold text-lg">
+                    Performance Analytics
+                  </h3>
+                </div>
+              </div>
+
+              {/* Recent Requests */}
+              <div className="bg-white rounded-md shadow-md p-6 mt-6">
+                <h3 className="text-lg font-semibold mb-4">Recent Requests</h3>
+                <div className="space-y-3">
+                  {myRequests.slice(0, 4).map((request) => (
+                    <div key={request.id} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{request.item}</p>
+                          <p className="text-xs text-gray-500">{request.type}</p>
                         </div>
-                        <div className="ml-4">
-                          {request.status === "approved" && (
-                            <div className="text-right">
-                              <div className="flex items-center gap-2 text-green-700 font-semibold mb-1">
-                                <CheckCircle size={20} />
-                                <span>Approved</span>
-                              </div>
-                              {request.approvedDate && (
-                                <p className="text-xs text-gray-500">
-                                  on {request.approvedDate}
-                                </p>
-                              )}
-                            </div>
-                          )}
-                          {request.status === "rejected" && (
-                            <div className="text-right">
-                              <div className="flex items-center gap-2 text-red-700 font-semibold">
-                                <XCircle size={20} />
-                                <span>Rejected</span>
-                              </div>
-                            </div>
-                          )}
-                          {request.status === "pending" && (
-                            <div className="flex items-center gap-2 text-amber-700 font-semibold">
-                              <Clock size={20} />
-                              <span>Pending</span>
-                            </div>
-                          )}
-                        </div>
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          request.status === "pending"
+                            ? "bg-amber-100 text-amber-700"
+                            : request.status === "approved"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}>
+                          {request.status}
+                        </span>
                       </div>
+                      <p className="text-xs text-gray-600 mt-1">{request.reason.substring(0, 50)}...</p>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-          )}
+          </main>
+        </SidebarInset>
+      </div>
 
-          {activeTab === "medicines" && (
-            <div className="bg-white rounded-2xl p-12 border border-gray-200 text-center shadow-sm">
-              <div className="max-w-md mx-auto">
-                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Pill size={40} className="text-gray-400" />
-                </div>
-                <h3 className="text-2xl font-bold mb-3">Medicine Inventory</h3>
-                <p className="text-gray-600 mb-6">
-                  View and manage available medicines and equipment in the
-                  clinic.
-                </p>
-                <button className="px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition font-semibold">
-                  View Inventory
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </main>
-
-     
+      {/* Patient Form Modal */}
       {showForm && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => {
-            setShowForm(false);
-            resetForm();
-          }}
-        >
-          <div
-            className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-auto border border-gray-300"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {editingPatientId ? "Edit Patient Details" : "Add New Patient"}
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-auto">
+            <div className="px-6 py-4 border-b flex justify-between items-center">
+              <h2 className="text-lg font-semibold">
+                {editingPatientId ? "Edit Patient" : "Add Patient"}
               </h2>
               <button
                 onClick={() => {
                   setShowForm(false);
                   resetForm();
                 }}
-                className="p-2 hover:bg-gray-200 rounded-lg transition"
+                className="p-1 hover:bg-gray-100 rounded"
               >
-                <X size={24} />
+                <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleSubmit}>
-              <div className="p-6">
-                {formError && (
-                  <div className="px-4 py-3 bg-red-50 text-red-700 rounded-xl mb-6 text-sm flex items-center gap-3 border border-red-200">
-                    <XCircle size={20} />
-                    <span>{formError}</span>
-                  </div>
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-2 font-semibold">
-                      First Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl outline-none transition-all bg-white text-gray-900 focus:border-black"
-                      placeholder="Enter first name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-2 font-semibold">
-                      Last Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl outline-none transition-all bg-white text-gray-900 focus:border-black"
-                      placeholder="Enter last name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-2 font-semibold">
-                      Gender <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={gender}
-                      onChange={(e) => setGender(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl outline-none transition-all bg-white text-gray-900 focus:border-black cursor-pointer"
-                    >
-                      <option value="">Select Gender</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-2 font-semibold">
-                      Date of Birth <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl outline-none transition-all bg-white text-gray-900 focus:border-black"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-2 font-semibold">
-                      Marital Status <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={maritalStatus}
-                      onChange={(e) => setMaritalStatus(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl outline-none transition-all bg-white text-gray-900 focus:border-black cursor-pointer"
-                    >
-                      <option value="">Select Status</option>
-                      <option value="single">Single</option>
-                      <option value="married">Married</option>
-                      <option value="divorced">Divorced</option>
-                      <option value="widowed">Widowed</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-2 font-semibold">
-                      Disease / Condition{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={disease}
-                      onChange={(e) => setDisease(e.target.value)}
-                      required
-                      placeholder="Enter primary diagnosis"
-                      className="w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl outline-none transition-all bg-white text-gray-900 focus:border-black"
-                    />
-                  </div>
+            <form onSubmit={handleSubmit} className="p-6">
+              {formError && (
+                <div className="mb-4 p-3 bg-red-50 text-red-700 rounded text-sm">
+                  {formError}
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    First Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Last Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Gender *
+                  </label>
+                  <select
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-400"
+                  >
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Date of Birth *
+                  </label>
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Marital Status *
+                  </label>
+                  <select
+                    value={maritalStatus}
+                    onChange={(e) => setMaritalStatus(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-400"
+                  >
+                    <option value="">Select</option>
+                    <option value="single">Single</option>
+                    <option value="married">Married</option>
+                    <option value="divorced">Divorced</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Disease *
+                  </label>
+                  <input
+                    type="text"
+                    value={disease}
+                    onChange={(e) => setDisease(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-400"
+                  />
                 </div>
               </div>
-              <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
+              <div className="flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => {
                     setShowForm(false);
                     resetForm();
                   }}
-                  disabled={loading}
-                  className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-xl transition-all hover:bg-gray-50"
+                  className="px-4 py-2 border rounded hover:bg-gray-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-2.5 text-sm font-semibold text-white bg-black rounded-xl transition-all hover:bg-gray-800 flex items-center gap-2 disabled:opacity-50"
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
                 >
                   {loading ? (
                     <>
@@ -1052,11 +955,11 @@ function NurseDashboard() {
                   ) : (
                     <>
                       {editingPatientId ? (
-                        <Save size={16} />
+                        <Save className="w-4 h-4" />
                       ) : (
-                        <Plus size={16} />
+                        <PlusCircle className="w-4 h-4" />
                       )}
-                      {editingPatientId ? "Save Changes" : "Add Patient"}
+                      {editingPatientId ? "Update" : "Add Patient"}
                     </>
                   )}
                 </button>
@@ -1066,59 +969,46 @@ function NurseDashboard() {
         </div>
       )}
 
-     
+      {/* Request Form Modal */}
       {showRequestForm && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => {
-            setShowRequestForm(false);
-            resetRequestForm();
-          }}
-        >
-          <div
-            className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-              <h2 className="text-2xl font-bold text-gray-900">New Request</h2>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-auto">
+            <div className="px-6 py-4 border-b flex justify-between items-center">
+              <h2 className="text-lg font-semibold">New Request</h2>
               <button
                 onClick={() => {
                   setShowRequestForm(false);
                   resetRequestForm();
                 }}
-                className="p-2 hover:bg-gray-200 rounded-lg transition"
+                className="p-1 hover:bg-gray-100 rounded"
               >
-                <X size={24} />
+                <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleRequestSubmit}>
-              <div className="p-6 space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <form onSubmit={handleRequestSubmit} className="p-6">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-700 mb-2 font-semibold">
-                      Request Type <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium mb-1">
+                      Request Type *
                     </label>
                     <select
                       value={requestType}
                       onChange={(e) => setRequestType(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl outline-none transition-all bg-white text-gray-900 focus:border-black cursor-pointer"
+                      className="w-full px-3 py-2 border rounded"
                     >
                       <option value="Medicine Request">Medicine Request</option>
-                      <option value="Equipment Request">
-                        Equipment Request
-                      </option>
+                      <option value="Equipment Request">Equipment Request</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-700 mb-2 font-semibold">
-                      Urgency <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium mb-1">
+                      Urgency *
                     </label>
                     <select
                       value={urgency}
                       onChange={(e) => setUrgency(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl outline-none transition-all bg-white text-gray-900 focus:border-black cursor-pointer"
+                      className="w-full px-3 py-2 border rounded"
                     >
                       <option value="Low">Low</option>
                       <option value="Medium">Medium</option>
@@ -1126,82 +1016,72 @@ function NurseDashboard() {
                     </select>
                   </div>
                 </div>
-
                 <div>
-                  <label className="block text-sm text-gray-700 mb-2 font-semibold">
-                    Item Name <span className="text-red-500">*</span>
+                  <label className="block text-sm font-medium mb-1">
+                    Item Name *
                   </label>
                   <input
                     type="text"
                     value={itemName}
                     onChange={(e) => setItemName(e.target.value)}
                     required
-                    placeholder="e.g., Paracetamol 500mg"
-                    className="w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl outline-none transition-all bg-white text-gray-900 focus:border-black"
+                    className="w-full px-3 py-2 border rounded"
                   />
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-700 mb-2 font-semibold">
-                      Quantity <span className="text-red-500">*</span>
+                    <label className="block text-sm font-medium mb-1">
+                      Quantity *
                     </label>
                     <input
                       type="text"
                       value={quantity}
                       onChange={(e) => setQuantity(e.target.value)}
                       required
-                      placeholder="e.g., 50 units"
-                      className="w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl outline-none transition-all bg-white text-gray-900 focus:border-black"
+                      className="w-full px-3 py-2 border rounded"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-700 mb-2 font-semibold">
-                      Number of Patients (Optional)
+                    <label className="block text-sm font-medium mb-1">
+                      Patient Count
                     </label>
                     <input
                       type="number"
                       value={patientCount}
-                      onChange={(e) =>
-                        setPatientCount(parseInt(e.target.value) || 0)
-                      }
-                      min="0"
-                      placeholder="0"
-                      className="w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl outline-none transition-all bg-white text-gray-900 focus:border-black"
+                      onChange={(e) => setPatientCount(e.target.value)}
+                      className="w-full px-3 py-2 border rounded"
                     />
                   </div>
                 </div>
-
                 <div>
-                  <label className="block text-sm text-gray-700 mb-2 font-semibold">
-                    Reason for Request <span className="text-red-500">*</span>
+                  <label className="block text-sm font-medium mb-1">
+                    Reason *
                   </label>
                   <textarea
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
                     required
-                    rows="4"
-                    placeholder="Explain why you need this item..."
-                    className="w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl outline-none transition-all bg-white text-gray-900 focus:border-black resize-none"
+                    rows="3"
+                    className="w-full px-3 py-2 border rounded"
                   />
                 </div>
               </div>
-              <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
+              <div className="flex justify-end gap-3 mt-6">
                 <button
                   type="button"
                   onClick={() => {
                     setShowRequestForm(false);
                     resetRequestForm();
                   }}
-                  className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-xl transition-all hover:bg-gray-50"
+                  className="px-4 py-2 border rounded hover:bg-gray-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 text-sm font-semibold text-white bg-black rounded-xl transition-all hover:bg-gray-800 flex items-center gap-2"
+                  className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 flex items-center gap-2"
                 >
-                  <Send size={16} />
+                  <Send className="w-4 h-4" />
                   Submit Request
                 </button>
               </div>
@@ -1211,7 +1091,7 @@ function NurseDashboard() {
       )}
 
       <ToastContainer position="bottom-right" theme="light" />
-    </div>
+    </SidebarProvider>
   );
 }
 

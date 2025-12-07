@@ -5,6 +5,7 @@ import {createServer} from "http"
 import userRouter from "./routes/userRoutes.js";
 import connectDB from "./config/db.js";
 import addRouter from "./routes/addRoutes.js"
+import { seed } from "./userSeed.js";
 
 
 dotenv.config();
@@ -25,6 +26,7 @@ app.use("/api/users",addRouter)
 
 
 connectDB();
+seed();
 app.listen(port, () => {
   console.log(`API listening on port ${port}`);
 });

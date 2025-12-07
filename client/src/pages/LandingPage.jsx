@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 
+
 import {
   Activity,
   Phone,
@@ -22,6 +23,7 @@ import techImage from "../../images/techImage.png";
 import FAQ from "../components/Faqs.jsx";
 import TEAM from "../components/teamSection.jsx";
 import Footer from "../components/Footer.jsx";
+import { useAuth } from "../../context/authContext.jsx";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -37,7 +39,7 @@ const LandingPage = () => {
   const faqRef = useRef(null);
   const HomeRef = useRef(null);
   const servicesRef = useRef(null);
-
+  const { login } = useAuth();
   const handleShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -105,20 +107,27 @@ const LandingPage = () => {
           localStorage.setItem("token", response.data.token);
           localStorage.setItem("name", response.data.username);
           localStorage.setItem("role", response.data.role);
+          const userData = {
+            username: response.data.username,
+            token: response.data.token,
+            role: response.data.role,
+          };
+
+          login(userData);
 
           if (response.data.role === "nurse") {
-            toast.success("Login successfully!");
             setTimeout(() => navigate("/home"), 1000);
-          } else if (response.data.role === "admin") {
-            toast.success("Logged in admin!!");
-            setTimeout(() => navigate("/home/admin"));
+            toast.success("Logged in as nurse successfully!");
+          } else {
+            setTimeout(() => navigate("/home/admin"), 1000);
+            toast.success("Logged as Admin successfully!");
           }
         } else {
           toast.error("Incorrect password or email!");
         }
       }
     } catch (error) {
-      toast.error("An error occurred. Please try again.");
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }

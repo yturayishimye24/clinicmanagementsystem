@@ -28,35 +28,36 @@ const Faqs = forwardRef((props, ref) => {
   };
 
   return (
-    <div className="min-h-screen text-center font-arial" ref={ref}>
-      <h1 className="text-gray-400 text-3xl mb-5">FAQs</h1>
-      <h1 className="text-gray-500 text-2xl mb-5">SERVICE INFO</h1>
+    <div ref={ref} className="min-h-screen px-4 py-10 font-arial bg-gray-50">
+      <h1 className="text-gray-400 text-3xl text-center mb-2 font-bold">FAQs</h1>
+      <h2 className="text-gray-500 text-xl text-center mb-8">SERVICE INFO</h2>
 
-      <div className="w-[700px] mx-auto space-y-3">
+      <div className="max-w-[700px] w-full mx-auto space-y-4">
         {faqData.map((item, index) => (
           <div
             key={index}
-            className="border-t-4 border-gray-400 bg-white shadow shadow-gray-400"
+            className="border border-gray-300 bg-white rounded-lg shadow-sm transition hover:shadow-md"
           >
-            <div
-              className="flex items-center justify-between p-5 cursor-pointer"
+            
+            <button
               onClick={() => toggleFAQ(index)}
+              className="w-full flex justify-between items-center p-5 text-left focus:outline-none focus:ring-2 focus:ring-green-500 rounded-lg"
             >
-              <h2 className="text-left w-[80%]">{item.q}</h2>
-
+              <span className="font-medium text-gray-800">{item.q}</span>
               {openIndex === index ? (
                 <Minus className="text-green-600" />
               ) : (
                 <Plus className="text-green-600" />
               )}
-            </div>
+            </button>
 
+            
             <div
-              className={`transition-all duration-300 overflow-hidden ${
-                openIndex === index ? "max-h-40 p-5" : "max-h-0"
+              className={`overflow-hidden transition-all duration-300 ${
+                openIndex === index ? "max-h-40 p-5" : "max-h-0 px-5"
               }`}
             >
-              <p className="text-gray-600 text-left">{item.a}</p>
+              <p className="text-gray-600">{item.a}</p>
             </div>
           </div>
         ))}

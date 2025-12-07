@@ -5,12 +5,16 @@ import { Routes, Route, BrowserRouter } from "react-router-dom";
 import CreatePage from "./pages/CreatePage.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
+import {AuthContext} from "../context/authContext.jsx"
 import "./index.css";
+import 'flowbite';
+
 
 export const backendUrl = "http://localhost:4000";
 const App = () => {
   return (
-    <div>
+    <div data-theme="cupcake">
+      <AuthContext>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -20,6 +24,7 @@ const App = () => {
         </Routes>
         <ToastContainer containerStyle={{ zIndex: 99999 }} />
       </BrowserRouter>
+      </AuthContext>
     </div>
   );
 };
