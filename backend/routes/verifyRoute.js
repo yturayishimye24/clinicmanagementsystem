@@ -1,6 +1,8 @@
 import express from "express"
-import { autheticateMiddleware } from "../middlewares/autheticateToken"
+import { autheticate } from "../middlewares/autheticateToken.js"
 import {Verify} from "../controllers/VerifyController.js"
 const router = express.Router()
 
-router.post("/verify",autheticateMiddleware,Verify)
+router.get("/verify",autheticate,Verify)
+
+export default router;

@@ -1,5 +1,6 @@
 import { trusted } from "mongoose";
 import addedPatient from "../models/addModel.js";
+import {io} from "../server.js"
 
 export const getOnePatient = async (req, res) => {
   try {
@@ -16,11 +17,11 @@ export const getOnePatient = async (req, res) => {
 
 export const getAllPatients = async (req, res) => {
   try {
-    const patients = await addedPatient.find();
+    const patients = await addedPatient.find().populate("createdBy","username email").sort({createdAt: -1}).lean();
     if (!patients || patients.length === 0) {
       return res
-        .status(404)
-        .json({ success: false, message: "No patients found." });
+        .status(200)
+        .json([]);
     }
     res.status(200).json(patients);
   } catch (error) {
@@ -40,6 +41,7 @@ export const createPatient = async (req, res) => {
       date,
       maritalStatus,
       disease,
+      avatarUrl,
     } = req.body;
 
     if (
@@ -62,10 +64,16 @@ export const createPatient = async (req, res) => {
       date: new Date(date).getTime(),
       maritalStatus,
       disease,
+      avatarUrl,
+      createdBy: req.user._id,
     });
+    
+    const payload = await addedPatient.findById(createdPatient.id).populate("createdBy","username role")
 
-    // const savedUser = await createdUser.save();
-    res.status(201).json(createdPatient);
+    io.to("admins").emit("newPatient",payload);
+
+    res.status(201).json({patient: payload});
+
   }  catch (error) {
     console.log("Error creating patient:", error.message);
     res.status(500).json({ success: false, message: "Error creating patient." });
@@ -76,6 +84,7 @@ export const deletePatient = async (req, res) => {
   try{
     const deletedPatient = await addedPatient.findByIdAndDelete(req.params.id)
     if(deletedPatient){
+      io.to("admins").emit("deletePatient",req.params.id)
       res.status(200).json({message:"Deleted Succesfully!"})
     }else{
       res.status(500).json({message:"Error deleting!"})
@@ -99,5 +108,38 @@ export const updatePatient = async (req, res) => {
   }
   }catch(error){
     console.log("Threw an error updating",error);
+  }
+};
+
+export const hPatient = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const patient = await addedPatient.findById(id);
+
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found!" });
+    }
+
+    if (patient.isHospitalized) {
+      return res.status(400).json({ message: "Patient is already hospitalized!" });
+    }
+
+    patient.isHospitalized = true;
+    patient.Status = "hospitalized";
+
+    await patient.save();
+
+    
+    io.to("admins").emit("patientHospitalized", patient);
+
+    return res.status(200).json({
+      message: "Patient hospitalized successfully",
+      patient,
+    });
+
+  } catch (error) {
+    console.log("Error hospitalizing patient:", error.message);
+    res.status(500).json({ message: "Server error" });
   }
 };

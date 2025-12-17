@@ -1,69 +1,102 @@
-import React, { useState, forwardRef } from "react";
-import { Plus, Minus } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionPanel,
+  AccordionTitle,
+} from "flowbite-react";
+import { forwardRef } from "react";
 
-const Faqs = forwardRef((props, ref) => {
-  const [openIndex, setOpenIndex] = useState(null);
-
-  const faqData = [
-    {
-      q: "HOW CAN I REACH OUT TO THE NURSE? WHEN ARE THEY AVAILABLE?",
-      a: "You can contact the nurse using the clinic hotline or book an appointment online."
-    },
-    {
-      q: "HOW DO I BOOK AN APPOINTMENT?",
-      a: "Appointments can be booked through our website or at the clinic front desk."
-    },
-    {
-      q: "WHAT ARE THE WORKING HOURS?",
-      a: "Our team is available from 8:00 AM to 6:00 PM, Monday to Saturday."
-    },
-    {
-      q: "CAN I CHANGE MY APPOINTMENT?",
-      a: "Yes, appointment changes are allowed up to 12 hours before your scheduled time."
-    },
-  ];
-
-  const toggleFAQ = (index) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
-
+const FAQ = forwardRef((props, ref) => {
   return (
-    <div ref={ref} className="min-h-screen px-4 py-10 font-arial bg-gray-50">
-      <h1 className="text-gray-400 text-3xl text-center mb-2 font-bold">FAQs</h1>
-      <h2 className="text-gray-500 text-xl text-center mb-8">SERVICE INFO</h2>
-
-      <div className="max-w-[700px] w-full mx-auto space-y-4">
-        {faqData.map((item, index) => (
-          <div
-            key={index}
-            className="border border-gray-300 bg-white rounded-lg shadow-sm transition hover:shadow-md"
-          >
-            
-            <button
-              onClick={() => toggleFAQ(index)}
-              className="w-full flex justify-between items-center p-5 text-left focus:outline-none focus:ring-2 focus:ring-green-500 rounded-lg"
+    <Accordion
+      collapseAll
+      ref={ref}
+      className="
+        w-full
+        max-w-sm
+        sm:max-w-md
+        md:max-w-lg
+        lg:max-w-xl
+        mx-auto
+      "
+    >
+    
+      <AccordionPanel>
+        <AccordionTitle>
+          Where is clinic located?
+        </AccordionTitle>
+        <AccordionContent className="max-h-48 overflow-y-auto">
+          <p className="mb-2 text-gray-500 dark:text-gray-400">
+            You can find the clinic building after passing Urugwiro.
+            You will see several maps showing the directions and services
+            provided there. It will be easy to locate.
+          </p>
+          <p className="text-gray-500 dark:text-gray-400">
+            Check out this guide to learn how to&nbsp;
+            <a
+              href="https://flowbite.com/docs/getting-started/introduction/"
+              className="text-cyan-600 hover:underline dark:text-cyan-500"
             >
-              <span className="font-medium text-gray-800">{item.q}</span>
-              {openIndex === index ? (
-                <Minus className="text-green-600" />
-              ) : (
-                <Plus className="text-green-600" />
-              )}
-            </button>
+              get started
+            </a>
+            &nbsp;and start developing websites even faster.
+          </p>
+        </AccordionContent>
+      </AccordionPanel>
 
-            
-            <div
-              className={`overflow-hidden transition-all duration-300 ${
-                openIndex === index ? "max-h-40 p-5" : "max-h-0 px-5"
-              }`}
+      {/* Panel 2 */}
+      <AccordionPanel>
+        <AccordionTitle>
+          What is the purpose of this website?
+        </AccordionTitle>
+        <AccordionContent className="max-h-48 overflow-y-auto">
+          <p className="mb-2 text-gray-500 dark:text-gray-400">
+            This website is designed to help you manage your patients and their information.
+          </p>
+          <p className="text-gray-500 dark:text-gray-400">
+            Check out the{" "}
+            <a
+              href="https://flowbite.com/figma/"
+              className="text-cyan-600 hover:underline dark:text-cyan-500"
             >
-              <p className="text-gray-600">{item.a}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+              www.clinicworkspace.com
+            </a>
+            .
+          </p>
+        </AccordionContent>
+      </AccordionPanel>
+
+      {/* Panel 3 */}
+      <AccordionPanel>
+        <AccordionTitle>
+         How can I contact the administrator?
+        </AccordionTitle>
+        <AccordionContent className="max-h-56 overflow-y-auto">
+          <p className="mb-2 text-gray-500 dark:text-gray-400">
+           The administrator can be contacted via the contact button in the header.
+          </p>
+          <ul className="list-disc pl-5 text-gray-500 dark:text-gray-400">
+            <li>
+              <a
+                href="https://flowbite.com/pro/"
+                className="text-cyan-600 hover:underline dark:text-cyan-500"
+              >
+                +250 788 932 710
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://tailwindui.com/"
+                className="text-cyan-600 hover:underline dark:text-cyan-500"
+              >
+               contact@clinicworkspace.com
+              </a>
+            </li>
+          </ul>
+        </AccordionContent>
+      </AccordionPanel>
+    </Accordion>
   );
 });
 
-export default Faqs;
+export default FAQ;

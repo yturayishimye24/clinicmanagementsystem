@@ -1,30 +1,36 @@
 import React, { useRef, useState, useEffect } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
-
-
 import {
-  Activity,
-  Phone,
-  ArrowRight,
-  Check,
-  Users,
-  Clock,
-  Shield,
-  X,
-  Globe,
-  Apple,
-} from "lucide-react";
+  Spinner,
+  Button,
+  Card,
+  Checkbox,
+  Label,
+  TextInput,
+} from "flowbite-react";
+import { Alert } from "flowbite-react";
+
+import { Activity, Phone, ArrowRight, Check, X } from "lucide-react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { OrbitProgress } from "react-loading-indicators";
 import { backendUrl } from "../App.jsx";
 import techImage from "../../images/techImage.png";
+import secure from "../../images/secure-private.jpeg";
+
 import FAQ from "../components/Faqs.jsx";
 import TEAM from "../components/teamSection.jsx";
-import Footer from "../components/Footer.jsx";
+import {
+  Footer,
+  FooterBrand,
+  FooterCopyright,
+  FooterDivider,
+  FooterLink,
+  FooterLinkGroup,
+} from "flowbite-react";
 import { useAuth } from "../../context/authContext.jsx";
-
+import { Popover } from "flowbite-react";
 const LandingPage = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -35,10 +41,12 @@ const LandingPage = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState("nurse");
+  const [showAlert, setShowAlert] = useState(false);
   const teamRef = useRef(null);
   const faqRef = useRef(null);
   const HomeRef = useRef(null);
   const servicesRef = useRef(null);
+  const whyChooseUsRef = useRef(null);
   const { login } = useAuth();
   const handleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -51,7 +59,9 @@ const LandingPage = () => {
     teamRef.current?.scrollIntoView({ behavior: "smooth" });
   const scrollToServices = () =>
     servicesRef.current?.scrollIntoView({ behavior: "smooth" });
-
+  const scrollToWhyUs = ()=>{
+    whyChooseUsRef.current?.scrollIntoView({behavior:"smooth"})
+  }
   const openLoginModal = () => setShowLoginModal(true);
   const closeLoginModal = () => {
     setShowLoginModal(false);
@@ -65,66 +75,37 @@ const LandingPage = () => {
     setLoading(true);
 
     try {
-      if (currentState === "SignUp") {
-        if (!username.trim() || !email.trim() || !password.trim()) {
-          toast.error("Please fill all fields.");
-          setLoading(false);
-          return;
-        }
-        const response = await axios.post(`${backendUrl}/api/users/signup`, {
-          username,
-          email,
-          role,
-          password,
-        });
+      if (!email.trim() || !password.trim()) {
+        toast.error("Please fill all fields.");
+        setLoading(false);
+        return;
+      }
+      const response = await axios.post(`${backendUrl}/api/users/login`, {
+        email,
+        password,
+      });
 
-        if (response.data.success) {
-          localStorage.setItem("token", response.data.token);
-          localStorage.setItem("name", response.data.username);
-          localStorage.setItem("role", response.data.role);
-          if (response.data.role === "nurse") {
-            toast.success(response.data.message);
-            setTimeout(() => navigate("/home"), 1000);
-          } else if (response.data.role === "admin") {
-            toast.success(response.data.message);
-            setTimeout(() => navigate("/home/admin"), 1000);
-          }
+      if (response.data.success) {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("name", response.data.username);
+        localStorage.setItem("role", response.data.role);
+        const userData = {
+          username: response.data.username,
+          token: response.data.token,
+          role: response.data.role,
+        };
+
+        login(userData);
+
+        if (response.data.role === "nurse") {
+          setTimeout(() => navigate("/home"), 1000);
+          toast.success("Logged in as nurse successfully!");
         } else {
-          toast.error("Error signing up: " + response.data.message);
+          setTimeout(() => navigate("/home/admin"), 1000);
+          toast.success("Logged as Admin successfully!");
         }
       } else {
-        if (!email.trim() || !password.trim()) {
-          toast.error("Please fill all fields.");
-          setLoading(false);
-          return;
-        }
-        const response = await axios.post(`${backendUrl}/api/users/login`, {
-          email,
-          password,
-        });
-
-        if (response.data.success) {
-          localStorage.setItem("token", response.data.token);
-          localStorage.setItem("name", response.data.username);
-          localStorage.setItem("role", response.data.role);
-          const userData = {
-            username: response.data.username,
-            token: response.data.token,
-            role: response.data.role,
-          };
-
-          login(userData);
-
-          if (response.data.role === "nurse") {
-            setTimeout(() => navigate("/home"), 1000);
-            toast.success("Logged in as nurse successfully!");
-          } else {
-            setTimeout(() => navigate("/home/admin"), 1000);
-            toast.success("Logged as Admin successfully!");
-          }
-        } else {
-          toast.error("Incorrect password or email!");
-        }
+        toast.error("Incorrect password or email!");
       }
     } catch (error) {
       toast.error(error.message);
@@ -132,7 +113,6 @@ const LandingPage = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === "Escape" && showLoginModal) {
@@ -143,26 +123,13 @@ const LandingPage = () => {
     return () => document.removeEventListener("keydown", handleEscape);
   }, [showLoginModal]);
 
-  const features = [
-    {
-      icon: Users,
-      title: "Patient Management",
-      description:
-        "Efficiently manage patient records, appointments, and medical history in one place",
-    },
-    {
-      icon: Clock,
-      title: "Real-time Updates",
-      description:
-        "Stay updated with instant notifications and real-time patient data synchronization",
-    },
-    {
-      icon: Shield,
-      title: "Secure & Private",
-      description:
-        "Your data is encrypted and protected with industry-standard security measures",
-    },
-  ];
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowAlert(true);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const services = [
     "Recording patients",
@@ -172,39 +139,64 @@ const LandingPage = () => {
     "Reporting",
     "Statistics",
   ];
-
+  const content = (
+    <div className="w-64 text-sm text-gray-500 dark:text-gray-400 z-99">
+      <div className="border-b border-gray-200 bg-gray-100 px-3 py-2 dark:border-gray-600 dark:bg-gray-700">
+        <h3 className="font-semibold text-gray-900 dark:text-white">
+          Contact Adminstrator
+        </h3>
+      </div>
+      <div className="px-3 py-2 z-99">
+        <p>+250 788 932 710</p>
+      </div>
+    </div>
+  );
   return (
-    <div className="font-sans min-h-screen bg-gray-50">
+    <div
+      className={`font-sans min-h-screen bg-white transition-all duraction-300 ${
+        showLoginModal === true ? "blur-md pointer-event-none select-none " : ""
+      } `}
+    >
+      {showAlert && (
+        <Alert
+          color="warning"
+          onDismiss={() => setShowAlert(false)}
+          className="fixed top-0 left-0 right-0 z-50 p-1 rounded-none flex items-cente justify-center"
+        >
+          <span className="font-medium">Welcome to Clinic Workspace</span> A
+          place where you can manage your patients and their information.
+        </Alert>
+      )}
       <header className="bg-white text-gray-900 flex items-center justify-between shadow-sm px-4 sm:px-6 lg:px-8 py-3">
-        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-green-600 font-bold">
           <Activity size={16} className="sm:w-[18px] sm:h-[18px]" />
-          <span className="font-medium hidden sm:inline">
+          <span className="font-medium sm:inline">
             Welcome to Clinic Workspace
           </span>
           <span className="font-medium sm:hidden">Clinic Workspace</span>
         </div>
-        <button
-          type="button"
-          className="bg-white text-gray-900 border-2 border-gray-200 rounded-xl sm:rounded-2xl px-3 sm:px-5 py-1.5 sm:py-2 flex items-center gap-1.5 sm:gap-2 shadow hover:bg-gray-50 transition text-xs sm:text-sm"
-        >
-          <Phone size={16} className="sm:w-[18px] sm:h-[18px]" />
-          <span className="hidden sm:inline">Contact Us</span>
-          <span className="sm:hidden">Contact</span>
-        </button>
+
+        <Popover content={content} trigger="hover" className="z-99">
+          <Button className="bg-white border-gray-900 shadow-sm text-black rounded-lg ">
+            Contact Us
+          </Button>
+        </Popover>
+
+        <span className="sm:hidden">Contact</span>
       </header>
 
       <nav className="bg-white shadow flex items-center justify-between py-3 sm:py-4 px-4 sm:px-6 lg:px-8 sticky top-0 w-full z-50">
         <div className="flex items-center gap-2 cursor-pointer">
           <div className="w-8 h-8 sm:w-10 sm:h-10 bg-black rounded-xl sm:rounded-2xl flex items-center justify-center shadow">
-            <Activity color="white" size={16} className="sm:w-5 sm:h-5" />
+            <Activity color="black" size={16} className="sm:w-5 sm:h-5" />
           </div>
           <h1 className="text-lg sm:text-2xl font-bold">
             <span className="text-black">Clinic</span>{" "}
-            <span className="text-gray-600 hidden sm:inline">Workspace</span>
+            <span className="text-gray-600 sm:inline">Workspace</span>
           </h1>
         </div>
 
-        <ul className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium text-gray-600">
+        <ul className="md:flex items-center gap-6 lg:gap-8 text-sm font-medium text-gray-600">
           <li
             onClick={goToHome}
             className="cursor-pointer hover:text-black transition"
@@ -235,11 +227,15 @@ const LandingPage = () => {
           </button>
           <button
             onClick={openLoginModal}
-            className="bg-black text-white rounded-xl sm:rounded-2xl px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold shadow transition-all flex items-center gap-1.5 sm:gap-2 hover:bg-gray-800"
+            className="bg-black text-black rounded-xl sm:rounded-2xl px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold shadow transition-all flex items-center gap-1.5 sm:gap-2"
           >
-            <span className="hidden sm:inline">Get Started</span>
+            <span className="sm:inline text-black">Get Started</span>
             <span className="sm:hidden">Login</span>
-            <ArrowRight size={16} className="sm:w-[18px] sm:h-[18px]" />
+            <ArrowRight
+              size={16}
+              color="black"
+              className="sm:w-[18px] sm:h-[18px]"
+            />
           </button>
         </div>
       </nav>
@@ -253,14 +249,16 @@ const LandingPage = () => {
             Manage Patients with <br />
             <span className="text-gray-600">Better Communication</span>
           </h1>
-          <p className="text-gray-600 text-sm sm:text-base md:text-lg lg:text-xl max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
+          <p className="text-gray-600 text-sm sm:text-base md:text-lg lg:text-xl max-w-3xl mx-auto mb-6 sm:mb-8 px-4 text-center">
             Join a community where every patient feels understood and receives
+            <br />
             the desired service. Experience seamless healthcare management with
+            <br />
             our comprehensive platform.
           </p>
           <button
             onClick={openLoginModal}
-            className="px-6 sm:px-8 py-3 sm:py-4 bg-black text-white text-base sm:text-lg font-semibold rounded-xl sm:rounded-2xl shadow hover:bg-gray-800 transition flex items-center gap-2 sm:gap-3 mx-auto"
+            className="px-6 sm:px-8 py-3 sm:py-4 bg-black text-black text-base sm:text-lg font-semibold rounded-xl sm:rounded-2xl shadow transition flex items-center gap-2 sm:gap-3 mx-auto"
           >
             Get started Now
             <ArrowRight size={20} className="sm:w-[22px] sm:h-[22px]" />
@@ -281,30 +279,216 @@ const LandingPage = () => {
           </div>
         </div>
 
-        <div className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-white">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-10 sm:mb-16 text-gray-900">
+        <div className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-white" ref={whyChooseUsRef}>
+          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-10 sm:mb-16 text-gray-400">
             Why Choose Us
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <div
-                  key={index}
-                  className="bg-white rounded-2xl p-6 sm:p-8 shadow hover:shadow-lg transition border border-gray-100"
-                >
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-black rounded-2xl flex items-center justify-center mb-4 sm:mb-6">
-                    <Icon className="text-white" size={24} />
-                  </div>
-                  <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">
-                    {feature.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm sm:text-base">
-                    {feature.description}
-                  </p>
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="flex items-center justify-center md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <Card
+                className="max-w-sm"
+                imgAlt="Apple Watch Series 7 in colors pink, silver, and black"
+                imgSrc="/images/secure-private.jpeg"
+              >
+                <a href="#">
+                  <h5 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
+                    Scanning eye with modern technology, we ensure efficiency.
+                  </h5>
+                </a>
+                <div className="mb-5 mt-2.5 flex items-center">
+                  <svg
+                    className="h-5 w-5 text-yellow-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <svg
+                    className="h-5 w-5 text-yellow-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <svg
+                    className="h-5 w-5 text-yellow-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <svg
+                    className="h-5 w-5 text-yellow-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <svg
+                    className="h-5 w-5 text-yellow-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <span className="ml-3 mr-2 rounded bg-cyan-100 px-2.5 py-0.5 text-xs font-semibold text-cyan-800 dark:bg-cyan-200 dark:text-cyan-800">
+                    5.0
+                  </span>
                 </div>
-              );
-            })}
+                <div className="flex items-center justify-between">
+                  <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                    That is it
+                  </span>
+                  <a
+                    onClick={()=>setShowLoginModal(true)}
+                    className="rounded-lg bg-cyan-700 hover:cursor-pointer px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
+                  >
+                    Right space
+                  </a>
+                </div>
+              </Card>
+
+              <Card
+                className="max-w-sm"
+                imgAlt="Apple Watch Series 7 in colors pink, silver, and black"
+                imgSrc="/images/techImage.png"
+              >
+                <a href="#">
+                  <h5 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
+                    Patients management with Clinic Workspace
+                  </h5>
+                </a>
+                <div className="mb-5 mt-2.5 flex items-center">
+                  <svg
+                    className="h-5 w-5 text-yellow-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <svg
+                    className="h-5 w-5 text-yellow-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <svg
+                    className="h-5 w-5 text-yellow-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <svg
+                    className="h-5 w-5 text-yellow-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <svg
+                    className="h-5 w-5 text-yellow-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <span className="ml-3 mr-2 rounded bg-cyan-100 px-2.5 py-0.5 text-xs font-semibold text-cyan-800 dark:bg-cyan-200 dark:text-cyan-800">
+                    5.0
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                    Your time
+                  </span>
+                  <a
+                    onClick={()=>setShowLoginModal(true)}
+                    className="rounded-lg bg-cyan-700 px-5 hover:cursor-pointer py-2.5 text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
+                  >
+                    Be Part of Us
+                  </a>
+                </div>
+              </Card>
+
+              <Card
+                className="max-w-sm"
+                imgAlt="Apple Watch Series 7 in colors pink, silver, and black"
+                imgSrc="/images/patients-management.png"
+              >
+                <a href="#">
+                  <h5 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
+                    First Aid services Available
+                  </h5>
+                </a>
+                <div className="mb-5 mt-2.5 flex items-center">
+                  <svg
+                    className="h-5 w-5 text-yellow-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <svg
+                    className="h-5 w-5 text-yellow-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <svg
+                    className="h-5 w-5 text-yellow-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <svg
+                    className="h-5 w-5 text-yellow-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <svg
+                    className="h-5 w-5 text-yellow-300"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <span className="ml-3 mr-2 rounded bg-cyan-100 px-2.5 py-0.5 text-xs font-semibold text-cyan-800 dark:bg-cyan-200 dark:text-cyan-800">
+                    5.0
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                    Free tryal
+                  </span>
+                  <a
+                    onClick={()=>setShowLoginModal(true)}
+                    className="rounded-lg bg-cyan-700 px-5 py-2.5 hover:cursor-pointer text-center text-sm font-medium text-white hover:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-300 dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
+                  >
+                    Join
+                  </a>
+                </div>
+              </Card>
+            </div>
           </div>
         </div>
 
@@ -312,14 +496,14 @@ const LandingPage = () => {
           className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-gray-50"
           ref={servicesRef}
         >
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-10 sm:mb-16 text-gray-900">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-10 sm:mb-16 text-gray-400">
             Our Services
           </h2>
-          <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-2 gap-4 sm:gap-6">
             {services.map((service, index) => (
               <div
                 key={index}
-                className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow hover:shadow-md transition border flex items-center gap-3 sm:gap-4"
+                className="bg-white sm:rounded-2xl p-4 sm:p-6 shadow hover:shadow-md transition border-l-5 border-green-500 flex items-center gap-3 sm:gap-4"
               >
                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-black rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
                   <Check className="text-white" size={18} />
@@ -333,7 +517,7 @@ const LandingPage = () => {
         </div>
 
         <div className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-white text-center">
-          <div className="max-w-4xl mx-auto bg-gray-900 rounded-2xl sm:rounded-3xl p-8 sm:p-12 shadow-xl">
+          <div className="max-w-4xl mx-auto bg-gray-900 rounded-lg sm:rounded-3xl p-8 sm:p-12 shadow-xl">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 text-white">
               Ready to Transform Your Healthcare Management?
             </h2>
@@ -342,7 +526,7 @@ const LandingPage = () => {
             </p>
             <button
               onClick={openLoginModal}
-              className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-black text-base sm:text-lg font-semibold rounded-xl sm:rounded-2xl shadow hover:bg-gray-100 transition flex items-center gap-2 sm:gap-3 mx-auto"
+              className="px-6 sm:px-8 py-3 sm:py-4  text-black backdrop-blur-4xl text-black text-base sm:text-lg font-semibold rounded-xl sm:rounded-2xl shadow bg-gray-100 transition flex items-center gap-2 sm:gap-3 mx-auto"
             >
               Start Your Journey
               <ArrowRight size={20} className="sm:w-[22px] sm:h-[22px]" />
@@ -350,7 +534,7 @@ const LandingPage = () => {
           </div>
         </div>
 
-        <div className="sticky top-20 bg-white rounded-full py-2 sm:py-3 px-4 sm:px-6 w-fit mx-auto flex items-center gap-4 sm:gap-8 text-gray-600 shadow mt-6 sm:mt-10 mb-6 sm:mb-10 z-40 border text-xs sm:text-sm">
+        {/* <div className="sticky top-20 bg-white rounded-full py-2 sm:py-3 px-[30px] sm:px-6 w-[500px] mx-auto flex justicy-around items-center gap-4 sm:gap-8 text-gray-600 shadow-md mt-6 sm:mt-10 mb-6 sm:mb-10 z-40 text-xs sm:text-sm">
           <button
             onClick={scrollToTeam}
             className="font-semibold hover:text-black"
@@ -369,6 +553,22 @@ const LandingPage = () => {
           >
             FAQs
           </button>
+        </div> */}
+        <div
+          className="
+  bg-white shadow-md rounded-full
+  py-5 px-4 w-[600px] mx-auto
+  flex justify-center items-center gap-4 sm:gap-8
+  text-gray-600 text-xl sm:text-sm
+  mt-6 sm:mt-10 mb-6 sm:mb-10
+  sticky top-[80px] z-40
+"
+        >
+          <ul className="flex items-center justify-center gap-5">
+            <li className="cursor-pointer" onClick={scrollToServices}>What's included</li>
+            <li className="cursor-pointer" onClick={scrollToFaqs}>How it works</li>
+            <li className="cursor-pointer" onClick={scrollToWhyUs}>Why us</li>
+          </ul>
         </div>
 
         <div ref={teamRef} className="py-5 px-4 bg-white">
@@ -376,224 +576,87 @@ const LandingPage = () => {
         </div>
 
         <div ref={faqRef} className="py-16 px-4 bg-gray-50">
+          <h1 className="text-4xl font-bold text-center mb-10 text-gray-400">Frequently Asked Questsions</h1>
           <FAQ />
         </div>
       </main>
-
       {showLoginModal && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn"
-          onClick={closeLoginModal}
-        >
-          <div
-            className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto relative animate-slideUp"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="relative bg-black rounded-lg shadow-xl max-w-sm w-full mx-4 ">
             <button
               onClick={closeLoginModal}
-              className="absolute right-3 top-3 sm:right-4 sm:top-4 p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition z-10"
+              className="absolute top-[-5px] right-[45%] text-gray-100 bg-gray-200 flex items-center justify-center rounded-full w-8 h-8 hover:text-gray-600"
             >
-              <X size={20} className="sm:w-6 sm:h-6" />
+              <X size={25} />
             </button>
-
-            <div className="p-6 sm:p-8">
-              {loading ? (
-                <div className="flex items-center justify-center py-20">
-                  <OrbitProgress />
-                </div>
-              ) : (
-                <>
-                  <div className="flex flex-col items-center mb-6">
-                    <div className="bg-gray-100 p-3 sm:p-4 rounded-full mb-3 sm:mb-4">
-                      <Activity size={48} className="sm:w-20 sm:h-20" />
-                    </div>
-                    <h1 className="text-2xl sm:text-3xl font-semibold text-center">
-                      {currentState} to Clinic
-                    </h1>
+            <Card className="max-w-sm">
+              <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+                <div>
+                  <div className="mb-2 block">
+                    <Label htmlFor="email1">Your email</Label>
                   </div>
-
-                  <form onSubmit={handleSubmit}>
-                    {currentState === "SignUp" && (
-                      <>
-                        <div className="mb-4">
-                          <label className="block mb-2 font-medium text-sm sm:text-base">
-                            Username
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="Enter your username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            className="w-full p-2.5 sm:p-3 border border-gray-300 rounded-lg focus:border-gray-500 focus:ring-2 focus:ring-green-200 transition-all text-sm sm:text-base"
-                          />
-                        </div>
-                        <div>
-                          <label className="block mb-2 font-arial text-sm sm:text-base">
-                            Role
-                          </label>
-
-                          <select
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md
-                                   focus:outline-none focus:ring-2 focus:ring-green-500
-                                 focus:border-green-500 bg-white"
-                            onChange={(e) => setRole(e.target.value)}
-                          >
-                            <option value="">Select a role</option>
-                            <option value="nurse">Nurse</option>
-                            <option value="admin">Admin</option>
-                          </select>
-                        </div>
-                      </>
-                    )}
-
-                    <div className="mb-4">
-                      <label className="block mb-2 font-medium text-sm sm:text-base">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        placeholder="Enter your email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full p-2.5 sm:p-3 border border-gray-300 rounded-lg focus:border-gray-500 focus:ring-2 focus:ring-green-200 transition-all text-sm sm:text-base"
-                      />
-                    </div>
-
-                    <div className="mb-6">
-                      <div className="flex justify-between items-center mb-2">
-                        <label className="font-medium text-sm sm:text-base">
-                          Password
-                        </label>
-                        <a
-                          href="#"
-                          className="text-green-500 hover:underline text-xs sm:text-sm"
-                        >
-                          Forgot password?
-                        </a>
-                      </div>
-                      <div style={{ position: "relative", width: "100%" }}>
-                        <input
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Enter your password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="w-full p-2.5 sm:p-3 border border-gray-300 rounded-lg focus:border-gray-500 focus:ring-2 focus:ring-green-200 transition-all text-sm sm:text-base"
-                        />
-                        <span
-                          onClick={handleShowPassword}
-                          style={{
-                            position: "absolute",
-                            right: "10px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            cursor: "pointer",
-                          }}
-                        >
-                          {showPassword ? <FiEye /> : <FiEyeOff />}
-                        </span>
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full p-2.5 sm:p-3 bg-black text-white rounded-lg flex justify-center items-center gap-2 mb-4 font-semibold hover:bg-gray-800 transition text-sm sm:text-base disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                      {currentState === "Login" ? "Sign In" : "Sign Up"}
-                    </button>
-
-                    <div className="flex items-center justify-center gap-2 mb-4">
-                      <span className="bg-gray-300 h-0.5 w-full"></span>
-                      <span className="text-gray-500 text-xs sm:text-sm">
-                        Or
-                      </span>
-                      <span className="bg-gray-300 h-0.5 w-full"></span>
-                    </div>
-
-                    <div className="flex flex-col gap-3 mb-6">
-                      <button
-                        type="button"
-                        className="flex items-center justify-center gap-2 border border-gray-300 rounded-lg p-2.5 sm:p-3 bg-white hover:bg-gray-50 transition text-xs sm:text-sm"
-                      >
-                        <Globe
-                          size={20}
-                          className="sm:w-6 sm:h-6"
-                          color="#4285F4"
-                        />{" "}
-                        Continue with Google
-                      </button>
-                      <button
-                        type="button"
-                        className="flex items-center justify-center gap-2 border border-gray-300 rounded-lg p-2.5 sm:p-3 bg-white hover:bg-gray-50 transition text-xs sm:text-sm"
-                      >
-                        <Apple
-                          size={20}
-                          className="sm:w-6 sm:h-6"
-                          color="black"
-                        />{" "}
-                        Continue with Apple
-                      </button>
-                    </div>
-
-                    <div className="flex justify-center gap-2 text-xs sm:text-sm flex-wrap">
-                      <span className="text-gray-600">
-                        {currentState === "Login"
-                          ? "New to Clinic?"
-                          : "Already have an account?"}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setCurrentState(
-                            currentState === "Login" ? "SignUp" : "Login"
-                          )
-                        }
-                        className="text-green-500 font-semibold hover:underline"
-                      >
-                        {currentState === "Login"
-                          ? "Create Account"
-                          : "Sign In"}
-                      </button>
-                    </div>
-                  </form>
-                </>
-              )}
-            </div>
+                  <TextInput
+                    id="email1"
+                    type="email"
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter you email"
+                    required
+                  />
+                </div>
+                <div>
+                  <div className="mb-2 block">
+                    <Label htmlFor="password1">Your password</Label>
+                  </div>
+                  <TextInput
+                    id="password1"
+                    type="password"
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox id="remember" required />
+                  <Label htmlFor="remember">Remember Me</Label>
+                </div>
+                <Button
+                  type="submit"
+                  className="bg-green-600 text-white font-poppins disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  disabled={loading}
+                >
+                  {loading ? (
+                  "Signing in..."
+                  ) : (
+                    "Sign in"
+                  )}
+                </Button>
+              </form>
+            </Card>
           </div>
         </div>
       )}
 
       <ToastContainer position="bottom-right" />
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
-        }
-        .animate-slideUp {
-          animation: slideUp 0.3s ease-out;
-        }
-      `}</style>
-      <Footer />
+      <Footer container className="mt-40">
+        <div className="w-full text-center">
+          <div className="w-full justify-between sm:flex sm:items-center sm:justify-between">
+            <FooterBrand
+              href="https://localhost:5173/"
+              src="images/asyv.png"
+              alt="Asyv Logo"
+              name="Asyv Clinic"
+            />
+            <FooterLinkGroup>
+              <FooterLink href="#">Team</FooterLink>
+              <FooterLink href="#">Services</FooterLink>
+              <FooterLink href="#">FAQs</FooterLink>
+              <FooterLink href="#">Contact</FooterLink>
+            </FooterLinkGroup>
+          </div>
+          <FooterDivider />
+          <FooterCopyright href="#" by="ASYVClinic™" year={2025} />
+        </div>
+      </Footer>
     </div>
   );
 };
-
 export default LandingPage;

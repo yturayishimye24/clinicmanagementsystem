@@ -1,33 +1,101 @@
-import express from "express";
+import express, { Router } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import {createServer} from "http"
+import { createServer } from "http";
 import userRouter from "./routes/userRoutes.js";
 import connectDB from "./config/db.js";
-import addRouter from "./routes/addRoutes.js"
+import addRouter from "./routes/addRoutes.js";
 import { seed } from "./userSeed.js";
-
-
+import requestRouter from "./routes/requestRoutes.js";
+import jwt from "jsonwebtoken";
+import http from "http";
+import { Server } from "socket.io";
+import User from "./models/userModel.js";
+import emailRouter from "./routes/getEmail.js";
+import router from "./routes/verifyRoute.js"
+import createNurseAccountRouter from "./routes/createNurseAccountRoute.js";
 dotenv.config();
 
 const port = process.env.PORT || 4000;
+const cors_origin = process.env.CORS_ORIGIN || "http://localhost:5173";
 const app = express();
+import path from "path"
+import multer from "multer"
+
+const storage = multer.diskStorage({
+  destination:(req,file,cb)=>{
+    cb(null,'images')
+  },
+  fileName:(req,file,cb)=>{
+    console.log(req.file)
+    cb(null, Date.now() + path.extname(file.originalname))
+  }
+}
+)
+const upload = multer({storage: storage})
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: cors_origin,
   })
 );
 
 app.use(express.json());
 
+app.post("/api/upload",upload.single('image'),(req,res)=>{
+  res.json(req.file)
+})
 app.use("/api/users", userRouter);
-app.use("/api/users",addRouter)
+app.use("/api/patients", addRouter); 
+app.use("/api/requests", requestRouter);
+app.use("/api/infos",emailRouter)
+app.use("/api/verify",router)
+app.use("/api/nurseaccount",createNurseAccountRouter)
 
+const server = http.createServer(app);
+export const io = new Server(server, {
+  cors: {
+    origin: cors_origin,
+    methods: ["GET", "POST"],
+  },
+});
+
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token;
+    if (!token) return next(new Error("No token provided"));
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(payload.id).select("-password");
+    if (!user) return next(new Error("No user found"));
+    socket.user = user;
+    next();
+  } catch (error) {
+    next(new Error("Error authenticating: " + error.message));
+  }
+});
+
+io.on('connection', (socket) => {
+  console.log("Socket connected:", socket.id, "user:", socket.user.username, socket.user.role);
+  
+ 
+  if (socket.user.role === "admin") {
+    socket.join("admins");
+    console.log(`${socket.user.username} joined admins room`);
+  }
+  if (socket.user.role === "nurse") {
+    socket.join("nurses");
+    console.log(`${socket.user.username} joined nurses room`);
+  }
+  
+  socket.on('disconnect', () => {
+    console.log("Socket disconnected:", socket.id);
+  });
+});
 
 connectDB();
 seed();
-app.listen(port, () => {
-  console.log(`API listening on port ${port}`);
+
+
+server.listen(port, () => {
+  console.log(`API and Socket.io server listening on port ${port}`);
 });
-  

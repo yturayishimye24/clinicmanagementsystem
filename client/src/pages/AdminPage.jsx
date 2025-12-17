@@ -1,485 +1,918 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Badge } from "@heroui/react";
+import { Alert } from "flowbite-react";
+import { HiEye, HiInformationCircle } from "react-icons/hi";
+import { Card } from "flowbite-react";
 import {
-  SidebarProvider,
-  Sidebar,
-  SidebarContent,
-  SidebarTrigger,
-  SidebarInset,
-} from "@/components/ui/sidebar";
-import { ThreeDot } from "react-loading-indicators";
-import {
-  Users,
   Calendar,
   PlusCircle,
   FileText,
-  TrendingUp,
-  Activity,
-  LayoutDashboard,
-  UserCircle,
-  CalendarDays,
-  Clock,
-  Building2,
-  ListChecks,
-  BadgeCheck,
-  MessageSquare,
-  BarChart3,
-  Settings,
-  ChevronDown,
-  ChevronRight,
-  CheckCircle2,
   X,
+  Users,
+  UserCheck,
+  Bell,
+  Hospital,
+  Menu,
+  Home,
+  Inbox,
+  Mail,
+  LogOut,
+  UserPlus,
+  FolderPlus,
+  Percent,
+  BarChart3,
+  TrendingUp,
+  RefreshCw,
+  ChevronDown,
+  Settings,
+  HelpCircle,
+  Loader2,
 } from "lucide-react";
-import techImage from "../../images/techImage.png";
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContext.jsx";
+import CreateNurseAccount from "./nurseForm";
 
-const menuItem = (href, Icon, label) => (
-  <a
-    href={href}
-    className="flex items-center gap-3 h-12 px-4 rounded-full bg-gray-300 hover:bg-gray-400 transition-all"
-  >
-    <Icon className="w-5 h-5" />
-    <span className="text-sm font-medium">{label}</span>
-  </a>
-);
-
-const Section = ({ title, isOpen, onToggle, children, Icon }) => (
-  <div>
-    <button
-      onClick={onToggle}
-      className="flex items-center justify-between w-full text-left px-2 py-2 rounded-md hover:bg-gray-200 transition"
-    >
-      <div className="flex items-center gap-2 text-sm font-semibold">
-        <Icon className="w-4 h-4" />
-        {title}
-      </div>
-      {isOpen ? (
-        <ChevronDown className="w-4 h-4" />
-      ) : (
-        <ChevronRight className="w-4 h-4" />
-      )}
-    </button>
-    <div
-      className={`overflow-hidden transition-all duration-300 ${
-        isOpen ? "max-h-96 mt-2" : "max-h-0"
-      }`}
-    >
-      <nav className="space-y-2 pl-4">{children}</nav>
-    </div>
-  </div>
-);
-
-const Toast = ({ message, onClose }) => (
-  <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-slide-down">
-    <div className="flex items-center gap-3 bg-white rounded-lg shadow-lg border border-gray-200 p-4 min-w-[320px]">
-      <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-full flex-shrink-0">
-        <CheckCircle2 className="w-5 h-5 text-green-600" />
-      </div>
-      <p className="text-sm font-medium text-gray-900 flex-1">{message}</p>
-      <button
-        onClick={onClose}
-        className="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-      >
-        <X className="w-5 h-5" />
-      </button>
-    </div>
-  </div>
-);
-
-const AdminPage = () => {
+export default function AdminPage() {
   const { logout } = useAuth();
-  const [openSection, setOpenSection] = useState(null);
-  const [showToast, setShowToast] = useState(false);
   const navigate = useNavigate();
-  const [logging, setLogging] = useState(false);
-  const toggle = (section) =>
-    setOpenSection(openSection === section ? null : section);
 
+  const [patients, setPatients] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [nurses, setNurses] = useState([]);
+  const [email, setEmails] = useState("");
+  const [role,setRole] = useState("")
+  const [username,setUsername]= useState("");
+  const [loadingPatients, setLoadingPatients] = useState(false);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+  const [loadingNurses, setLoadingNurses] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [activeItem, setActiveItem] = useState("Home");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [alert,setShowAlert] = useState(true);
   useEffect(() => {
-    if (showToast) {
-      const timer = setTimeout(() => setShowToast(false), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [showToast]);
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
 
-  const handleLogout = () => {
-    setLogging(true);
-    setShowToast(true);
-    setTimeout(() => {
-      logout();
-      navigate("/home");
-    }, 2000);
+    if (!token) {
+      toast.error("Please login to access dashboard");
+      navigate("/");
+      return;
+    }
+
+    if (role !== "admin") {
+      toast.error("Unauthorized access - Admins only");
+      navigate("/");
+      return;
+    }
+  }, [navigate]);
+
+  const fetchRequests = async () => {
+    setLoadingRequests(true);
+    try {
+      const response = await axios.get(
+        "http://localhost:4000/api/requests/showRequests"
+      );
+      const d = response.data;
+      const arr = Array.isArray(d)
+        ? d
+        : Array.isArray(d.requests)
+        ? d.requests
+        : [];
+      setRequests(arr);
+    } catch (err) {
+      console.error("fetchRequests error:", err);
+      toast.error("Error getting requests");
+      setRequests([]);
+    } finally {
+      setLoadingRequests(false);
+    }
   };
 
+  const fetchEmail = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        "http://localhost:4000/api/infos/email",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setEmails(response.data.email);
+      setUsername(response.data.username);
+      setRole(response.data.role);
+      
+    } catch (error) {
+      console.error("Error fetching email:", error);
+    }
+  };
+
+  const fetchPatients = async () => {
+    setLoadingPatients(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get("http://localhost:4000/api/patients/", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const d = response.data;
+      const arr = Array.isArray(d) ? d : d.users ?? [];
+      setPatients(arr);
+    } catch (err) {
+      console.error("fetchPatients error:", err.message);
+      toast.error(err.message);
+      setPatients([]);
+    } finally {
+      setLoadingPatients(false);
+    }
+  };
+
+  const fetchNurses = async () => {
+    setLoadingNurses(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        "http://localhost:4000/api/nurseaccount/nurse_account",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const d = response.data;
+      const arr = Array.isArray(d)
+        ? d
+        : Array.isArray(d.nurses)
+        ? d.nurses
+        : [];
+      setNurses(arr);
+      console.log("Nurses loaded:", arr.length);
+    } catch (error) {
+      console.error("Error fetching nurses:", error);
+      toast.error("Error loading nurses");
+      setNurses([]);
+    } finally {
+      setLoadingNurses(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEmail();
+    fetchRequests();
+    fetchPatients();
+    fetchNurses();
+  }, []);
+
+  const handleLogout = () => {
+    toast.info("Logging out...");
+    setTimeout(() => {
+      logout();
+      navigate("/");
+      toast.success("Successfully logged out!");
+    }, 1200);
+  };
+
+  const handleNurseCreated = () => {
+    toast.success("Nurse account created successfully!");
+    setShowForm(false);
+    fetchNurses();
+  };
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
+
+  const setActiveItemAndClose = (item) => {
+    setActiveItem(item);
+    if (window.innerWidth < 1024) {
+      closeSidebar();
+    }
+  };
+
+  const pendingRequests = requests.filter((r) => r.Status === "pending").length;
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".user-dropdown")) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        closeSidebar();
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+  const GoogleWorkspaceIcon = ({ icon: Icon, color, label, onClick }) => (
+    <div
+      className={`group relative flex items-center justify-center w-12 h-12 rounded-lg cursor-pointer transition-all duration-200 ease-out hover:scale-110 hover:bg-white hover:shadow-lg`}
+      onClick={onClick}
+    >
+      <div
+        className={`absolute inset-0 ${color} rounded-lg group-hover:bg-white transition-colors duration-200`}
+      ></div>
+      <Icon
+        className={`relative w-6 h-6 text-white group-hover:${color.replace(
+          "bg-",
+          "text-"
+        )} transition-colors duration-200`}
+      />
+      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-2">
+        <span className="bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+          {label}
+        </span>
+      </div>
+    </div>
+  );
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        {showToast && (
-          <Toast
-            message="Logged out successfully!"
-            onClose={() => setShowToast(false)}
-          />
-        )}
-        <Sidebar className="fixed">
-          <SidebarContent className="sidebar-scroll overflow-y-auto max-h-screen px-4 py-4 space-y-1">
-            <Section
-              title="Main"
-              Icon={LayoutDashboard}
-              isOpen={openSection === "main"}
-              onToggle={() => toggle("main")}
-            >
-              {menuItem("/admin/dashboard", LayoutDashboard, "Dashboard")}
-            </Section>
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
+      <style jsx>{`
+       @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
-            <Section
-              title="Management"
-              Icon={UserCircle}
-              isOpen={openSection === "management"}
-              onToggle={() => toggle("management")}
-            >
-              {menuItem("/admin/nurses", UserCircle, "Nurses")}
-              {menuItem("/admin/scheduling", CalendarDays, "Scheduling")}
-              {menuItem("/admin/attendance", Clock, "Attendance")}
-              {menuItem("/admin/departments", Building2, "Departments")}
-            </Section>
+        * {
+          font-family: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .smooth-transition {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-            <Section
-              title="Operations"
-              Icon={ListChecks}
-              isOpen={openSection === "operations"}
-              onToggle={() => toggle("operations")}
-            >
-              {menuItem("/admin/tasks", ListChecks, "Tasks")}
-              {menuItem("/admin/compliance", BadgeCheck, "Compliance")}
-              {menuItem("/admin/communication", MessageSquare, "Communication")}
-            </Section>
+        .card-hover:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
 
-            <Section
-              title="System"
-              Icon={Settings}
-              isOpen={openSection === "system"}
-              onToggle={() => toggle("system")}
-            >
-              {menuItem("/admin/reports", BarChart3, "Reports")}
-              {menuItem("/admin/settings", Settings, "Settings")}
-            </Section>
+        .sidebar-item.active::before {
+          content: "";
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 4px;
+          background: linear-gradient(135deg, #10b981, #059669);
+          border-radius: 0 2px 2px 0;
+        }
 
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 h-12 px-4 rounded-full bg-red-500 hover:bg-red-600 text-white font-medium transition-all"
-              >
-                {logging ? (
-                  <ThreeDot
-                    color="#32cd32"
-                    size={"10"}
-                    text=""
-                    textColor="white"
-                  />
-                ) : (
-                  <h1>Logout</h1>
+        .notification-dot {
+          position: absolute;
+          top: -2px;
+          right: -2px;
+          width: 18px;
+          height: 18px;
+          background: #ef4444;
+          color: white;
+          font-size: 10px;
+          font-weight: 600;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid white;
+        }
+
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e0 transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: #cbd5e0;
+          border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background-color: #a0aec0;
+        }
+
+        .modal-backdrop {
+          background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(4px);
+        }
+
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          display: inline-block;
+          margin-right: 6px;
+        }
+
+        .status-active {
+          background-color: #10b981;
+        }
+
+        .dark .glass-effect {
+          background: rgba(24, 24, 27, 0.95);
+          border: 1px solid rgba(39, 39, 42, 0.3);
+        }
+
+        @media (max-width: 1024px) {
+          .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 50;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .sidebar.open {
+            transform: translateX(0);
+          }
+
+          .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+          }
+
+          .sidebar-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+          }
+
+          .requests-sidebar {
+            display: none;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .header-title {
+            font-size: 1.25rem;
+          }
+        }
+      `}</style>
+
+    { alert &&(<Alert
+      additionalContent={"Here are some requests that are trending up"}
+      color="success"
+      icon={HiInformationCircle}
+      onDismiss={() => setShowAlert(false)}
+      className="fixed w-full z-50 top-0 left-0"
+      rounded
+    >
+      <span className="font-medium">Info alert!</span> Welcome to admin page. You have got  `${requests.length}` requests.
+    </Alert>)}
+     
+
+     
+      <header className="border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 shodow-lg">
+        <div className="flex items-center justify-around gap-10">
+          <div className="flex items-center space-x-3">
+          
+            <button
+              onClick={toggleSidebar}
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 smooth-transition"
+            >
+              <Menu className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+            </button>
+
+            <div className="w-10 h-10 ">
+                  <img src="/images/asyv.png" className="rounded-full"/>
+            </div>
+            <h1 className="header-title text-2xl font-bold text-gray-800 dark:text-white">
+              Clinic Admin
+            </h1>
+          </div>
+
+          <div className="flex items-center space-x-4">
+        
+            <div className="relative">
+              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 smooth-transition relative">
+                <Bell className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+                {pendingRequests > 0 && (
+                  <div className="notification-dot">{pendingRequests}</div>
                 )}
               </button>
             </div>
-          </SidebarContent>
-        </Sidebar>
 
-        <SidebarInset className="flex-1">
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 fixed w-full bg-transparent z-999 backdrop-blur-md">
-            <SidebarTrigger />
-            <h1 className="text-xl font-semibold">Admin Panel</h1>
-          </header>
+            <div className="relative">
+              <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30">
+                <Users className="w-6 h-6 text-emerald-600" />
+                <div className="notification-dot bg-emerald-500">{patients.length}</div>
+              </div>
+            </div>
 
-          <main className="p-6 grid lg:grid-cols-[2fr_1fr] gap-6 mt-20 bg-gray-50 md:grid-cols-1 sm:grid-cols-1">
-            <div>
-              <h1 className="font-arial text-3xl font-bold mb-9 md:text-center sm:text-center">
-                Welcome {localStorage.getItem("name")}
-              </h1>
-              <div className="flex items-center justify-center bg-white rounded-md max-w-[900px] shadow-md p-9 gap-6">
-                <div>
-                  <h1 className="font-bold font-arial">Configure the Theme</h1>
-                  <p className="text-gray-500 font-sans">
-                    Configuring theme colors and background options allows you
-                    to personalize the theme.
-                    <br /> You can also change the menu type,
-                    <br /> and switch between fluid and boxed layout.
-                  </p>
-                  <button className="text-white bg-green-600 rounded-full btn btn-accent mt-4 px-6 py-2">
-                    Configure
+            <div className="relative user-dropdown">
+              <button
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 smooth-transition"
+              >
+                <img
+                  src="/images/userIcon.png"
+                  alt="Admin"
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div className="hidden sm:block text-left">
+                  <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    {username}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {email}
+                  </div>
+                </div>
+                <ChevronDown className="w-4 h-4 text-gray-400" />
+              </button>
+
+              {userDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                  <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="font-medium text-gray-900 dark:text-white">
+                      {username}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {email || "admin@clinic.com"}
+                    </div>
+                  </div>
+                  <div className="py-2">
+                    <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <Settings className="w-4 h-4 mr-3" />
+                      Settings
+                    </button>
+                    <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <HelpCircle className="w-4 h-4 mr-3" />
+                      Help
+                    </button>
+                    <hr className="my-2" />
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    >
+                      <LogOut className="w-4 h-4 mr-3" />
+                      Sign out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex h-[calc(100vh-140px)] mt-20">
+        <div
+          className={`sidebar-overlay ${sidebarOpen ? "visible" : ""}`}
+          onClick={closeSidebar}
+        />
+
+        <aside
+          className={`sidebar ${
+            sidebarOpen ? "open" : ""
+          } w-64 bg-white dark:bg-gray-800 shadow-sm border-r border-gray-200 dark:border-gray-700 flex flex-col mt-[30px]`}
+        >
+          <div className="p-6 text-center border-b border-gray-200 dark:border-gray-700">
+            <img
+              src="/images/userIcon.png"
+              alt="Admin"
+              className="w-20 h-20 rounded-full mx-auto object-cover relative"
+            />
+            <img src="/images/camera.png" className="absolute w-5 h-5 left-[160px] hover:bg-gray-50 transition-all cursor-pointer bottom-[500px] rounded-full"/>
+            <h3 className="mt-3 font-semibold text-gray-900 dark:text-white">
+              {username}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {email || "admin@clinic.com"}
+            </p>
+          </div>
+
+         
+          <nav className="flex-1 p-4">
+            <ul className="space-y-2">
+              {[
+                { key: "Home", icon: Home, label: "Home" },
+                {
+                  key: "Requests",
+                  icon: Inbox,
+                  label: "Requests",
+                  badge: pendingRequests,
+                  badgeColor: "bg-red-500",
+                },
+                {
+                  key: "Nurses",
+                  icon: Users,
+                  label: "Nurses",
+                  badge: nurses.length,
+                  badgeColor: "bg-emerald-500",
+                },
+                {
+                  key: "Messages",
+                  icon: Mail,
+                  label: "Messages",
+                  badge: requests.length,
+                  badgeColor: "bg-blue-500",
+                },
+                {
+                  key: "Patients",
+                  icon: UserCheck,
+                  label: "Patients",
+                  badge: patients.length,
+                  badgeColor: "bg-purple-500",
+                },
+              ].map(({ key, icon: Icon, label, badge, badgeColor }) => (
+                <li key={key}>
+                  <button
+                    onClick={() => setActiveItemAndClose(key)}
+                    className={`
+                      sidebar-item w-full flex items-center px-4 py-3 text-left rounded-lg smooth-transition relative overflow-hidden
+                      ${
+                        activeItem === key
+                          ? "active text-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400"
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      }
+                    `}
+                  >
+                    <Icon className="w-5 h-5 mr-3" />
+                    {label}
+                    {badge > 0 && (
+                      <span
+                        className={`ml-auto px-2 py-1 text-xs font-semibold text-white rounded-full ${badgeColor}`}
+                      >
+                        {activeItem === key? "":`${badge}`}
+                      </span>
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg smooth-transition"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </button>
+          </div>
+        </aside>
+
+        <main className="flex-1 p-6 overflow-y-auto custom-scrollbar">
+          <div className="flex items-center justify-center gap-6 mb-8">
+            <GoogleWorkspaceIcon
+              icon={UserPlus}
+              color="bg-blue-500"
+              label="Add Nurse"
+              onClick={() => setShowForm(true)}
+            />
+            <GoogleWorkspaceIcon
+              icon={FolderPlus}
+              color="bg-gray-400"
+              label="Add Category"
+            />
+            <GoogleWorkspaceIcon
+              icon={Percent}
+              color="bg-purple-500"
+              label="Create Discount"
+            />
+            <GoogleWorkspaceIcon
+              icon={BarChart3}
+              color="bg-orange-500"
+              label="Track Metrics"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    Current Patients
+                  </h2>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="search"
+                      placeholder="Search patients..."
+                      className="px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white"
+                    />
+                    <button
+                      onClick={fetchPatients}
+                      className="p-2 text-gray-500 hover:text-emerald-600 smooth-transition"
+                    >
+                      <RefreshCw className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="overflow-auto max-h-96 custom-scrollbar">
+                <table className="w-full">
+                  <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Patient
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Disease
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {loadingPatients ? (
+                      <tr>
+                        <td
+                          colSpan="3"
+                          className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
+                        >
+                          <div className="flex flex-col items-center">
+                            <Loader2 className="w-8 h-8 animate-spin mb-2" />
+                            <p>Loading patients...</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : patients.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan="3"
+                          className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
+                        >
+                          <div className="flex flex-col items-center">
+                            <Users className="w-8 h-8 mb-2" />
+                            <p>No patients found</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      patients.map((patient) => (
+                        <tr
+                          key={patient._id}
+                          className="hover:bg-gray-50 dark:hover:bg-gray-700 smooth-transition"
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <img
+                                src={
+                                  patient.avatarUrl ||
+                                  "/images/patientt.png"
+                                }
+                                alt={patient.firstName}
+                                className="w-10 h-10 rounded-full object-cover mr-3"
+                              />
+                              <div>
+                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {patient.firstName} {patient.lastName || ""}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            {patient.disease || "-"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="status-dot status-active"></span>
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              {patient.Status || "Active"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Nurses Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Latest Nurses
+                  </h3>
+                  <button className="text-sm text-emerald-600 hover:underline">
+                    View all
                   </button>
                 </div>
-                <div
-                  style={{ backgroundImage: `url(${techImage})` }}
-                  className="bg-cover bg-center w-full h-64 rounded-lg"
-                ></div>
               </div>
 
-              <div className="mt-6 grid grid-cols-4 gap-4">
-                <div className="bg-white shadow-md rounded-md p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Users className="w-6 h-6 text-blue-600" />
+              <div className="p-6">
+                <div className="space-y-4">
+                  {loadingNurses ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="text-center">
+                        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-gray-400" />
+                        <p className="text-gray-500 dark:text-gray-400">
+                          Loading nurses...
+                        </p>
+                      </div>
                     </div>
-                    <span className="text-sm font-semibold text-green-600">
-                      +12%
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800">248</h3>
-                  <p className="text-sm text-gray-500">Total Nurses</p>
-                </div>
-
-                <div className="bg-white shadow-md rounded-md p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                      <Activity className="w-6 h-6 text-green-600" />
+                  ) : nurses.length === 0 ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="text-center">
+                        <Users className="w-6 h-6 mx-auto mb-2 text-gray-400" />
+                        <p className="text-gray-500 dark:text-gray-400">
+                          No nurses found
+                        </p>
+                      </div>
                     </div>
-                    <span className="text-sm font-semibold text-green-600">
-                      +8%
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800">186</h3>
-                  <p className="text-sm text-gray-500">Active Today</p>
-                </div>
-
-                <div className="bg-white shadow-md rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <Calendar className="w-6 h-6 text-purple-600" />
-                    </div>
-                    <span className="text-sm font-semibold text-red-600">
-                      -3%
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800">42</h3>
-                  <p className="text-sm text-gray-500">Scheduled Shifts</p>
-                </div>
-
-                <div className="bg-white shadow-md rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                      <Clock className="w-6 h-6 text-orange-600" />
-                    </div>
-                    <span className="text-sm font-semibold text-green-600">
-                      +5%
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800">1,240</h3>
-                  <p className="text-sm text-gray-500">Hours This Week</p>
-                </div>
-              </div>
-              <div className="bg-white rounded-md shadow-md mt-20 p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h1 className="text-xl font-bold">Current Patients</h1>
-                  <input
-                    type="search"
-                    placeholder="Search patients..."
-                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
-
-                <div className="max-h-96 overflow-auto border border-gray-200 overflow-y-scroll">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50 sticky top-0 z-10">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Image
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Patient Name
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Disease
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      <tr className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <img
-                            src="https://via.placeholder.com/40"
-                            alt="Patient"
-                            className="w-10 h-10 rounded-full"
-                          />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          John Doe
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          Flu
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            Active
-                          </span>
-                        </td>
-                      </tr>
-                      <tr className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <img
-                            src="https://via.placeholder.com/40"
-                            alt="Patient"
-                            className="w-10 h-10 rounded-full"
-                          />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          Jane Smith
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          Cold
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                            Recovering
-                          </span>
-                        </td>
-                      </tr>
-                      <tr className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <img
-                            src="https://via.placeholder.com/40"
-                            alt="Patient"
-                            className="w-10 h-10 rounded-full"
-                          />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          Michael Brown
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          Fever
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                            Critical
-                          </span>
-                        </td>
-                      </tr>
-                      <tr className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <img
-                            src="https://via.placeholder.com/40"
-                            alt="Patient"
-                            className="w-10 h-10 rounded-full"
-                          />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          Michael Brown
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          Fever
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                            Critical
-                          </span>
-                        </td>
-                      </tr>
-                      <tr className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <img
-                            src="https://via.placeholder.com/40"
-                            alt="Patient"
-                            className="w-10 h-10 rounded-full"
-                          />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          Michael Brown
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          Fever
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                            Critical
-                          </span>
-                        </td>
-                      </tr>
-                      <tr className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <img
-                            src="https://via.placeholder.com/40"
-                            alt="Patient"
-                            className="w-10 h-10 rounded-full"
-                          />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          Michael Brown
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          Fever
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                            Critical
-                          </span>
-                        </td>
-                      </tr>
-                      <tr className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <img
-                            src="https://via.placeholder.com/40"
-                            alt="Patient"
-                            className="w-10 h-10 rounded-full"
-                          />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          Michael Brown
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          Fever
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                            Critical
-                          </span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  ) : (
+                    nurses.map((nurse, index) => (
+                      <div
+                        key={nurse._id || nurse.email || index}
+                        className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 smooth-transition"
+                      >
+                        <img
+                          src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=40&h=40&fit=crop&crop=face"
+                          alt={nurse.firstName}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                            {nurse.firstName} {nurse.lastName}
+                          </p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                            {nurse.email}
+                          </p>
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {nurse.hireDate
+                            ? new Date(nurse.hireDate).getFullYear()
+                            : new Date().getFullYear()}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
+          </div>
+        </main>
 
-            <div className="space-y-4">
-              <div className="space-y-4">
-                <div className="bg-white text-gray-700 shadow-lg h-auto p-2 rounded-3xl flex items-center gap-4 hover:shadow-xl transition-shadow cursor-pointer">
-                  <div className="h-20 w-12 bg-green-200 rounded-l-3xl flex items-center justify-center">
-                    <PlusCircle className="w-6 h-6 text-green-700" />
-                  </div>
-                  <h3 className="ml-4 font-semibold text-lg">Add Nurse</h3>
-                </div>
-
-                <div className="bg-white text-gray-700 shadow-lg h-auto p-2 rounded-3xl flex items-center gap-4 hover:shadow-xl transition-shadow cursor-pointer">
-                  <div className="h-20 w-12 bg-blue-200 rounded-l-3xl flex items-center justify-center">
-                    <Calendar className="w-6 h-6 text-blue-700" />
-                  </div>
-                  <h3 className="ml-4 font-semibold text-lg">Schedule Shift</h3>
-                </div>
-
-                <div className="bg-white text-gray-700 shadow-lg h-auto p-2 rounded-3xl flex items-center gap-4 hover:shadow-xl transition-shadow cursor-pointer">
-                  <div className="h-20 w-12 bg-purple-200 rounded-l-3xl flex items-center justify-center">
-                    <FileText className="w-6 h-6 text-purple-700" />
-                  </div>
-                  <h3 className="ml-4 font-semibold text-lg">View Reports</h3>
-                </div>
-
-                <div className="bg-white text-gray-700 shadow-lg h-auto p-2 rounded-3xl flex items-center gap-4 hover:shadow-xl transition-shadow cursor-pointer">
-                  <div className="h-20 w-12 bg-orange-200 rounded-l-3xl flex items-center justify-center">
-                    <TrendingUp className="w-6 h-6 text-orange-700" />
-                  </div>
-                  <h3 className="ml-4 font-semibold text-lg">
-                    Performance Analytics
-                  </h3>
-                </div>
-              </div>
+        <aside className="requests-sidebar w-80 bg-white dark:bg-gray-800 border-l overflow-y-scroll h-[400px] border-gray-200 dark:border-gray-700 flex flex-col">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Requests
+              </h3>
+              <button
+                onClick={fetchRequests}
+                className="text-sm text-emerald-600 hover:underline"
+              >
+                Refresh
+              </button>
             </div>
-          </main>
-        </SidebarInset>
+
+            <div className="space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
+              {loadingRequests ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-gray-400" />
+                    <p className="text-gray-500 dark:text-gray-400">
+                      Loading requests...
+                    </p>
+                  </div>
+                </div>
+              ) : requests.length === 0 ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <Inbox className="w-6 h-6 mx-auto mb-2 text-gray-400" />
+                    <p className="text-gray-500 dark:text-gray-400">
+                      No requests found
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                requests.map((request, index) => (
+                  <div
+                    key={request._id || request.id || index}
+                    className="flex items-start space-x-3 p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 smooth-transition border border-gray-200 dark:border-gray-600"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {request.reason || request.itemName || "Request"}
+                        </h4>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            request.Status === "approved"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : request.Status === "rejected"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {request.Status || "pending"}
+                        </span>
+                      </div>
+                      {(request.quantity ||
+                        request.patientCount ||
+                        request.urgency) && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                          {request.quantity
+                            ? `Qty: ${request.quantity} · `
+                            : ""}
+                          {request.patientCount
+                            ? `Patients: ${request.patientCount} · `
+                            : ""}
+                          {request.urgency ? `Urgency: ${request.urgency}` : ""}
+                        </p>
+                      )}
+                      {request.createdAt && (
+                        <div className="text-xs text-gray-400">
+                          {new Date(request.createdAt).toLocaleDateString()}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Quick Actions
+            </h3>
+            <div className="space-y-2">
+              <button
+                onClick={() => setShowForm(true)}
+                className="w-full flex items-center px-4 py-3 text-left rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 smooth-transition"
+              >
+                <UserPlus className="w-5 h-5 text-emerald-600 mr-3" />
+                <span className="text-gray-700 dark:text-gray-300">
+                  Add Nurse
+                </span>
+              </button>
+              <button className="w-full flex items-center px-4 py-3 text-left rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 smooth-transition">
+                <Calendar className="w-5 h-5 text-blue-600 mr-3" />
+                <span className="text-gray-700 dark:text-gray-300">
+                  Schedule Shift
+                </span>
+              </button>
+              <button className="w-full flex items-center px-4 py-3 text-left rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 smooth-transition">
+                <FileText className="w-5 h-5 text-purple-600 mr-3" />
+                <span className="text-gray-700 dark:text-gray-300">
+                  View Reports
+                </span>
+              </button>
+            </div>
+          </div>
+        </aside>
       </div>
-    </SidebarProvider>
-  );
-};
 
-export default AdminPage;
+      {showForm && (
+        <div className="modal-backdrop fixed inset-0 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center z-10">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white">
+                Create Nurse Account
+              </h2>
+              <button
+                onClick={() => setShowForm(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full smooth-transition"
+              >
+                <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              </button>
+            </div>
+            <div className="overflow-y-auto max-h-[calc(90vh-80px)] custom-scrollbar">
+              <CreateNurseAccount
+                onClose={() => setShowForm(false)}
+                onSuccess={handleNurseCreated}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ToastContainer position="bottom-right" className="z-50" />
+    </div>
+  );
+}

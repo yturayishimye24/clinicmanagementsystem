@@ -1,0 +1,6 @@
+{
+    "codeium.apiServerUrl": "https://server.codeium.com",
+    "docwriter.progress.trackFunctions": false,
+    "docwriter.progress.trackMethods": false,
+    "Codegeex.RepoIndex": true
+}

@@ -64,6 +64,7 @@ const LoginPage = () => {
         });
 
         if (response.data.success) {
+          
           setTimeout(setLoading(true), 2000);
           localStorage.setItem("token", response.data.token);
           localStorage.setItem("name", response.data.username);

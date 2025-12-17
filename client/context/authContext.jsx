@@ -1,6 +1,7 @@
 import React from "react";
 import { createContext, useState, useContext,useEffect } from "react";
 import {useNavigate} from "react-router-dom"
+import axios from "axios"
 const userContext = createContext();
 
 export const AuthContext = ({ children }) => {
@@ -12,13 +13,14 @@ export const AuthContext = ({ children }) => {
       
       try{
        if(token){
-       const response = await axios.get("http://localhost:4000/api/users/verify",{
+       const response = await axios.get("http://localhost:4000/api/verify",{
          headers:{
         "Authorization": `Bearer ${token}`
          }
        })
        if(response.data.success){
-        setUser(response.data.userData)
+        setLoading(true);
+        setUser(response.data.user)
        }
       }else{
         setUser(null)
@@ -31,16 +33,19 @@ export const AuthContext = ({ children }) => {
     }
     verfifyUser();
    },[])
-  const login = (userData) => {
-    setUser(userData);
+
+  const login = (user) => {
+    setUser(user);
   };
 
   const logout = () => {
+    setLoading(true)
     setUser(null)
     localStorage.removeItem("token")
     localStorage.removeItem("role")
     localStorage.removeItem("username")
   };
+  
   return (
     <userContext.Provider value={{ user, login, logout,loading}}>
       {children}

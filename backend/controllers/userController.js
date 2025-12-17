@@ -16,9 +16,9 @@ export const loginController = async (req, res) => {
       return res.json({ success: false, message: "Please provide email" });
     }
     if (!user) {
-      return res.json({ sucess: false, message: "User not found" });
+      return res.json({ sucess: false, message: "Invalid user" });
     }
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await user.verifyPassword(password);
     if (isMatch) {
       const token = userToken(user._id, user.role);
       res.json({
@@ -46,7 +46,7 @@ export const signupController = async (req, res) => {
         message: "Please enter a strong password",
       });
     }
-    const exists = await User.findOne({ email });
+    const exists = await User.findOne({ email});
     if (exists) {
       return res.json({
         success: false,
@@ -74,5 +74,21 @@ export const signupController = async (req, res) => {
     });
   } catch (error) {
     console.log("Error registering", error);
+  }
+};
+
+export const getUsers = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const userEmail = await User.findById(userId).select("email");
+    const userUsername = await User.findById(userId).select("username");
+    const userRole = await User.findById(userId).select("role");
+    if (!userEmail) return res.status(404).json({ message: "User not found" });
+    if(!userUsername) return res.status(404).json({ message: "User not found" });
+    if(!userRole) return res.status(404).json({ message: "User not found" });
+    return res.status(200).json({ success: true, email:userEmail.email,username:userUsername.username,role:userRole.role});
+  } catch (error) {
+    console.log("Error getting the user's email", error.message);
   }
 };
