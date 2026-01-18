@@ -47,14 +47,30 @@ export default function AdminPage() {
   const [loadingPatients, setLoadingPatients] = useState(false);
   const [loadingRequests, setLoadingRequests] = useState(false);
   const [loadingNurses, setLoadingNurses] = useState(false);
+  const [em,setEmail] = useState("");
+  const [password,setPassword] = useState("");
+  const [nurseUsername,setNurseUsername]= useState("");
   const [showForm, setShowForm] = useState(false);
   const [activeItem, setActiveItem] = useState("Home");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [alert, setShowAlert] = useState(true);
-  const [reports, setReports] = useState([]);
-  const [reportForm, setReportForm] = useState(false);
+  const [adding,setAdding] = useState(false);
+  //const [reports, setReports] = useState([]);
+  //const [reportForm, setReportForm] = useState(false);
 
+  const handleAccount = async (e) => {
+    e.preventDefault();
+    const response = await axios.post("http://localhost:4000/api/users/signup",{nurseUsername,em,password,role});
+    if (response.data.success) {
+      toast.success("Account created successfully");
+      setAdding(true);
+      setNurses(response.data);
+      setEmail("")
+      setPassword("")
+      setRole("");
+    }
+  };
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -68,7 +84,6 @@ export default function AdminPage() {
     if (role !== "admin") {
       toast.error("Unauthorized access - Admins only");
       navigate("/");
-      return;
     }
   }, [navigate]);
 
@@ -89,21 +104,22 @@ export default function AdminPage() {
     setLoadingRequests(true);
     try {
       const response = await axios.get(
-        "http://localhost:4000/api/requests/showRequests"
+        "http://localhost:4000/api/requests/showRequests",
       );
       const d = response.data;
       const arr = Array.isArray(d)
         ? d
         : Array.isArray(d.requests)
-        ? d.requests
-        : [];
+          ? d.requests
+          : [];
       setRequests(arr);
     } catch (err) {
       console.error("fetchRequests error:", err);
       toast.error("Error getting requests");
       setRequests([]);
     } finally {
-      setLoadingRequests(false);
+      setLoadingRequests(false)
+      setAdding(false);
     }
   };
 
@@ -114,7 +130,7 @@ export default function AdminPage() {
         "http://localhost:4000/api/infos/email",
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       setEmails(response.data.email);
       setUsername(response.data.username);
@@ -132,7 +148,7 @@ export default function AdminPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const d = response.data;
-      const arr = Array.isArray(d) ? d : d.users ?? [];
+      const arr = Array.isArray(d) ? d : (d.users ?? []);
       setPatients(arr);
     } catch (err) {
       console.error("fetchPatients error:", err.message);
@@ -212,7 +228,7 @@ export default function AdminPage() {
       <Icon
         className={`relative w-6 h-6 text-white group-hover:${color.replace(
           "bg-",
-          "text-"
+          "text-",
         )} transition-colors duration-200`}
       />
       <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-2">
@@ -222,19 +238,26 @@ export default function AdminPage() {
       </div>
     </div>
   );
-  const handleApprove = async (requestId,e)=>{
-    if(!window.confirm("Are you sure you want to approve this request?")) return;
-  e.preventDefault();
-  const response = await axios.post(`http://localhost:4000/api/requests/approve/:${requestId}`);
+  const handleApprove = async (requestId, e) => {
+    if (!window.confirm("Are you sure you want to approve this request?"))
+      return;
+    e.preventDefault();
+    const response = await axios.post(
+      `http://localhost:4000/api/requests/approve/:${requestId}`,
+    );
+  };
 
-  }
   return (
     <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
       <style jsx>{`
         @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
         * {
-          font-family: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif;
+          font-family:
+            "Poppins",
+            -apple-system,
+            BlinkMacSystemFont,
+            sans-serif;
         }
         .smooth-transition {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -339,7 +362,9 @@ export default function AdminPage() {
             z-index: 40;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            transition:
+              opacity 0.3s ease,
+              visibility 0.3s ease;
           }
 
           .sidebar-overlay.visible {
@@ -679,7 +704,9 @@ export default function AdminPage() {
                             {patient.disease || "-"}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`status-dot ${patient.Status==="hospitalized"?("bg-red-500"):("bg-green-500")}`}></span>
+                            <span
+                              className={`status-dot ${patient.Status === "hospitalized" ? "bg-red-500" : "bg-green-500"}`}
+                            ></span>
                             <span className="text-sm font-medium text-gray-900 dark:text-white">
                               {patient.Status || "Active"}
                             </span>
@@ -810,11 +837,17 @@ export default function AdminPage() {
                             request.Status === "approved"
                               ? "bg-emerald-100 text-emerald-800"
                               : request.Status === "rejected"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-yellow-100 text-yellow-800"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-yellow-100 text-yellow-800"
                           }`}
                         >
-                          {request.Status==="pending"?(<button onClick={()=>handleApprove(request._id)}>Approve</button>):(request.Status || "pending")}
+                          {request.Status === "pending" ? (
+                            <button onClick={() => handleApprove(request._id)}>
+                              Approve
+                            </button>
+                          ) : (
+                            request.Status || "pending"
+                          )}
                         </span>
                       </div>
                       {(request.quantity ||
@@ -875,19 +908,83 @@ export default function AdminPage() {
 
       {showForm && (
         <div className="modal-backdrop fixed inset-0 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center z-10">
-              <h2 className="text-xl font-bold text-gray-800 dark:text-white">
-                Create Nurse Account
-              </h2>
-              <button
-                onClick={() => setShowForm(false)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full smooth-transition"
-              >
-                <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              </button>
+          <form
+            onSubmit={handleAccount}
+            className="relative max-w-md mx-auto bg-white p-6 rounded-xl shadow-md space-y-5"
+          >
+            <X onClick={()=>setShowForm(false)} className="absolute top-1 bg-red-100 text-red-500 align-center justify-center rounded-full right-[50%] cursor-pointer" />
+            <h2 className="text-xl font-semibold text-gray-800 text-center">
+              Create User Account
+            </h2>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">
+                Username
+              </label>
+              <input
+                type="text"
+                placeholder="Enter username"
+                name="username"
+                value={nurseUsername}
+                onChange={(e)=>setNurseUsername(e.target.value)}
+                className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
             </div>
-          </div>
+
+            
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">Email</label>
+              <input
+                type="email"
+                placeholder="example@email.com"
+                name="email"
+                value={em}
+                onChange={(e)=>setEmail(e.target.value)}
+                className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+          
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <input
+                name="password"
+                type="password"
+                value={password}
+                onChange={(e)=>setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+           
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">Role</label>
+              <select
+                className="px-4 py-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="">Select role</option>
+                <option name="nurse" value={role}>Nurse</option>
+                <option name="admin" value={role}>Admin</option>
+              </select>
+            </div>
+
+            
+            <button
+              type="submit"
+              disabled={adding}
+              onClick={()=>alert("working")}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+            >
+              {adding===true? ("Creating nurse"):("Add nurse")}
+            </button>
+          </form>
         </div>
       )}
 

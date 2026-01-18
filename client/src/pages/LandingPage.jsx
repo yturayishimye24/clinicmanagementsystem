@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { FiEye, FiEyeOff } from "react-icons/fi";
+import {FiEye, FiEyeOff} from "react-icons/fi";
 import {
   Spinner,
   Button,
@@ -14,14 +14,12 @@ import { Activity, Phone, ArrowRight, Check, X } from "lucide-react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { OrbitProgress } from "react-loading-indicators";
+import {ClipLoader} from "react-spinners";
 import { backendUrl } from "../App.jsx";
 import techImage from "../../images/techImage.png";
-import secure from "../../images/secure-private.jpeg";
-
 import FAQ from "../components/Faqs.jsx";
 import TEAM from "../components/teamSection.jsx";
-import landingNurse from "../../images/landingNurse.png"
+
 import {
   Footer,
   FooterBrand,
@@ -36,12 +34,9 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [currentState, setCurrentState] = useState("Login");
   const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [role, setRole] = useState("nurse");
   const [showAlert, setShowAlert] = useState(false);
   const teamRef = useRef(null);
   const faqRef = useRef(null);
@@ -49,6 +44,7 @@ const LandingPage = () => {
   const servicesRef = useRef(null);
   const whyChooseUsRef = useRef(null);
   const { login } = useAuth();
+
   const handleShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -67,7 +63,6 @@ const LandingPage = () => {
   const closeLoginModal = () => {
     setShowLoginModal(false);
     setEmail("");
-    setUsername("");
     setPassword("");
   };
 
@@ -241,33 +236,31 @@ const LandingPage = () => {
         </div>
       </nav>
 
-      <main className="min-h-screen">
+      <main className="min-h-screen font-poppins">
         <div
-          className="text-center py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-white flex"
+          className="text-center bg-green-50 py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-white flex items-center justify-around"
           ref={HomeRef}
         >
           <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 text-gray-900 leading-tight">
-            Manage Patients with <br />
-            <span className="text-gray-600">Better Communication</span>
-          </h1>
-          <p className="text-gray-600 text-sm sm:text-base md:text-lg lg:text-xl max-w-3xl mx-auto mb-6 sm:mb-8 px-4 text-center">
-            Join a community where every patient feels understood and receives
-            <br />
-            the desired service. Experience seamless healthcare management with
-            <br />
-            our comprehensive platform.
-          </p>
-          <button
-            onClick={openLoginModal}
-            className="px-6 sm:px-8 py-3 sm:py-4 bg-black text-black text-base sm:text-lg font-semibold rounded-xl sm:rounded-2xl shadow transition flex items-center gap-2 sm:gap-3 mx-auto"
-          >
-            Get started Now
-            <ArrowRight size={20} className="sm:w-[22px] sm:h-[22px]" />
-          </button>
-          </div>
-          <div>
-            <img src="/images/landingNurse.png" className="w-50 h-50"/>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-poppins mb-4 sm:mb-6 text-gray-900 leading-tight">
+              <p>Manage Patients</p>
+              <p><span className="bg-[#27d895] text-white">Better Communication</span></p>
+            </h1>
+            <p className="text-gray-600 text-sm sm:text-base md:text-lg lg:text-xl font-poppins max-w-3xl mx-auto mb-6 sm:mb-8 px-4 text-center">
+              Join a community where every patient feels understood and receives
+              <br />
+              the desired service. Experience seamless healthcare management
+              with
+              <br />
+              our comprehensive platform.
+            </p>
+            <button
+              onClick={openLoginModal}
+              className="px-6 sm:px-8 py-3 sm:py-4 bg-black text-black text-base sm:text-lg font-bold hover:bg-gray-50 transition-all hover:cursor-pointer rounded-xl sm:rounded-2xl shadow transition flex items-center gap-2 sm:gap-3 mx-auto"
+            >
+              Get started Now
+              <ArrowRight size={20} className="sm:w-[22px] sm:h-[22px]" />
+            </button>
           </div>
         </div>
 
@@ -289,7 +282,7 @@ const LandingPage = () => {
           className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-white"
           ref={whyChooseUsRef}
         >
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-10 sm:mb-16 text-gray-400">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center hover:cursor-pointer mb-10 sm:mb-16 text-gray-400">
             Why Choose Us
           </h2>
           <div className="max-w-6xl mx-auto px-4">
@@ -542,27 +535,6 @@ const LandingPage = () => {
             </button>
           </div>
         </div>
-
-        {/* <div className="sticky top-20 bg-white rounded-full py-2 sm:py-3 px-[30px] sm:px-6 w-[500px] mx-auto flex justicy-around items-center gap-4 sm:gap-8 text-gray-600 shadow-md mt-6 sm:mt-10 mb-6 sm:mb-10 z-40 text-xs sm:text-sm">
-          <button
-            onClick={scrollToTeam}
-            className="font-semibold hover:text-black"
-          >
-            Team
-          </button>
-          <button
-            onClick={scrollToServices}
-            className="font-semibold hover:text-black"
-          >
-            Services
-          </button>
-          <button
-            onClick={scrollToFaqs}
-            className="font-semibold hover:text-black"
-          >
-            FAQs
-          </button>
-        </div> */}
         <div
           className="
   bg-white shadow-md rounded-full
@@ -598,25 +570,27 @@ const LandingPage = () => {
         </div>
       </main>
       {showLoginModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="relative bg-black rounded-lg shadow-xl max-w-sm w-full mx-4 ">
+        <div className="fixed bg-[rgba(0,0,0,0.5)] backdrop-blur-3xl inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+          <div className="relative rounded-lg shadow-xl max-w-sm w-full mx-4 ">
             <button
               onClick={closeLoginModal}
-              className="absolute top-[-5px] right-[45%] text-gray-100 bg-gray-200 flex items-center justify-center rounded-full w-8 h-8 hover:text-gray-600"
+              className="absolute top-[-5px] right-[45%] text-gray-100 bg-red-100 flex items-center justify-center rounded-full w-8 h-8 hover:text-gray-600"
             >
-              <X size={25} />
+              <X size={25} className="text-red-500" />
             </button>
+
             <Card className="max-w-sm">
               <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                 <div>
                   <div className="mb-2 block">
-                    <Label htmlFor="email1">Your email</Label>
+                    <Label htmlFor="email1" className="font-Poppins">Your email</Label>
                   </div>
                   <TextInput
                     id="email1"
                     type="email"
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter you email"
+                    className={"focus:border-green-500"}
                     required
                   />
                 </div>
@@ -626,10 +600,13 @@ const LandingPage = () => {
                   </div>
                   <TextInput
                     id="password1"
-                    type="password"
+                    type={showPassword===true?"text" : "password"}
                     onChange={(e) => setPassword(e.target.value)}
+                    placeholder={"Enter your password"}
                     required
                   />
+                  {showPassword ?(<FiEye onClick={handleShowPassword}/>):(<FiEyeOff onClick={handleShowPassword}/>)}
+
                 </div>
                 <div className="flex items-center gap-2">
                   <Checkbox id="remember" required />
@@ -640,7 +617,7 @@ const LandingPage = () => {
                   className="bg-green-600 text-white font-poppins disabled:bg-gray-300 disabled:cursor-not-allowed"
                   disabled={loading}
                 >
-                  {loading ? "Signing in..." : "Sign in"}
+                  {loading ? (<ClipLoader color={"white"} />) : "Sign in"}
                 </Button>
               </form>
             </Card>

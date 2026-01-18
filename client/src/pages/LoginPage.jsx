@@ -13,7 +13,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [goingBack, setGointBack] = useState(false);
+  const [goingBack, setGoingBack] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const ChangeToSignup = (e) => {
@@ -44,7 +44,7 @@ const LoginPage = () => {
         });
 
         if (response.data.success) {
-          setGointBack(true);
+          setGoingBack(true);
           localStorage.setItem("token", response.data.token);
           localStorage.setItem("name", response.data.username);
           toast.success(response.data.message);

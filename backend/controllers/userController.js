@@ -16,16 +16,15 @@ export const loginController = async (req, res) => {
       return res.json({ success: false, message: "Please provide email" });
     }
     if (!user) {
-      return res.json({ sucess: false, message: "Invalid user" });
+      return res.json({ success: false, message: "Invalid user" });
     }
     const isMatch = await user.verifyPassword(password);
     if (isMatch) {
       const token = userToken(user._id, user.role);
       res.json({
         success: true,
-        message: "Login successfull!!",
+        message: "Login successfull!",
         token,
-        role: user.role,
         username: user.username,
         role: user.role,
       });
@@ -38,9 +37,9 @@ export const loginController = async (req, res) => {
 export const signupController = async (req, res) => {
   try {
     const { username, email, role, password } = req.body;
-    if (!validator.isEmail(email)) {
-      return res.json({ success: false, message: "Invalid email" });
-    }
+    // if (!validator.isEmail(email)) {
+    //   return res.json({ success: false, message: "Invalid email" });
+    // }
     if (password.length < 8) {
       return res.json({
         success: false,
@@ -71,6 +70,7 @@ export const signupController = async (req, res) => {
       message: "Account created Successfully!",
       token,
       username: user.username,
+      password:user.password,
       role: user.role,
     });
   } catch (error) {

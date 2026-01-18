@@ -10,7 +10,9 @@ import patient from "../../images/patientt.png";
 import request from "../../images/request.jpg";
 import report from "../../images/report.jpg";
 
-import { Card, Dropdown, DropdownItem } from "flowbite-react";
+
+import { Card, Dropdown, DropdownItem,Sidebar, SidebarItem, SidebarItemGroup, SidebarItems, SidebarLogo } from "flowbite-react";
+import { HiArrowSmRight, HiChartPie, HiInbox, HiShoppingBag, HiTable, HiUser, HiViewBoards } from "react-icons/hi";
 import {
   Users,
   Calendar,
@@ -621,14 +623,36 @@ export default function NursePage() {
 
         <main className="flex-1 p-6 overflow-y-auto">
           <div className="grid grid-cols-2 gap-6">
-            <aside>
-              <ul>
-                <li>Home</li>
-                <li>Contact</li>
-                <li>Settings</li>
-                <li>Profile</li>
-              </ul>
-            </aside>
+          <Sidebar aria-label="Sidebar with logo branding example">
+      <SidebarLogo href="#" img="/favicon.svg" imgAlt="Flowbite logo">
+        Flowbite
+      </SidebarLogo>
+      <SidebarItems>
+        <SidebarItemGroup>
+          <SidebarItem href="#" icon={HiChartPie}>
+            Dashboard
+          </SidebarItem>
+          <SidebarItem href="#" icon={HiViewBoards}>
+            Kanban
+          </SidebarItem>
+          <SidebarItem href="#" icon={HiInbox}>
+            Inbox
+          </SidebarItem>
+          <SidebarItem href="#" icon={HiUser}>
+            Users
+          </SidebarItem>
+          <SidebarItem href="#" icon={HiShoppingBag}>
+            Products
+          </SidebarItem>
+          <SidebarItem href="#" icon={HiArrowSmRight}>
+            Sign In
+          </SidebarItem>
+          <SidebarItem href="#" icon={HiTable}>
+            Sign Up
+          </SidebarItem>
+        </SidebarItemGroup>
+      </SidebarItems>
+    </Sidebar>
             <div>
           <div className="mb-8">
             <h1 className="text-3xl font-poppins text-gray-800 dark:text-white mb-2">
@@ -822,7 +846,7 @@ export default function NursePage() {
               </div>
             </div>
           </div>
-          </div>
+          
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <button
@@ -931,6 +955,7 @@ export default function NursePage() {
             </div>
 
             <div className="overflow-x-auto">
+            
               <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
@@ -1136,6 +1161,7 @@ export default function NursePage() {
                 )}
               </div>
             </div>
+          </div>
           </div>
         </main>
       </div>
