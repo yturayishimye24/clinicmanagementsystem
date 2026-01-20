@@ -3,34 +3,17 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
-import { ThreeDot } from "react-loading-indicators";
-import kaze from "../../images/kaze.png";
-import patients from "../../images/patients.png";
-import patient from "../../images/patientt.png";
-import request from "../../images/request.jpg";
-import report from "../../images/report.jpg";
+
 
 
 import { Card, Dropdown, DropdownItem,Sidebar, SidebarItem, SidebarItemGroup, SidebarItems, SidebarLogo } from "flowbite-react";
 import { HiArrowSmRight, HiChartPie, HiInbox, HiShoppingBag, HiTable, HiUser, HiViewBoards } from "react-icons/hi";
 import {
   Users,
-  Calendar,
   PlusCircle,
-  FileText,
-  TrendingUp,
-  Activity,
-  UserCircle,
   CalendarDays,
-  Clock,
-  Building2,
-  ListChecks,
-  BadgeCheck,
-  MessageSquare,
   BarChart3,
   Settings,
-  ChevronDown,
-  CheckCircle2,
   X,
   Pill,
   Ambulance,
@@ -40,24 +23,15 @@ import {
   Package,
   Bell,
   LogOut,
-  Search,
   Save,
-  MoreVertical,
-  Home,
-  Inbox,
-  Mail,
-  UserCheck,
   Menu,
   Hospital,
-  UserPlus,
   RefreshCw,
-  Shield,
   ActivitySquare,
   AlertCircle,
 } from "lucide-react";
-import { Badge } from "@heroui/react";
 import { Alert } from "flowbite-react";
-import { HiInformationCircle } from "react-icons/hi";
+
 
 export default function NursePage() {
   const navigate = useNavigate();
@@ -84,6 +58,7 @@ export default function NursePage() {
   const [reason, setReason] = useState("");
   const [patientCount, setPatientCount] = useState(0);
 
+
   const [alert, showAlert] = useState(false);
 
   const [myRequests, setMyRequests] = useState([]);
@@ -91,12 +66,7 @@ export default function NursePage() {
   const [activeItem, setActiveItem] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [statsData, setStatsData] = useState({
-    totalPatients: 0,
-    hospitalized: 0,
-    pendingRequests: 0,
-    approvedRequests: 0,
-  });
+
 
   const fetchPatients = async () => {
     try {
@@ -107,11 +77,6 @@ export default function NursePage() {
       });
 
       setPatients(response.data || []);
-      setStatsData((prev) => ({
-        ...prev,
-        totalPatients: response.data?.length || 0,
-        // hospitalized: response.data.filter((p) => p.isHospitalized).length || 0,
-      }));
     } catch (error) {
       console.error("Error fetching patients:", error.message);
       toast.error("Failed to fetch patients. Please check your connection.");
@@ -134,12 +99,8 @@ export default function NursePage() {
     if (role !== "nurse") {
       toast.error("Unauthorized access - Nurses only");
       navigate("/");
-      return;
-    }
 
-    fetchEmail();
-    fetchPatients();
-    fetchRequests();
+    }
   }, [navigate]);
 
   const handleHospitalize = async (patientId) => {
@@ -153,9 +114,7 @@ export default function NursePage() {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      if (res.data.success) {
-        setHospitalize(res.data);
-      }
+
       toast.success(res.data.message);
 
       fetchPatients();
@@ -177,7 +136,11 @@ export default function NursePage() {
       console.error("Error fetching email:", error);
     }
   };
-
+useEffect(()=>{
+  fetchEmail();
+  fetchPatients();
+  fetchRequests();
+},[])
   const fetchRequests = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -189,17 +152,6 @@ export default function NursePage() {
       );
       if (response.data.success) {
         setMyRequests(response.data.requests || []);
-        const pending =
-          response.data.requests?.filter((r) => r.Status === "pending")
-            .length || 0;
-        const approved =
-          response.data.requests?.filter((r) => r.Status === "approved")
-            .length || 0;
-        setStatsData((prev) => ({
-          ...prev,
-          pendingRequests: pending,
-          approvedRequests: approved,
-        }));
       }
     } catch (error) {
       console.error("Error fetching requests:", error);
@@ -219,10 +171,6 @@ export default function NursePage() {
       setPatients((prev) =>
         prev.filter((patient) => patient._id !== patientId)
       );
-      setStatsData((prev) => ({
-        ...prev,
-        totalPatients: prev.totalPatients - 1,
-      }));
       toast.success("Patient deleted successfully!");
     } catch (error) {
       console.error("Error deleting patient:", error);
@@ -289,12 +237,9 @@ export default function NursePage() {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setPatients((prev) => [...prev, response.data]);
-        setStatsData((prev) => ({
-          ...prev,
-          totalPatients: prev.totalPatients + 1,
-        }));
+        }
         toast.success("Patient added successfully!");
-      }
+
 
       setShowForm(false);
       resetForm();
@@ -345,7 +290,6 @@ export default function NursePage() {
       );
 
       if (response.data.success) {
-        toast.alert("Request submitted successfully!");
         toast.success("Request Done");
       }
     } catch (error) {
@@ -353,13 +297,13 @@ export default function NursePage() {
       toast.error("Failed to submit request. Please try again.");
     }
   };
-  const filteredPatients = patients.filter((patient) =>
-    `${patient.firstName || ""} ${patient.lastName || ""} ${
-      patient.disease || ""
-    }`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
+  // const filteredPatients = patients.filter((patient) =>
+  //   `${patient.firstName || ""} ${patient.lastName || ""} ${
+  //     patient.disease || ""
+  //   }`
+  //     .toLowerCase()
+  //     .includes(searchTerm.toLowerCase())
+  // );
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -369,44 +313,6 @@ export default function NursePage() {
     return clearTimeout(timer);
   }, []);
 
-  const stats = [
-    {
-      icon: Users,
-      label: "Added patients",
-      value: statsData.totalPatients,
-      change: "+12%",
-      color: "bg-blue-100",
-      iconColor: "text-blue-600",
-      bgImage: "/images/patientAdd.jpg",
-    },
-    {
-      icon: Ambulance,
-      label: "Hospitalized",
-      value: statsData.hospitalized,
-      change: "Active",
-      color: "bg-red-100",
-      iconColor: "text-red-600",
-      bgImage: "/images/hospitalized.jpg",
-    },
-    {
-      icon: CheckCircle2,
-      label: "Approved Requests",
-      value: statsData.approvedRequests,
-      change: "This week",
-      color: "bg-green-100",
-      iconColor: "text-green-600",
-      bgImage: "/images/request.jpg",
-    },
-    {
-      icon: AlertCircle,
-      label: "Pending Requests",
-      value: statsData.pendingRequests,
-      change: "Awaiting",
-      color: "bg-amber-100",
-      iconColor: "text-amber-600",
-      bgImage: "/images/pending.jpg",
-    },
-  ];
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -470,9 +376,9 @@ export default function NursePage() {
             <div className="relative">
               <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative">
                 <Bell className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-                {statsData.pendingRequests > 0 && (
+                {myRequests.length> 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                    {statsData.pendingRequests}
+                    {myRequests.length}
                   </span>
                 )}
               </button>
@@ -558,49 +464,7 @@ export default function NursePage() {
           </div>
 
           <nav className="flex-1 p-4 overflow-y-auto">
-            <div className="space-y-1">
-              {[
-                {
-                  key: "Dashboard",
-                  icon: ActivitySquare,
-                  label: "Dashboard",
-                },
-                {
-                  key: "Patients",
-                  icon: Users,
-                  label: "Patients",
-                  count: patients.length,
-                },
-                {
-                  key: "Requests",
-                  icon: Package,
-                  label: "Requests",
-                  count: myRequests.length,
-                },
-                { key: "Schedule", icon: CalendarDays, label: "Schedule" },
-                { key: "Medicines", icon: Pill, label: "Medicines" },
-                { key: "Reports", icon: BarChart3, label: "Reports" },
-                { key: "Settings", icon: Settings, label: "Settings" },
-              ].map(({ key, icon: Icon, label, count }) => (
-                <button
-                  key={key}
-                  onClick={() => setActiveItemAndClose(key)}
-                  className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors relative ${
-                    activeItem === key
-                      ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
-                >
-                  <Icon className="w-5 h-5 mr-3" />
-                  <span className="flex-1">{label}</span>
-                  {count > 0 && (
-                    <span className="px-2 py-1 text-xs font-semibold text-white bg-blue-500 rounded-full">
-                      {count}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
+
           </nav>
 
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
@@ -623,36 +487,6 @@ export default function NursePage() {
 
         <main className="flex-1 p-6 overflow-y-auto">
           <div className="grid grid-cols-2 gap-6">
-          <Sidebar aria-label="Sidebar with logo branding example">
-      <SidebarLogo href="#" img="/favicon.svg" imgAlt="Flowbite logo">
-        Flowbite
-      </SidebarLogo>
-      <SidebarItems>
-        <SidebarItemGroup>
-          <SidebarItem href="#" icon={HiChartPie}>
-            Dashboard
-          </SidebarItem>
-          <SidebarItem href="#" icon={HiViewBoards}>
-            Kanban
-          </SidebarItem>
-          <SidebarItem href="#" icon={HiInbox}>
-            Inbox
-          </SidebarItem>
-          <SidebarItem href="#" icon={HiUser}>
-            Users
-          </SidebarItem>
-          <SidebarItem href="#" icon={HiShoppingBag}>
-            Products
-          </SidebarItem>
-          <SidebarItem href="#" icon={HiArrowSmRight}>
-            Sign In
-          </SidebarItem>
-          <SidebarItem href="#" icon={HiTable}>
-            Sign Up
-          </SidebarItem>
-        </SidebarItemGroup>
-      </SidebarItems>
-    </Sidebar>
             <div>
           <div className="mb-8">
             <h1 className="text-3xl font-poppins text-gray-800 dark:text-white mb-2">
@@ -701,7 +535,7 @@ export default function NursePage() {
                   <img
                     alt="Bonnie image"
                     height="96"
-                    src="/images/kaze.png"
+                    src="/images/Kaze.png"
                     width="96"
                     className="mb-3 rounded-full shadow-lg"
                   />

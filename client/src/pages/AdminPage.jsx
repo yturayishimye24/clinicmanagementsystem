@@ -2,19 +2,16 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Badge } from "@heroui/react";
+
 import { Alert } from "flowbite-react";
-import { HiEye, HiInformationCircle } from "react-icons/hi";
-import { Card } from "flowbite-react";
+import { HiInformationCircle } from "react-icons/hi";
 import {
   Calendar,
-  PlusCircle,
   FileText,
   X,
   Users,
   UserCheck,
   Bell,
-  Hospital,
   Menu,
   Home,
   Inbox,
@@ -24,7 +21,6 @@ import {
   FolderPlus,
   Percent,
   BarChart3,
-  TrendingUp,
   RefreshCw,
   ChevronDown,
   Settings,
@@ -46,7 +42,6 @@ export default function AdminPage() {
   const [username, setUsername] = useState("");
   const [loadingPatients, setLoadingPatients] = useState(false);
   const [loadingRequests, setLoadingRequests] = useState(false);
-  const [loadingNurses, setLoadingNurses] = useState(false);
   const [em,setEmail] = useState("");
   const [password,setPassword] = useState("");
   const [nurseUsername,setNurseUsername]= useState("");
@@ -56,6 +51,7 @@ export default function AdminPage() {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [alert, setShowAlert] = useState(true);
   const [adding,setAdding] = useState(false);
+  const [loadingNurses,setLoadingNurses]=useState(false);
   //const [reports, setReports] = useState([]);
   //const [reportForm, setReportForm] = useState(false);
 
@@ -63,6 +59,7 @@ export default function AdminPage() {
     e.preventDefault();
     const response = await axios.post("http://localhost:4000/api/users/signup",{nurseUsername,em,password,role});
     if (response.data.success) {
+      setLoadingNurses(true);
       toast.success("Account created successfully");
       setAdding(true);
       setNurses(response.data);
@@ -217,7 +214,7 @@ export default function AdminPage() {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-  const GoogleWorkspaceIcon = ({ icon: Icon, color, label, onClick }) => (
+  const GoogleWorkspaceIcon = ({ icon:color, label, onClick }) => (
     <div
       className={`group relative flex items-center justify-center w-12 h-12 rounded-lg cursor-pointer transition-all duration-200 ease-out hover:scale-110 hover:bg-white hover:shadow-lg`}
       onClick={onClick}
@@ -225,12 +222,7 @@ export default function AdminPage() {
       <div
         className={`absolute inset-0 ${color} rounded-lg group-hover:bg-white transition-colors duration-200`}
       ></div>
-      <Icon
-        className={`relative w-6 h-6 text-white group-hover:${color.replace(
-          "bg-",
-          "text-",
-        )} transition-colors duration-200`}
-      />
+
       <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-2">
         <span className="bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
           {label}
@@ -242,9 +234,12 @@ export default function AdminPage() {
     if (!window.confirm("Are you sure you want to approve this request?"))
       return;
     e.preventDefault();
-    const response = await axios.post(
+    const response = await axios.patch(
       `http://localhost:4000/api/requests/approve/:${requestId}`,
     );
+    if(response.data.success){
+      toast.success("Request approved!")
+    }
   };
 
   return (
@@ -263,10 +258,7 @@ export default function AdminPage() {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .card-hover:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        }
+       
 
         .sidebar-item.active::before {
           content: "";
@@ -279,41 +271,10 @@ export default function AdminPage() {
           border-radius: 0 2px 2px 0;
         }
 
-        .notification-dot {
-          position: absolute;
-          top: -2px;
-          right: -2px;
-          width: 18px;
-          height: 18px;
-          background: #ef4444;
-          color: white;
-          font-size: 10px;
-          font-weight: 600;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 2px solid white;
-        }
+        
+       
 
-        .custom-scrollbar {
-          scrollbar-width: thin;
-          scrollbar-color: #cbd5e0 transparent;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #cbd5e0;
-          border-radius: 3px;
-        }
-
+        
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background-color: #a0aec0;
         }
@@ -323,65 +284,10 @@ export default function AdminPage() {
           backdrop-filter: blur(4px);
         }
 
-        .status-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          display: inline-block;
-          margin-right: 6px;
-        }
+       
+      
 
-        .status-active {
-          background-color: #10b981;
-        }
-
-        .dark .glass-effect {
-          background: rgba(24, 24, 27, 0.95);
-          border: 1px solid rgba(39, 39, 42, 0.3);
-        }
-
-        @media (max-width: 1024px) {
-          .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            z-index: 50;
-            transform: translateX(-100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-
-          .sidebar.open {
-            transform: translateX(0);
-          }
-
-          .sidebar-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 40;
-            opacity: 0;
-            visibility: hidden;
-            transition:
-              opacity 0.3s ease,
-              visibility 0.3s ease;
-          }
-
-          .sidebar-overlay.visible {
-            opacity: 1;
-            visibility: visible;
-          }
-
-          .requests-sidebar {
-            display: none;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .header-title {
-            font-size: 1.25rem;
-          }
-        }
+        
       `}</style>
 
       {alert && (
@@ -551,29 +457,29 @@ export default function AdminPage() {
                   badgeColor: "bg-purple-500",
                 },
               ].map(({ key, icon: Icon, label, badge, badgeColor }) => (
-                <li key={key}>
-                  <button
-                    onClick={() => setActiveItemAndClose(key)}
-                    className={`
-                      sidebar-item w-full flex items-center px-4 py-3 text-left rounded-lg smooth-transition relative overflow-hidden
-                      ${
-                        activeItem === key
-                          ? "active text-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400"
-                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      }
-                    `}
-                  >
-                    <Icon className="w-5 h-5 mr-3" />
-                    {label}
-                    {badge > 0 && (
-                      <span
-                        className={`ml-auto px-2 py-1 text-xs font-semibold text-white rounded-full ${badgeColor}`}
-                      >
-                        {activeItem === key ? "" : `${badge}`}
-                      </span>
-                    )}
-                  </button>
-                </li>
+                  <li key={key}>
+                    <button
+                        onClick={() => setActiveItemAndClose(key)}
+                        className={`
+        sidebar-item w-full flex items-center px-4 py-3 text-left rounded-lg smooth-transition relative overflow-hidden
+        ${
+                            activeItem === key
+                                ? "active text-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        }
+      `}
+                    >
+                      <Icon className="w-5 h-5 mr-3" />
+                      <span className="flex-1">{label}</span>
+                      {badge > 0 && (
+                          <span
+                              className={`ml-auto px-2 py-1 text-xs font-semibold text-white rounded-full ${badgeColor}`}
+                          >
+          {badge}
+        </span>
+                      )}
+                    </button>
+                  </li>
               ))}
             </ul>
           </nav>
@@ -598,7 +504,6 @@ export default function AdminPage() {
               onClick={() => setShowForm(true)}
             />
             <GoogleWorkspaceIcon
-              onClick={() => setReportForm(true)}
               icon={FolderPlus}
               color="bg-gray-400"
               label="Add Report"
@@ -688,7 +593,7 @@ export default function AdminPage() {
                             <div className="flex items-center">
                               <img
                                 src={
-                                  patient.avatarUrl || "/images/patientt.png"
+                                  patient.avatarUrl || "/images/patient.png"
                                 }
                                 alt={patient.firstName}
                                 className="w-10 h-10 rounded-full object-cover mr-3"
