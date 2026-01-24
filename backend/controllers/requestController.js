@@ -2,7 +2,7 @@ import request from "../models/requestModel.js";
 
 export const getRequests = async (req, res) => {
   try {
-    const requests = await request.find().sort({ createdAt: -1 });
+    const requests = await request.find().sort({ createdAt: -1 }).populate("createdBy","name");
     if (!requests || requests.length === 0) {
       res.status(404).json({ success: false, message: "Requests not Found!" });
     } else {

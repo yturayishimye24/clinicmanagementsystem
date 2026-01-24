@@ -1,35 +1,33 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef,useState } from "react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Mything from "../components/forHeader.jsx"
-
-import { Alert } from "flowbite-react";
-import { HiInformationCircle } from "react-icons/hi";
+import { useNavigate } from "react-router-dom";
+import {Badge} from "flowbite-react"
 import {
+  Bell,
   Calendar,
   FileText,
   X,
   Users,
-  UserCheck,
-  Bell,
-  Menu,
-  Home,
   Inbox,
-  Mail,
-  LogOut,
   UserPlus,
-  FolderPlus,
-  Percent,
-  BarChart3,
   RefreshCw,
   Loader2,
+  Home,
+  ClipboardList,
+  Stethoscope,
+  Package,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  Plus,
+  LogOut,
+  Settings,
+  User,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/authContext.jsx";
 
 export default function AdminPage() {
-  const { logout } = useAuth();
   const navigate = useNavigate();
 
   const [patients, setPatients] = useState([]);
@@ -40,32 +38,63 @@ export default function AdminPage() {
   const [username, setUsername] = useState("");
   const [loadingPatients, setLoadingPatients] = useState(false);
   const [loadingRequests, setLoadingRequests] = useState(false);
-  const [em,setEmail] = useState("");
-  const [password,setPassword] = useState("");
-  const [nurseUsername,setNurseUsername]= useState("");
+  const [em, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [nurseUsername, setNurseUsername] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [activeItem, setActiveItem] = useState("Home");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [alert, setShowAlert] = useState(true);
-  const [adding,setAdding] = useState(false);
-  const [loadingNurses,setLoadingNurses]=useState(false);
-  //const [reports, setReports] = useState([]);
-  //const [reportForm, setReportForm] = useState(false);
+  const [formRole, setFormRole] = useState("");
 
+
+  const [collapsed, setCollapsed] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  const [adding, setAdding] = useState(false);
+  const [loadingNurses, setLoadingNurses] = useState(false);
+  const nurseRef= useRef(null);
+  const patientRef = useRef(null);
+  const requestRef = useRef(null);
+
+  const handleGoNurses = ()=>{
+    nurseRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
+  const handleGoPatients =()=>{
+    patientRef.current?.scrollIntoView({behavior:"smooth"})
+  }
+  const handleGoRequests = ()=>{
+    requestRef.current?.scrollIntoView({behavior:"smooth"})
+  }
   const handleAccount = async (e) => {
     e.preventDefault();
-    const response = await axios.post("http://localhost:4000/api/users/signup",{nurseUsername,em,password,role});
-    if (response.data.success) {
-      setLoadingNurses(true);
-      toast.success("Account created successfully");
-      setAdding(true);
-      setNurses(response.data);
-      setEmail("")
-      setPassword("")
-      setRole("");
+    setAdding(true);
+    try {
+      const response = await axios.post("http://localhost:4000/api/accounts/signup", {
+        username: nurseUsername,
+        email: em,
+        password,
+        role: formRole,
+      });
+      if (response.data.success) {
+        toast.success("Account created successfully");
+        // setNurses(response.data);
+        fetchNurses();
+        setEmail("");
+        setPassword("");
+        setFormRole("");
+        setNurseUsername("");
+        setShowForm(false);
+      } else {
+        toast.error(response.data.message)
+      }
+    } catch (error) {
+      console.log(error.message)
+      toast.error("Error creating account");
+
+    } finally {
+      setAdding(false);
     }
   };
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -82,56 +111,33 @@ export default function AdminPage() {
     }
   }, [navigate]);
 
-  useEffect(() => {
-    const delayTimer = setTimeout(() => {
-      setShowAlert(true);
-    }, 5000);
-
-    const disappearTimer = setTimeout(() => {
-      setShowAlert(false);
-    }, 6000);
-
-    clearTimeout(delayTimer);
-    clearTimeout(disappearTimer);
-  }, []);
-
   const fetchRequests = async () => {
     setLoadingRequests(true);
     try {
-      const response = await axios.get(
-        "http://localhost:4000/api/requests/showRequests",
-      );
+      const response = await axios.get("http://localhost:4000/api/requests/showRequests");
       const d = response.data;
-      const arr = Array.isArray(d)
-        ? d
-        : Array.isArray(d.requests)
-          ? d.requests
-          : [];
+      const arr = Array.isArray(d) ? d : Array.isArray(d.requests) ? d.requests : [];
       setRequests(arr);
     } catch (err) {
-      console.error("fetchRequests error:", err);
+      console.loge("fetchRequests error:", err);
       toast.error("Error getting requests");
       setRequests([]);
     } finally {
-      setLoadingRequests(false)
-      setAdding(false);
+      setLoadingRequests(false);
     }
   };
 
   const fetchEmail = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(
-        "http://localhost:4000/api/infos/email",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const response = await axios.get("http://localhost:4000/api/infos/email", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setEmails(response.data.email);
       setUsername(response.data.username);
       setRole(response.data.role);
     } catch (error) {
-      console.error("Error fetching email:", error);
+      console.log("Error fetching email:", error);
     }
   };
 
@@ -143,7 +149,7 @@ export default function AdminPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const d = response.data;
-      const arr = Array.isArray(d) ? d : (d.users ?? []);
+      const arr = Array.isArray(d) ? d : d.users ?? [];
       setPatients(arr);
     } catch (err) {
       console.error("fetchPatients error:", err.message);
@@ -154,659 +160,694 @@ export default function AdminPage() {
     }
   };
 
-  useEffect(() => {
-    fetchEmail();
-    fetchRequests();
-    fetchPatients();
-  }, []);
+  const fetchNurses = async () => {
+    setLoadingNurses(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get("http://localhost:4000/api/accounts/nurses/", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNurses(response.data);
+    } catch (err) {
+      console.log("fetchNurses error:", err.message);
+      setNurses([]);
+    } finally {
+      setLoadingNurses(false);
+    }
+  };
+
 
   const handleLogout = () => {
     toast.info("Logging out...");
     setTimeout(() => {
-      logout();
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
       navigate("/");
       toast.success("Successfully logged out!");
-    }, 1200);
+    }, 1000);
   };
 
-
-
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-  };
-
-  const setActiveItemAndClose = (item) => {
-    setActiveItem(item);
-    if (window.innerWidth < 1024) {
-      closeSidebar();
-    }
-  };
-
-  const pendingRequests = requests.filter((r) => r.Status === "pending").length;
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest(".user-dropdown")) {
-        setUserDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("click", handleClickOutside);
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, []);
-
-  // Handle window resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        closeSidebar();
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-  const GoogleWorkspaceIcon = ({ icon:color, label, onClick }) => (
-    <div
-      className={`group relative flex items-center justify-center w-12 h-12 rounded-lg cursor-pointer transition-all duration-200 ease-out hover:scale-110 hover:bg-white hover:shadow-lg`}
-      onClick={onClick}
-    >
-      <div
-        className={`absolute inset-0 ${color} rounded-lg group-hover:bg-white transition-colors duration-200`}
-      ></div>
-
-      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-2">
-        <span className="bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-          {label}
-        </span>
-      </div>
-    </div>
-  );
   const handleApprove = async (requestId, e) => {
-    if (!window.confirm("Are you sure you want to approve this request?"))
-      return;
+    if (!window.confirm("Are you sure you want to approve this request?")) return;
     e.preventDefault();
-    const response = await axios.patch(
-      `http://localhost:4000/api/requests/approve/:${requestId}`,
-    );
-    if(response.data.success){
-      toast.success("Request approved!")
+    try {
+      const response = await axios.patch(
+          `http://localhost:4000/api/requests/approve/${requestId}`
+      );
+      if (response.data.success) {
+        toast.success("Request approved!");
+        fetchRequests();
+      }
+    } catch (error) {
+      console.log(error)
+      toast.error("Error approving request");
     }
   };
+
+  const sidebarItems = [
+    { icon: Home, label: "Home", href: "/" },
+    { icon: Users, label: "Patients", href: {handleGoPatients} },
+    { icon: Inbox, label: "Requests", href: {handleGoRequests}, badge: requests.length },
+    { icon: Stethoscope, label: "Nurses", href: {handleGoNurses} },
+  ];
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <style jsx>{`
-        @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+      <div className="min-h-screen bg-gray-50">
+        <style>{`
+        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
         * {
-          font-family:
-            "Poppins",
-            -apple-system,
-            BlinkMacSystemFont,
-            sans-serif;
-        }
-        .smooth-transition {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
-       
+        .cozy-shadow {
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+        }
 
-        .sidebar-item.active::before {
+        .cozy-shadow-lg {
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .cozy-transition {
+          transition: all 0.2s ease-in-out;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f8fafc;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #e2e8f0;
+          border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #cbd5e1;
+        }
+
+        .gradient-border {
+          position: relative;
+        }
+
+        .gradient-border::after {
           content: "";
           position: absolute;
-          left: 0;
-          top: 0;
           bottom: 0;
-          width: 4px;
-          background: linear-gradient(135deg, #10b981, #059669);
-          border-radius: 0 2px 2px 0;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, #e5e7eb, transparent);
         }
-
-        
-       
-
-        
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #a0aec0;
-        }
-
-        .modal-backdrop {
-          background: rgba(0, 0, 0, 0.6);
-          backdrop-filter: blur(4px);
-        }
-
-       
-      
-
-        
       `}</style>
 
-      {alert && (
-        <Alert
-          additionalContent={"Here are some requests that are trending up"}
-          color="success"
-          icon={HiInformationCircle}
-          onDismiss={() => setShowAlert(false)}
-          className="fixed w-full z-50 top-0 left-0"
-          rounded
-        >
-          <span className="font-medium">Info alert!</span> Welcome to admin
-          page. You have got `${requests.length}` requests.
-        </Alert>
-      )}
-
-      <header className="border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 shodow-lg">
-            <div>
-              <h1>Logo</h1>
-            </div>
-            <div>
-                <Mything/>
-            </div>
-      </header>
-
-      <div className="flex h-[calc(100vh-140px)] mt-20">
-        <div
-          className={`sidebar-overlay ${sidebarOpen ? "visible" : ""}`}
-          onClick={closeSidebar}
-        />
-
-        <aside
-          className={`sidebar ${
-            sidebarOpen ? "open" : ""
-          } w-64 bg-white dark:bg-gray-800 shadow-sm border-r border-gray-200 dark:border-gray-700 flex flex-col mt-[30px]`}
-        >
-          <div className="p-6 text-center border-b border-gray-200 dark:border-gray-700">
-            <img
-              src="/images/userIcon.png"
-              alt="Admin"
-              className="w-20 h-20 rounded-full mx-auto object-cover relative"
-            />
-            <img
-              src="/images/camera.png"
-              className="absolute w-5 h-5 left-[160px] hover:bg-gray-50 transition-all cursor-pointer bottom-[500px] rounded-full"
-            />
-            <h3 className="mt-3 font-semibold text-gray-900 dark:text-white">
-              {username}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {email || "admin@clinic.com"}
-            </p>
-          </div>
-
-          <nav className="flex-1 p-4">
-            <ul className="space-y-2">
-              {[
-                { key: "Home", icon: Home, label: "Home" },
-                {
-                  key: "Requests",
-                  icon: Inbox,
-                  label: "Requests",
-                  badge: pendingRequests,
-                  badgeColor: "bg-red-500",
-                },
-                {
-                  key: "Nurses",
-                  icon: Users,
-                  label: "Nurses",
-                  badge: nurses.length,
-                  badgeColor: "bg-emerald-500",
-                },
-                {
-                  key: "Messages",
-                  icon: Mail,
-                  label: "Messages",
-                  badge: requests.length,
-                  badgeColor: "bg-blue-500",
-                },
-                {
-                  key: "Patients",
-                  icon: UserCheck,
-                  label: "Patients",
-                  badge: patients.length,
-                  badgeColor: "bg-purple-500",
-                },
-              ].map(({ key, icon: Icon, label, badge, badgeColor }) => (
-                  <li key={key}>
-                    <button
-                        onClick={() => setActiveItemAndClose(key)}
-                        className={`
-        sidebar-item w-full flex items-center px-4 py-3 text-left rounded-lg smooth-transition relative overflow-hidden
-        ${
-                            activeItem === key
-                                ? "active text-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400"
-                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        }
-      `}
-                    >
-                      <Icon className="w-5 h-5 mr-3" />
-                      <span className="flex-1">{label}</span>
-                      {badge > 0 && (
-                          <span
-                              className={`ml-auto px-2 py-1 text-xs font-semibold text-white rounded-full ${badgeColor}`}
-                          >
-          {badge}
-        </span>
-                      )}
-                    </button>
-                  </li>
-              ))}
-            </ul>
-          </nav>
-
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg smooth-transition"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </button>
-          </div>
-        </aside>
-
-        <main className="flex-1 p-6 overflow-y-auto custom-scrollbar">
-          <div className="flex items-center justify-center gap-6 mb-8">
-            <GoogleWorkspaceIcon
-              icon={UserPlus}
-              color="bg-blue-500"
-              label="Add Nurse"
-              onClick={() => setShowForm(true)}
-            />
-            <GoogleWorkspaceIcon
-              icon={FolderPlus}
-              color="bg-gray-400"
-              label="Add Report"
-            />
-            <GoogleWorkspaceIcon
-              icon={Percent}
-              color="bg-purple-500"
-              label="Create Discount"
-            />
-            <GoogleWorkspaceIcon
-              icon={BarChart3}
-              color="bg-orange-500"
-              label="Track Metrics"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Current Patients
-                  </h2>
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="search"
-                      placeholder="Search patients..."
-                      className="px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white"
-                    />
-                    <button
-                      onClick={fetchPatients}
-                      className="p-2 text-gray-500 hover:text-emerald-600 smooth-transition"
-                    >
-                      <RefreshCw className="w-5 h-5" />
-                    </button>
-                  </div>
+        {/* Navbar */}
+        <nav className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-100 cozy-shadow">
+          <div className="px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo */}
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">C</span>
                 </div>
+                <span className="text-lg font-semibold text-gray-800 tracking-tight">
+                Clinic Dashboard
+              </span>
               </div>
 
-              <div className="overflow-auto max-h-96 custom-scrollbar">
-                <table className="w-full">
-                  <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Patient
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Disease
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {loadingPatients ? (
-                      <tr>
-                        <td
-                          colSpan="3"
-                          className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
-                        >
-                          <div className="flex flex-col items-center">
-                            <Loader2 className="w-8 h-8 animate-spin mb-2" />
-                            <p>Loading patients...</p>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : patients.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan="3"
-                          className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
-                        >
-                          <div className="flex flex-col items-center">
-                            <Users className="w-8 h-8 mb-2" />
-                            <p>No patients found</p>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      patients.map((patient) => (
-                        <tr
-                          key={patient._id}
-                          className="hover:bg-gray-50 dark:hover:bg-gray-700 smooth-transition"
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <img
-                                src={
-                                  patient.avatarUrl || "/images/patient.png"
-                                }
-                                alt={patient.firstName}
-                                className="w-10 h-10 rounded-full object-cover mr-3"
-                              />
-                              <div>
-                                <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                  {patient.firstName} {patient.lastName || ""}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            {patient.disease || "-"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`status-dot ${patient.Status === "hospitalized" ? "bg-red-500" : "bg-green-500"}`}
-                            ></span>
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">
-                              {patient.Status || "Active"}
-                            </span>
-                          </td>
-                        </tr>
-                      ))
+              {/* Right Side */}
+              <div className="flex items-center gap-3">
+                {/* Notifications */}
+                <div className="relative">
+                  <button
+                      onClick={() => setShowNotifications(!showNotifications)}
+                      className="relative p-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 cozy-transition"
+                  >
+                    <Bell className="w-5 h-5 text-gray-600" />
+                    {requests.length > 0 && (
+                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-xs font-medium rounded-full flex items-center justify-center">
+                      {requests.length}
+                    </span>
                     )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Nurses Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Latest Nurses
-                  </h3>
-                  <button className="text-sm text-emerald-600 hover:underline">
-                    View all
                   </button>
-                </div>
-              </div>
 
-              <div className="p-6">
-                <div className="space-y-4">
-                  {loadingNurses ? (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="text-center">
-                        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-gray-400" />
-                        <p className="text-gray-500 dark:text-gray-400">
-                          Loading nurses...
-                        </p>
-                      </div>
-                    </div>
-                  ) : nurses.length === 0 ? (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="text-center">
-                        <Users className="w-6 h-6 mx-auto mb-2 text-gray-400" />
-                        <p className="text-gray-500 dark:text-gray-400">
-                          No nurses found
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    nurses.map((nurse, index) => (
-                      <div
-                        key={nurse._id || nurse.email || index}
-                        className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 smooth-transition"
-                      >
-                        <img
-                          src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=40&h=40&fit=crop&crop=face"
-                          alt={nurse.firstName}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                            {nurse.firstName} {nurse.lastName}
-                          </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                            {nurse.email}
-                          </p>
+                  {showNotifications && (
+                      <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl cozy-shadow-lg border border-gray-100 overflow-hidden z-50">
+                        <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
+                          <h3 className="font-semibold text-gray-800">Notifications</h3>
                         </div>
-                        <div className="text-xs text-gray-400">
-                          {nurse.hireDate
-                            ? new Date(nurse.hireDate).getFullYear()
-                            : new Date().getFullYear()}
+                        <div className="max-h-80 overflow-y-auto custom-scrollbar">
+                          {requests.length === 0 ? (
+                              <div className="px-4 py-8 text-center text-gray-500">
+                                No new notifications
+                              </div>
+                          ) : (
+                              requests.slice(0, 5).map((request, index) => (
+                                  <div
+                                      key={index}
+                                      className="px-4 py-3 hover:bg-gray-50 cozy-transition cursor-pointer border-b border-gray-50 last:border-0"
+                                  >
+                                    <p className="text-sm text-gray-700">{request.reason}</p>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                      {request.createdAt
+                                          ? new Date(request.createdAt).toLocaleDateString()
+                                          : "Recently"}
+                                    </p>
+                                  </div>
+                              ))
+                          )}
                         </div>
                       </div>
-                    ))
+                  )}
+                </div>
+
+                {/* Profile */}
+                <div className="relative">
+                  <button
+                      onClick={() => setShowProfileMenu(!showProfileMenu)}
+                      className="flex items-center gap-3 p-1.5 pr-3 rounded-xl hover:bg-gray-50 cozy-transition"
+                  >
+                    <img
+                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face"
+                        alt="Profile"
+                        className="w-8 h-8 rounded-lg object-cover"
+                    />
+                    <div className="hidden sm:block text-left">
+                      <p className="text-sm font-medium text-gray-700">
+                        {localStorage.getItem("name") || username || "Admin"}
+                      </p>
+                      <p className="text-xs text-gray-400">{email || "admin@clinic.com"}</p>
+                    </div>
+                  </button>
+
+                  {showProfileMenu && (
+                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl cozy-shadow-lg border border-gray-100 overflow-hidden z-50">
+                        <div className="px-4 py-3 border-b border-gray-100">
+                          <p className="font-medium text-gray-800">{localStorage.getItem("name") || username}</p>
+                          <p className="text-sm text-gray-500">{email}</p>
+                        </div>
+                        <div className="py-2">
+                          <button className="w-full px-4 py-2.5 text-left text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-3 cozy-transition">
+                            <User className="w-4 h-4" />
+                            Profile
+                          </button>
+                          <button className="w-full px-4 py-2.5 text-left text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-3 cozy-transition">
+                            <Settings className="w-4 h-4" />
+                            Settings
+                          </button>
+                          <div className="border-t border-gray-100 my-1"></div>
+                          <button
+                              onClick={handleLogout}
+                              className="w-full px-4 py-2.5 text-left text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-3 cozy-transition"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            Sign out
+                          </button>
+                        </div>
+                      </div>
                   )}
                 </div>
               </div>
             </div>
           </div>
-        </main>
+        </nav>
 
-        <aside className="requests-sidebar w-80 bg-white dark:bg-gray-800 border-l overflow-y-scroll h-[400px] border-gray-200 dark:border-gray-700 flex flex-col">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Requests
-              </h3>
-              <button
-                onClick={fetchRequests}
-                className="text-sm text-emerald-600 hover:underline"
-              >
-                Refresh
-              </button>
-            </div>
-
-            <div className="space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
-              {loadingRequests ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-center">
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-gray-400" />
-                    <p className="text-gray-500 dark:text-gray-400">
-                      Loading requests...
-                    </p>
-                  </div>
-                </div>
-              ) : requests.length === 0 ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-center">
-                    <Inbox className="w-6 h-6 mx-auto mb-2 text-gray-400" />
-                    <p className="text-gray-500 dark:text-gray-400">
-                      No requests found
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                requests.map((request, index) => (
-                  <div
-                    key={request._id || request.id || index}
-                    className="flex items-start space-x-3 p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 smooth-transition border border-gray-200 dark:border-gray-600"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                          {request.reason || request.itemName || "Request"}
-                        </h4>
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full ${
-                            request.Status === "approved"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : request.Status === "rejected"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-yellow-100 text-yellow-800"
-                          }`}
-                        >
-                          {request.Status === "pending" ? (
-                            <button onClick={() => handleApprove(request._id)}>
-                              Approve
-                            </button>
-                          ) : (
-                            request.Status || "pending"
-                          )}
-                        </span>
-                      </div>
-                      {(request.quantity ||
-                        request.patientCount ||
-                        request.urgency) && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                          {request.quantity
-                            ? `Qty: ${request.quantity} · `
-                            : ""}
-                          {request.patientCount
-                            ? `Patients: ${request.patientCount} · `
-                            : ""}
-                          {request.urgency ? `Urgency: ${request.urgency}` : ""}
-                        </p>
-                      )}
-                      {request.createdAt && (
-                        <div className="text-xs text-gray-400">
-                          {new Date(request.createdAt).toLocaleDateString()}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Quick Actions
-            </h3>
-            <div className="space-y-2">
-              <button
-                onClick={() => setShowForm(true)}
-                className="w-full flex items-center px-4 py-3 text-left rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 smooth-transition"
-              >
-                <UserPlus className="w-5 h-5 text-emerald-600 mr-3" />
-                <span className="text-gray-700 dark:text-gray-300">
-                  Add Nurse
-                </span>
-              </button>
-              <button className="w-full flex items-center px-4 py-3 text-left rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 smooth-transition">
-                <Calendar className="w-5 h-5 text-blue-600 mr-3" />
-                <span className="text-gray-700 dark:text-gray-300">
-                  Schedule Shift
-                </span>
-              </button>
-              <button className="w-full flex items-center px-4 py-3 text-left rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 smooth-transition">
-                <FileText className="w-5 h-5 text-purple-600 mr-3" />
-                <span className="text-gray-700 dark:text-gray-300">
-                  View Reports
-                </span>
-              </button>
-            </div>
-          </div>
-        </aside>
-      </div>
-
-      {showForm && (
-        <div className="modal-backdrop fixed inset-0 flex items-center justify-center z-50 p-4">
-          <form
-            onSubmit={handleAccount}
-            className="relative max-w-md mx-auto bg-white p-6 rounded-xl shadow-md space-y-5"
+        <div className="flex pt-16">
+          {/* Sidebar */}
+          <aside
+              className={`fixed left-0 top-16 min-h-screen bg-white border-r border-gray-100 cozy-shadow z-30 cozy-transition ${
+                  collapsed ? "w-20" : "w-64"
+              }`}
           >
-            <X onClick={()=>setShowForm(false)} className="absolute top-1 bg-red-100 text-red-500 align-center justify-center rounded-full right-[50%] cursor-pointer" />
-            <h2 className="text-xl font-semibold text-gray-800 text-center">
-              Create User Account
-            </h2>
+            <div className="flex flex-col h-full items-center justify-between">
+              {/* Collapse Button */}
+              <div className="p-4 flex justify-end">
+                <button
+                    onClick={() => setCollapsed(!collapsed)}
+                    className="p-2 rounded-lg hover:bg-gray-100 cozy-transition"
+                >
+                  {collapsed ? (
+                      <ChevronRight className="w-4 h-4 text-gray-500" />
+                  ) : (
+                      <ChevronLeft className="w-4 h-4 text-gray-500" />
+                  )}
+                </button>
+              </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
-                Username
-              </label>
-              <input
-                type="text"
-                placeholder="Enter username"
-                name="username"
-                value={nurseUsername}
-                onChange={(e)=>setNurseUsername(e.target.value)}
-                className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
+              {/* Navigation Items */}
+              <nav className="flex-1 px-3 space-y-1">
+                {sidebarItems.map((item, index) => (
+                    <a
+                        key={index}
+                        onClick={item.href}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 cozy-transition group"
+                    >
+                      <item.icon className="w-5 h-5 text-gray-500 group-hover:text-emerald-600 cozy-transition" />
+                      {!collapsed && (
+                          <>
+                            <span className="font-medium text-sm">{item.label}</span>
+                            {item.badge > 0 && (
+                                <span className="ml-auto bg-emerald-100 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded-full">
+                          {item.badge}
+                        </span>
+                            )}
+                          </>
+                      )}
+                    </a>
+                ))}
+              </nav>
             </div>
+          </aside>
 
-            
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">Email</label>
-              <input
-                type="email"
-                placeholder="example@email.com"
-                name="email"
-                value={em}
-                onChange={(e)=>setEmail(e.target.value)}
-                className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
+          {/* Main Content */}
+          <main className={`flex-1 cozy-transition ${collapsed ? "ml-[100px]" : "ml-[300px]"}`}>
+            <div className="p-6 lg:p-8">
+
+              <div className="mb-8">
+                <h1 className="text-2xl font-bold text-gray-800">
+                  Welcome back, {localStorage.getItem("name") || username || "Admin"} 👋
+                  <Badge color="Success">{role}</Badge>
+                </h1>
+                <p className="text-gray-500 mt-1">Here's what's happening at your clinic today.</p>
+              </div>
+
+              {/* Quick Actions Cards */}
+              <div className="grid grid-cols-2 lg:grid-cols-1">
+              <div className="p-1">
+                <button
+                    onClick={() => setShowForm(true)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-black font-medium rounded-xl hover:from-emerald-600 hover:to-teal-600 cozy-transition cozy-shadow"
+                >
+                  <Plus className="w-4 h-4 text-black" />
+                  Add Nurse
+                </button>
+              </div>
+              <div className="p-1">
+                <button
+                    onClick={() => setShowForm(true)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-black font-medium rounded-xl hover:from-emerald-600 hover:to-teal-600 cozy-transition cozy-shadow"
+                >
+                  <Plus className="w-4 h-4 text-black" />
+                  Add Nurse
+                </button>
+              </div>
             </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
 
-          
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                name="password"
-                type="password"
-                value={password}
-                onChange={(e)=>setPassword(e.target.value)}
-                placeholder=""
-                className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
+                <div className="bg-white rounded-2xl p-5 cozy-shadow border border-gray-100 flex items-center gap-4 hover:border-emerald-200 cozy-transition cursor-pointer">
+                  <div className="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center">
+                    <UserPlus className="w-6 h-6 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-800">Add New Nurse</h3>
+                    <p className="text-sm text-gray-500">Record a new patient visit</p>
+                  </div>
+
+                </div>
+                <div className="bg-white rounded-2xl p-5 cozy-shadow border border-gray-100 flex items-center gap-4 hover:border-blue-200 cozy-transition cursor-pointer">
+                  <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center">
+                    <Calendar className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-800">Schedule Appointment</h3>
+                    <p className="text-sm text-gray-500">Book a new appointment</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 sm:grid-cols-3 gap-4 mb-8">
+                <div className="bg-white rounded-2xl p-5 cozy-shadow border border-gray-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-gray-500 text-sm">Total Patients</span>
+                    <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
+                      <Users className="w-4 h-4 text-emerald-600" />
+                    </div>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-800">{patients.length}</p>
+                </div>
+                <div className="bg-white rounded-2xl p-5 cozy-shadow border border-gray-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-gray-500 text-sm">Pending Requests</span>
+                    <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center">
+                      <Inbox className="w-4 h-4 text-amber-600" />
+                    </div>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-800">
+                    {requests.filter((r) => r.Status === "pending").length}
+                  </p>
+                </div>
+                <div className="bg-white rounded-2xl p-5 cozy-shadow border border-gray-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-gray-500 text-sm">Active Nurses</span>
+                    <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                      <Stethoscope className="w-4 h-4 text-blue-600" />
+                    </div>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-800">{nurses.length}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                {/* Patients Table */}
+                <div className="xl:col-span-2 bg-white rounded-2xl cozy-shadow border border-gray-100 overflow-hidden">
+                  <div className="p-5 border-b border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-lg font-semibold text-gray-800">Current Patients</h2>
+                      <div className="flex items-center gap-2">
+                        <div className="relative">
+                          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                          <input
+                              type="search"
+                              placeholder="Search..."
+                              className="pl-9 pr-4 py-2 text-sm bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white w-48"
+                          />
+                        </div>
+                        <button
+                            onClick={fetchPatients}
+                            className="p-2 rounded-xl hover:bg-gray-50 cozy-transition"
+                        >
+                          <RefreshCw className="w-4 h-4 text-gray-500" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="overflow-auto max-h-96 custom-scrollbar">
+                    <table className="w-full">
+                      <thead className="bg-gray-50/80 sticky top-0">
+                      <tr>
+                        <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Patient
+                        </th>
+                        <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Condition
+                        </th>
+                        <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                      </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                      {loadingPatients ? (
+                          <tr>
+                            <td colSpan="3" className="px-5 py-12 text-center">
+                              <div className="flex flex-col items-center text-gray-400">
+                                <Loader2 className="w-6 h-6 animate-spin mb-2" />
+                                <p className="text-sm">Loading patients...</p>
+                              </div>
+                            </td>
+                          </tr>
+                      ) : patients.length === 0 ? (
+                          <tr>
+                            <td colSpan="3" className="px-5 py-12 text-center">
+                              <div className="flex flex-col items-center text-gray-400">
+                                <Users className="w-6 h-6 mb-2" />
+                                <p className="text-sm">No patients found</p>
+                              </div>
+                            </td>
+                          </tr>
+                      ) : (
+                          patients.map((patient) => (
+                              <tr
+                                  key={patient._id}
+                                  className="hover:bg-gray-50/50 cozy-transition cursor-pointer"
+                              >
+                                <td className="px-5 py-4">
+                                  <div className="flex items-center gap-3">
+                                    <img
+                                        src={patient.avatarUrl || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=40&h=40&fit=crop&crop=face"}
+                                        alt={patient.firstName}
+                                        className="w-10 h-10 rounded-xl object-cover"
+                                    />
+                                    <div>
+                                      <p className="font-medium text-gray-800">
+                                        {patient.firstName} {patient.lastName || ""}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-5 py-4">
+                              <span className="text-sm text-gray-600">
+                                {patient.disease || "General checkup"}
+                              </span>
+                                </td>
+                                <td className="px-5 py-4">
+                                  {patient.Status ==="hospitalized"?(<Badge color="warning">{patient.Status}</Badge>):(<Badge color="success"></Badge>)}
+                                </td>
+                              </tr>
+                          ))
+                      )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl cozy-shadow border border-gray-100 overflow-hidden" ref={nurseRef}>
+                  <div className="p-5 border-b border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-gray-800">Nursing Staff</h3>
+                      <button className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                        View all
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="p-4 space-y-2 max-h-80 overflow-y-auto custom-scrollbar">
+                    {loadingNurses ? (
+                        <div className="flex flex-col items-center py-8 text-gray-400">
+                          <Loader2 className="w-5 h-5 animate-spin mb-2" />
+                          <p className="text-sm">Loading...</p>
+                        </div>
+                    ) : nurses.length === 0 ? (
+                        <div className="flex flex-col items-center py-8 text-gray-400">
+                          <Users className="w-5 h-5 mb-2" />
+                          <p className="text-sm">No nurses found</p>
+                        </div>
+                    ) : (
+                        nurses.map((nurse, index) => (
+                            <div
+                                key={nurse._id || index}
+                                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cozy-transition"
+                            >
+                              <img
+                                  src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=40&h=40&fit=crop&crop=face"
+                                  alt={nurse.firstName}
+                                  className="w-10 h-10 rounded-xl object-cover"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-gray-800 text-sm truncate">
+                                  {nurse.firstName} {nurse.lastName}
+                                </p>
+                                <p className="text-xs text-gray-500 truncate">{nurse.email}</p>
+                              </div>
+                              <span className="text-xs text-gray-400">
+                          {nurse.hireDate
+                              ? new Date(nurse.hireDate).getFullYear()
+                              : new Date().getFullYear()}
+                        </span>
+                            </div>
+                        ))
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Requests Section */}
+              <div className="mt-6 bg-white rounded-2xl cozy-shadow border border-gray-100 overflow-hidden">
+                <div className="p-5 border-b border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-gray-800">Recent Requests</h2>
+                    <button
+                        onClick={fetchRequests}
+                        className="flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      Refresh
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  {loadingRequests ? (
+                      <div className="flex flex-col items-center py-8 text-gray-400">
+                        <Loader2 className="w-5 h-5 animate-spin mb-2" />
+                        <p className="text-sm">Loading requests...</p>
+                      </div>
+                  ) : requests.length === 0 ? (
+                      <div className="flex flex-col items-center py-8 text-gray-400">
+                        <Inbox className="w-5 h-5 mb-2" />
+                        <p className="text-sm">No pending requests</p>
+                      </div>
+                  ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {requests.map((request, index) => (
+                            <div
+                                key={index}
+                                className="flex items-start gap-3 p-4 rounded-xl bg-gray-50/50 border border-gray-100 hover:border-gray-200 cozy-transition"
+                            >
+                              <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center flex-shrink-0">
+                                <FileText className="w-5 h-5 text-violet-600" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-2 mb-1">
+                                  <h4 className="text-sm font-medium text-gray-800 truncate">
+                                    {request.reason || request.itemName || "Request"}
+                                  </h4>
+                                  <span
+                                      className={`flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${
+                                          request.Status === "approved"
+                                              ? "bg-emerald-100 text-emerald-700"
+                                              : request.Status === "rejected"
+                                                  ? "bg-rose-100 text-rose-700"
+                                                  : "bg-amber-100 text-amber-700"
+                                      }`}
+                                  >
+                              {request.Status === "pending" ? (
+                                  <button
+                                      onClick={(e) => handleApprove(request._id, e)}
+                                      className="hover:underline"
+                                  >
+                                    Pending
+                                  </button>
+                              ) : (
+                                  request.Status || "Pending"
+                              )}
+                            </span>
+                                </div>
+                                {(request.quantity || request.urgency) && (
+                                    <p className="text-xs text-gray-500 mb-1">
+                                      {request.quantity && `Qty: ${request.quantity}`}
+                                      {request.quantity && request.urgency && " · "}
+                                      {request.urgency && `${request.urgency} priority`}
+                                    </p>
+                                )}
+                                {request.createdAt && (
+                                    <p className="text-xs text-gray-400">
+                                      {new Date(request.createdAt).toLocaleDateString()}
+                                    </p>
+                                )}
+                              </div>
+                            </div>
+                        ))}
+                      </div>
+                  )}
+                </div>
+              </div>
             </div>
-
-           
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">Role</label>
-              <select
-                className="px-4 py-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="">Select role</option>
-                <option name="nurse" value={role}>Nurse</option>
-                <option name="admin" value={role}>Admin</option>
-              </select>
-            </div>
-
-            
-            <button
-              type="submit"
-              disabled={adding}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition"
-            >
-              {adding===true? ("Creating nurse"):("Add nurse")}
-            </button>
-          </form>
+          </main>
         </div>
-      )}
 
-      <ToastContainer position="bottom-right" className="z-50" />
-    </div>
+        {/* Add Nurse Modal */}
+        {showForm && (
+            <div className="fixed inset-0 bg-rgba(0,0,0,0.5) backdrop-blur-3xl bg-opacity-50 flex items-center justify-center z-50 p-4 w-full">
+              <div className="bg-white rounded-2xl cozy-shadow-lg max-w-md w-full overflow-hidden">
+                <div className="flex items-center justify-between p-5 border-b border-gray-100">
+                  <h2 className="text-lg font-semibold text-gray-800">Create Account</h2>
+                  <button
+                      onClick={() => setShowForm(false)}
+                      className="p-2 rounded-xl hover:bg-gray-100 cozy-transition"
+                  >
+                    <X className="w-4 h-4 text-gray-500" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleAccount} className="p-5 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Username
+                    </label>
+                    <input
+                        type="text"
+                        placeholder="Enter username"
+                        value={nurseUsername}
+                        onChange={(e) => setNurseUsername(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white text-sm"
+                        required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Email
+                    </label>
+                    <input
+                        type="email"
+                        placeholder="example@clinic.com"
+                        value={em}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white text-sm"
+                        required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Password
+                    </label>
+                    <input
+                        type="password"
+                        placeholder=""
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white text-sm"
+                        required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Role
+                    </label>
+                    <select
+                        value={formRole}
+                        onChange={(e) => setFormRole(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white text-sm"
+                        required
+                    >
+                      <option value="">Select role</option>
+                      <option value="nurse">Nurse</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+
+                  <button
+                      type="submit"
+                      disabled={adding}
+                      className="w-full py-3 text-black font-medium rounded-xl hover:from-emerald-600 hover:to-teal-600 cozy-transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {adding ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Creating...
+                        </>
+                    ) : (
+                        "Create Account"
+                    )}
+                  </button>
+                </form>
+              </div>
+            </div>
+        )}
+
+      
+        {(showNotifications || showProfileMenu) && (
+            <div
+                className="fixed inset-0 z-30"
+                onClick={() => {
+                  setShowNotifications(false);
+                  setShowProfileMenu(false);
+                }}
+            />
+        )}
+
+        <ToastContainer
+            position="bottom-right"
+            toastClassName="!bg-white !text-gray-800 !rounded-xl !shadow-lg"
+        />
+      </div>
   );
 }

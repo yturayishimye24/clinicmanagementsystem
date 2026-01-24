@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
   },
   { timestamps: true }
 );
@@ -29,5 +30,5 @@ userSchema.methods.verifyPassword = function(enteredPassword){
 return bcrypt.compare(enteredPassword,this.password)
 
 }
-const User = mongoose.models.User || mongoose.model("User", userSchema);
-export default User;
+const Nurse = mongoose.models.Nurse || mongoose.model("User", userSchema);
+export default Nurse;

@@ -76,7 +76,7 @@ const LandingPage = () => {
         setLoading(false);
         return;
       }
-      const response = await axios.post(`${backendUrl}/api/users/login`, {
+      const response = await axios.post(`${backendUrl}/api/accounts/login`, {
         email,
         password,
       });
@@ -139,7 +139,7 @@ const LandingPage = () => {
     <div className="w-64 text-sm text-gray-500 dark:text-gray-400 z-99">
       <div className="border-b border-gray-200 bg-gray-100 px-3 py-2 dark:border-gray-600 dark:bg-gray-700">
         <h3 className="font-semibold text-gray-900 dark:text-white">
-          Contact Adminstrator
+          Contact Admin
         </h3>
       </div>
       <div className="px-3 py-2 z-99">
@@ -237,16 +237,18 @@ const LandingPage = () => {
       </nav>
 
       <main className="min-h-screen font-poppins">
-        <div
-          className="text-center bg-green-50 py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-white flex items-center justify-around"
-          ref={HomeRef}
-        >
+        <div ref={HomeRef} className="relative text-center bg-white py-12 sm:py-16 lg:py-20 px-4 sm:px-6 items-center justify-around  clip-path-[ellipse(85%_100%_at_50%_0%)]">
           <div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-poppins mb-4 sm:mb-6 text-gray-900 leading-tight">
               <p>Manage Patients</p>
-              <p><span className="bg-[#27d895] text-white">Better Communication</span></p>
+              <p>
+        <span className="bg-[#27d895] text-white px-2">
+          Better Communication
+        </span>
+              </p>
             </h1>
-            <p className="text-gray-600 text-sm sm:text-base md:text-lg lg:text-xl font-poppins max-w-3xl mx-auto mb-6 sm:mb-8 px-4 text-center">
+
+            <p className="text-gray-600 text-sm sm:text-base md:text-lg lg:text-xl font-poppins max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
               Join a community where every patient feels understood and receives
               <br />
               the desired service. Experience seamless healthcare management
@@ -254,15 +256,17 @@ const LandingPage = () => {
               <br />
               our comprehensive platform.
             </p>
+
             <button
-              onClick={openLoginModal}
-              className="px-6 sm:px-8 py-3 sm:py-4 bg-black text-black text-base sm:text-lg font-bold hover:bg-gray-50 transition-all hover:cursor-pointer rounded-xl sm:rounded-2xl shadow transition flex items-center gap-2 sm:gap-3 mx-auto"
+                onClick={openLoginModal}
+                className="bg-[#2fd033] text-white rounded-xl flex items-center justify-center p-3 gap-2 mx-auto"
             >
               Get started Now
-              <ArrowRight size={20} className="sm:w-[22px] sm:h-[22px]" />
+              <ArrowRight size={20} />
             </button>
           </div>
         </div>
+
 
         <div
           className="bg-fixed bg-cover bg-center w-full h-64 sm:h-80 md:h-96 lg:h-[500px] relative shadow-inner flex items-center justify-center"
@@ -570,7 +574,7 @@ const LandingPage = () => {
         </div>
       </main>
       {showLoginModal && (
-        <div className="fixed bg-[rgba(0,0,0,0.5)] backdrop-blur-3xl inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+        <div className="fixed bg-[rgba(0,0,0,0.5)] backdrop-blur-3xl inset-0  bg-opacity-60 flex justify-center items-center z-50">
           <div className="relative rounded-lg shadow-xl max-w-sm w-full mx-4 ">
             <button
               onClick={closeLoginModal}

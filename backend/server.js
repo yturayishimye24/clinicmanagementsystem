@@ -2,7 +2,7 @@ import express, { Router } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import { createServer } from "http";
-import userRouter from "./routes/userRoutes.js";
+import nurseRouter from "./routes/userRoutes.js";
 import connectDB from "./config/db.js";
 import addRouter from "./routes/addRoutes.js";
 import { seed } from "./userSeed.js";
@@ -46,7 +46,7 @@ app.use(express.json());
 app.post("/api/upload",upload.single('image'),(req,res)=>{
   res.json(req.file)
 })
-app.use("/api/users", userRouter);
+app.use("/api/accounts", nurseRouter);
 app.use("/api/patients", addRouter); 
 app.use("/api/requests", requestRouter);
 app.use("/api/infos",emailRouter)
@@ -79,7 +79,7 @@ io.on('connection', (socket) => {
   console.log("Socket connected:", socket.id, "user:", socket.user.username, socket.user.role);
   
  
-  if (socket.user.role === "admin") {
+  if (socket.nurse.role === "admin") {
     socket.join("admins");
     console.log(`${socket.user.username} joined admins room`);
   }
