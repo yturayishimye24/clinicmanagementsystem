@@ -12,28 +12,15 @@ import http from "http";
 import { Server } from "socket.io";
 import User from "./models/userModel.js";
 import emailRouter from "./routes/getEmail.js";
-import router from "./routes/verifyRoute.js"
-import reportRouter from "./routes/reportRoute.js"
+import router from "./routes/verifyRoute.js";
+import reportRouter from "./routes/reportRoute.js";
+import path from "path";
 
 dotenv.config();
 
 const port = process.env.PORT || 4000;
 const cors_origin = process.env.CORS_ORIGIN || "http://localhost:5173";
 const app = express();
-import path from "path"
-import multer from "multer"
-
-const storage = multer.diskStorage({
-  destination:(req,file,cb)=>{
-    cb(null,'images')
-  },
-  fileName:(req,file,cb)=>{
-    console.log(req.file)
-    cb(null, Date.now() + path.extname(file.originalname))
-  }
-}
-)
-const upload = multer({storage: storage})
 
 app.use(
   cors({
@@ -42,16 +29,15 @@ app.use(
 );
 
 app.use(express.json());
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
-app.post("/api/upload",upload.single('image'),(req,res)=>{
-  res.json(req.file)
-})
+
 app.use("/api/accounts", nurseRouter);
 app.use("/api/patients", addRouter); 
 app.use("/api/requests", requestRouter);
 app.use("/api/infos",emailRouter)
 app.use("/api/verify",router)
-app.use("api/report",reportRouter)
+app.use("/api/report",reportRouter)
 
 const server = http.createServer(app);
 export const io = new Server(server, {
@@ -79,7 +65,7 @@ io.on('connection', (socket) => {
   console.log("Socket connected:", socket.id, "user:", socket.user.username, socket.user.role);
   
  
-  if (socket.nurse.role === "admin") {
+  if (socket.user.role === "admin") {
     socket.join("admins");
     console.log(`${socket.user.username} joined admins room`);
   }

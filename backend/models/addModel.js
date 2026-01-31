@@ -17,11 +17,6 @@ const addSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-  maritalStatus: {
-    type: String,
-    enum: ["married", "single", "divorced", "widowed"],
-    required: true,
-  },
   disease: {
     type: String,
     required: true,
@@ -38,7 +33,7 @@ const addSchema = new mongoose.Schema({
     type: String,
     enum: ["active", "hospitalized", "released"],
   },
-  avatarUrl: { type: String, default: "" },
+  Image: { type: String, default: "" },
 });
 const addedPatient = mongoose.model("addedPatient", addSchema);
 export default addedPatient;

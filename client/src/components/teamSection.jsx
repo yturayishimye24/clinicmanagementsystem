@@ -28,7 +28,7 @@ const TeamSection = forwardRef((props, ref) => {
   sm:pt-10
 "
       >
-        <Card className="max-w-sm">
+        <Card className="sm:w-full md:w-full lg:w-1/3">
           <div className="flex justify-end px-4 pt-4">
             <Dropdown inline label="">
               <DropdownItem>
@@ -84,7 +84,7 @@ const TeamSection = forwardRef((props, ref) => {
             </div>
           </div>
         </Card>
-        <Card className="max-w-sm">
+        <Card className="sm:w-full md:w-full lg:w-1/3">
           <div className="flex justify-end px-4 pt-4">
             <Dropdown inline label="">
               <DropdownItem>
@@ -140,7 +140,7 @@ const TeamSection = forwardRef((props, ref) => {
             </div>
           </div>
         </Card>
-        <Card className="max-w-sm">
+        <Card className="sm:w-full md:w-full lg:w-1/3">
           <div className="flex justify-end px-4 pt-4">
             <Dropdown inline label="">
               <DropdownItem>

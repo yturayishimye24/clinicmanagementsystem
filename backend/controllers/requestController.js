@@ -48,6 +48,7 @@ export const createRequests = async (req, res) => {
       Status: Status || "pending",
     });
     const savedRequest = await createdRequest.save();
+    io.to("admins").emit("requestCreated",savedRequest);
     res.status(201).json({ success: true, request: savedRequest });
   } catch (error) {
     res
@@ -61,9 +62,9 @@ export const removeRequests = async (req, res) => {
     const { id } = req.params;
     const deletedRequest = await request.findByIdAndDelete(id);
     if (!deletedRequest) {
-      res.status(501).json({ message: "Deleting user throwing error" });
+      res.status(501).json({ success:false, message: "Deleting user throwing error" });
     } else {
-      res.status(200).json({ message: "Request deletion successfull!" });
+      res.status(200).json({ success:true, message: "Request deletion successfull!" });
     }
   } catch (error) {
     console.log("Error getting requests", error.message);
@@ -103,19 +104,22 @@ export const approveRequests = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const request = await request.findById(id);
-    if (!request) {
-      res.status(404).json({ message: "Request not found!" });
+    const reqDoc = await request.findById(id);
+    if (!reqDoc) {
+      return res.status(404).json({ message: "Request not found!" });
     }
 
-    if (request.approved) {
-      throw error("Already approved!");
+    if (reqDoc.Status === "approved") {
+      return res.status(400).json({ message: "Already approved!" });
     }
-    request.Status = "Approved";
-    await request.save();
-    res.status(200).json({ message: "Request approved!" }, request);
+
+    reqDoc.Status = "approved";
+    await reqDoc.save();
+
+    res.status(200).json({ success: true, message: "Request approved!", request: reqDoc });
   } catch (error) {
-    console.log("Error approving request");
+    console.error("Error approving request:", error);
     res.status(500).json({ message: "Error approving request" });
   }
 };
+

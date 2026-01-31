@@ -39,18 +39,17 @@ export const createPatient = async (req, res) => {
       lastName,
       gender,
       date,
-      maritalStatus,
       disease,
-      avatarUrl,
     } = req.body;
+    const Image=req.file;
 
     if (
       !firstName ||
       !lastName ||
       !gender ||
       !date ||
-      !maritalStatus ||
-      !disease
+      !disease||
+      !req.file
     ) {
       return res
         .status(400)
@@ -62,15 +61,14 @@ export const createPatient = async (req, res) => {
       lastName,
       gender,
       date: new Date(date).getTime(),
-      maritalStatus,
       disease,
-      avatarUrl,
+      Image:req.file ? `/uploads/${req.file.filename}` : null,
       createdBy: req.user._id,
     });
     
     const payload = await addedPatient.findById(createdPatient.id).populate("createdBy","username role")
 
-    io.to("admins").emit("newPatient",payload);
+    io.to("admins").emit("patientCreated",payload);
     
     res.status(201).json({patient: payload});
 
@@ -99,7 +97,7 @@ export const updatePatient = async (req, res) => {
   try{
   const{firstName,lastName,gender,date,maritalStatus,disease}=req.body;
   const updatedPatient = await addedPatient.findByIdAndUpdate(req.params.id,{
-    firstName,lastName,date,gender,maritalStatus,disease,
+    firstName,lastName,date,gender,disease,
   },{new:true})
   if(!updatedPatient){
     console.log("Error updating")
