@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Button, Spinner } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "flowbite-react";
 import {
   Bell,
   Calendar,
   FileText,
+  Flag,
   X,
   Users,
   Inbox,
@@ -62,6 +64,10 @@ export default function NursePage() {
   const [disease, setDisease] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [formError, setFormError] = useState("");
+  const [reportTitle, setReportTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [conclusion, setConclusion] = useState("");
+  const [reporting, setReporting] = useState(false);
 
   // Request form state
   const [requestType, setRequestType] = useState("Medicine Request");
@@ -75,6 +81,7 @@ export default function NursePage() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [role, setRole] = useState("");
+  const [reportForm, ShowReportForm] = useState(false);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -83,8 +90,6 @@ export default function NursePage() {
 
   // Add maritalStatus state
   const [maritalStatus, setMaritalStatus] = useState("");
-
-  
 
   const fetchPatients = async () => {
     try {
@@ -124,6 +129,30 @@ export default function NursePage() {
     }
   }, [navigate]);
 
+  const Report = async (e) => {
+    e.preventDefault();
+    setReporting(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        "http://localhost:4000/api/report/create_report",
+        {
+          title,
+          body,
+          conclusion,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+    } catch (error) {
+      console.log(error);
+      toast.error(
+        "Failed to generate report. Please try again.",
+        error.response || error.data.message,
+      );
+    }
+  };
   const handleHospitalize = async (patientId) => {
     if (!window.confirm("Hospitalize this patient?")) return;
 
@@ -185,24 +214,30 @@ export default function NursePage() {
       setMyRequests([]);
     }
   };
-  const handleDeleteRequest = async(requestId,e)=>{
+  const handleDeleteRequest = async (requestId, e) => {
     e.preventDefault();
-    if(!window.confirm("Are you sure you want to delete this request?")) return;
-    try{
-    const token = localStorage.getItem("token");
-    const response = await axios.delete(`https://localhost:4000/api/requests/removeRequests/${requestId}`,{
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    if(response.data.success){
-      const updatedRequests = myRequests.filter((request) => request._id !== requestId);
-      setMyRequests(updatedRequests);
-      toast.success("Request deleted successfully!");
-    }
-    }catch(error){
+    if (!window.confirm("Are you sure you want to delete this request?"))
+      return;
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.delete(
+        `http://localhost:4000/api/requests/removeRequests/${requestId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      if (response.data.success) {
+        const updatedRequests = myRequests.filter(
+          (request) => request._id !== requestId,
+        );
+        setMyRequests(updatedRequests);
+        toast.success("Request deleted successfully!");
+      }
+    } catch (error) {
       console.log(error);
       toast.error(error.message);
     }
-  }
+  };
   const handleDelete = async (patientId) => {
     if (!window.confirm("Are you sure you want to delete this patient?"))
       return;
@@ -252,7 +287,7 @@ export default function NursePage() {
     e.preventDefault();
     setFormError("");
     setLoading(true);
-    
+
     try {
       const token = localStorage.getItem("token");
       const patientData = {
@@ -293,8 +328,8 @@ export default function NursePage() {
           {
             headers: {
               Authorization: `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data'
-            }
+              "Content-Type": "multipart/form-data",
+            },
           },
         );
         setPatients((prev) => [...prev, response.data.patient]);
@@ -383,7 +418,14 @@ export default function NursePage() {
   //   setNotifications(notifications.map((notif) => ({ ...notif, read: true })));
   //   toast.success("All notifications marked as read");
   // };
-
+  const filteredPatients = patients.filter((patient)=> {
+    const userFullName = `${patient.firstName} ${patient.lastName}`.toLowerCase();
+    const disease= patient.disease.toLowerCase();
+    return (
+      userFullName.includes(searchTerm.toLowerCase()) ||
+      disease.includes(searchTerm.toLowerCase())
+    );
+  });
   const sidebarItems = [
     { icon: Home, label: "Dashboard", href: "#" },
     { icon: Users, label: "Patients", href: "#" },
@@ -451,7 +493,7 @@ export default function NursePage() {
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-100 cozy-shadow">
         <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-around h-16">
             {/* Logo */}
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center">
@@ -463,7 +505,7 @@ export default function NursePage() {
             </div>
 
             <div className="flex items-center gap-3">
-{/*             
+              {/*             
               <div className="relative">
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
@@ -576,7 +618,7 @@ export default function NursePage() {
                       {localStorage.getItem("name") || username || "Nurse"}
                     </p>
                     <p className="text-xs text-gray-400">
-                      {email || "nurse@clinic.com"}
+                      {localStorage.getItem("email") || "nurse@clinic.com"}
                     </p>
                   </div>
                 </button>
@@ -672,7 +714,7 @@ export default function NursePage() {
             <div className="mb-8">
               <h1 className="text-2xl font-bold text-gray-800">
                 Welcome back,{" "}
-                {localStorage.getItem("name") || username || "Nurse"} 👩‍⚕️
+                {localStorage.getItem("name") || username || "Nurse"} 👩‍⚕️  
               </h1>
               <p className="text-gray-500 mt-1">
                 Manage patient records and medical requests efficiently.
@@ -683,106 +725,23 @@ export default function NursePage() {
               <h1 className="text-bold font-Poppins text-3xl ">Actions</h1>
               <div className="flex itemsp-center mb-10 mt-5 flex-start gap-3">
                 <button
-                  class="group relative flex flex-row items-center bg-[#212121] justify-center gap-2 rounded-2xl px-4 py-1.5 text-sm font-medium shadow-[inset_0_-8px_10px_#8fdfff1f] transition-shadow duration-500 ease-out hover:shadow-[inset_0_-5px_10px_#8fdfff3f]"
+                  className="btn btn-soft btn-secondary"
                   onClick={() => setShowRequestForm(true)}
-                >
-                  <div class="absolute inset-0 block h-full w-full animate-gradient bg-gradient-to-r from-[#ffaa40]/50 via-[#9c40ff]/50 to-[#ffaa40]/50 bg-[length:var(--bg-size)_100%] [border-radius:inherit] [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] p-[1px] ![mask-composite:subtract]"></div>
-                  <svg
-                    class="size-4 text-[#ffaa40]"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 15 15"
-                    height="15"
-                    width="15"
-                  >
-                    <path
-                      clip-rule="evenodd"
-                      fill-rule="evenodd"
-                      fill="currentColor"
-                      d="M5 4.63601C5 3.76031 5.24219 3.1054 5.64323 2.67357C6.03934 2.24705 6.64582 1.9783 7.5014 1.9783C8.35745 1.9783 8.96306 2.24652 9.35823 2.67208C9.75838 3.10299 10 3.75708 10 4.63325V5.99999H5V4.63601ZM4 5.99999V4.63601C4 3.58148 4.29339 2.65754 4.91049 1.99307C5.53252 1.32329 6.42675 0.978302 7.5014 0.978302C8.57583 0.978302 9.46952 1.32233 10.091 1.99162C10.7076 2.65557 11 3.57896 11 4.63325V5.99999H12C12.5523 5.99999 13 6.44771 13 6.99999V13C13 13.5523 12.5523 14 12 14H3C2.44772 14 2 13.5523 2 13V6.99999C2 6.44771 2.44772 5.99999 3 5.99999H4ZM3 6.99999H12V13H3V6.99999Z"
-                    ></path>
-                  </svg>
-                  <div
-                    class="shrink-0 bg-border w-[1px] h-4"
-                    role="none"
-                    data-orientation="vertical"
-                  ></div>
-                  <span class="inline animate-gradient whitespace-pre bg-gradient-to-r from-[#ffaa40] via-[#9c40ff] to-[#ffaa40] bg-[length:var(--bg-size)_100%] bg-clip-text text-transparent [--bg-size:300%] text-center">
-                    Make a request
-                  </span>
-                  <svg
-                    stroke-linecap="round"
-                    class="text-[#9c40ff]"
-                    stroke-width="1.5"
-                    aria-hidden="true"
-                    viewBox="0 0 10 10"
-                    height="11"
-                    width="11"
-                    stroke="currentColor"
-                    fill="none"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      d="M0 5h7"
-                      class="opacity-0 transition group-hover:opacity-100"
-                    ></path>
-                    <path
-                      stroke-linecap="round"
-                      d="M1 1l4 4-4 4"
-                      class="transition group-hover:translate-x-[3px]"
-                    ></path>
-                  </svg>
+                > 
+                  Make request <Plus />
                 </button>
                 <button
-                  class="group relative flex flex-row items-center bg-[#212121] justify-center gap-2 rounded-2xl px-4 py-1.5 text-sm font-medium shadow-[inset_0_-8px_10px_#8fdfff1f] transition-shadow duration-500 ease-out hover:shadow-[inset_0_-5px_10px_#8fdfff3f]"
+                  className="btn btn-soft btn-primary"
                   onClick={() => setShowForm(true)}
                 >
-                  <div class="absolute inset-0 block h-full w-full animate-gradient bg-gradient-to-r from-[#ffaa40]/50 via-[#9c40ff]/50 to-[#ffaa40]/50 bg-[length:var(--bg-size)_100%] [border-radius:inherit] [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] p-[1px] ![mask-composite:subtract]"></div>
-                  <svg
-                    class="size-4 text-[#ffaa40]"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 15 15"
-                    height="15"
-                    width="15"
-                  >
-                    <path
-                      clip-rule="evenodd"
-                      fill-rule="evenodd"
-                      fill="currentColor"
-                      d="M5 4.63601C5 3.76031 5.24219 3.1054 5.64323 2.67357C6.03934 2.24705 6.64582 1.9783 7.5014 1.9783C8.35745 1.9783 8.96306 2.24652 9.35823 2.67208C9.75838 3.10299 10 3.75708 10 4.63325V5.99999H5V4.63601ZM4 5.99999V4.63601C4 3.58148 4.29339 2.65754 4.91049 1.99307C5.53252 1.32329 6.42675 0.978302 7.5014 0.978302C8.57583 0.978302 9.46952 1.32233 10.091 1.99162C10.7076 2.65557 11 3.57896 11 4.63325V5.99999H12C12.5523 5.99999 13 6.44771 13 6.99999V13C13 13.5523 12.5523 14 12 14H3C2.44772 14 2 13.5523 2 13V6.99999C2 6.44771 2.44772 5.99999 3 5.99999H4ZM3 6.99999H12V13H3V6.99999Z"
-                    ></path>
-                  </svg>
-                  <div
-                    class="shrink-0 bg-border w-[1px] h-4"
-                    role="none"
-                    data-orientation="vertical"
-                  ></div>
-                  <span class="inline animate-gradient whitespace-pre bg-gradient-to-r from-[#ffaa40] via-[#9c40ff] to-[#ffaa40] bg-[length:var(--bg-size)_100%] bg-clip-text text-transparent [--bg-size:300%] text-center">
-                    Add New Patient
-                  </span>
-                  <svg
-                    stroke-linecap="round"
-                    class="text-[#9c40ff]"
-                    stroke-width="1.5"
-                    aria-hidden="true"
-                    viewBox="0 0 10 10"
-                    height="11"
-                    width="11"
-                    stroke="currentColor"
-                    fill="none"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      d="M0 5h7"
-                      class="opacity-0 transition group-hover:opacity-100"
-                    ></path>
-                    <path
-                      stroke-linecap="round"
-                      d="M1 1l4 4-4 4"
-                      class="transition group-hover:translate-x-[3px]"
-                    ></path>
-                  </svg>
+                  Add New Patient
+                  <Plus />{" "}
+                </button>
+                <button
+                  className="btn btn-outline btn-accent"
+                  onClick={() => ShowReportForm(true)}
+                >
+                  Report <Flag />
                 </button>
               </div>
             </div>
@@ -892,7 +851,7 @@ export default function NursePage() {
                           </td>
                         </tr>
                       ) : (
-                        patients.slice(0, 8).map((patient) => (
+                        filteredPatients.slice(0,8).map((patient) => (
                           <tr
                             key={patient._id}
                             className="hover:bg-gray-50/50 cozy-transition"
@@ -900,7 +859,6 @@ export default function NursePage() {
                             <td className="px-5 py-4">
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-black bg-blue-50 font-bold">
-                                  
                                   {patient.patientImage}
                                 </div>
                                 <div>
@@ -1001,12 +959,15 @@ export default function NursePage() {
                                   : "bg-amber-100 text-amber-700"
                             }`}
                           >
-                            <Badge color={request.Status === "approved"
-                                ? "success"
-                                : request.Status === "rejected"
-                                  ? "danger"
-                                  : "warning"
-                            }>
+                            <Badge
+                              color={
+                                request.Status === "approved"
+                                  ? "success"
+                                  : request.Status === "rejected"
+                                    ? "danger"
+                                    : "warning"
+                              }
+                            >
                               {request.Status}
                             </Badge>
                           </span>
@@ -1017,11 +978,16 @@ export default function NursePage() {
                         <div className="flex justify-between text-xs text-gray-400">
                           <div className="flex flex-col gap-1">
                             <span>Qty: {request.quantity}</span>
-                          <span>Urg: {request.urgency}</span>
+                            <span>Urg: {request.urgency}</span>
                           </div>
                           <div>
-                            <Trash2 className="w-4 h-4 text-red-500 cursor-pointer hover:text-red-700" onClick={(e)=>handleDeleteRequest(request._id,e)} />
-                            </div>
+                            <Trash2
+                              className="w-4 h-4 text-red-500 cursor-pointer hover:text-red-700"
+                              onClick={(e) =>
+                                handleDeleteRequest(request._id, e)
+                              }
+                            />
+                          </div>
                         </div>
                       </div>
                     ))
@@ -1033,6 +999,140 @@ export default function NursePage() {
         </main>
       </div>
 
+      {reportForm && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 bg-opacity-50 backdrop-blur-sm z-50">
+          <div className="w-full animation-formEnter max-w-lg bg-white rounded-sm shadow-2xl p-6 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-semibold text-gray-800">
+                Make overall report
+              </h2>
+
+              <button
+                onClick={() => ShowReportForm(false)}
+                className="p-2 rounded-full hover:bg-gray-100 transition"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form className="space-y-4" onSubmit={(e) => Report(e)}>
+              <div>
+                <div className="flex  flex-col justify-around gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">
+                      Title
+                    </label>
+                    <input
+                      type="text"
+                      value={reportTitle}
+                      name="title"
+                      onChange={(e) => setReportTitle(e.target.value)}
+                      placeholder="Enter title..."
+                      className="mt-1 w-full rounded-xl border border-gray-200 p-3 outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">
+                      Body
+                    </label>
+                    <textarea
+                      rows={5}
+                      name="body"
+                      value={body}
+                      onChange={(e) => setBody(e.target.value)}
+                      placeholder="Write something..."
+                      className="mt-1 w-full rounded-xl border border-gray-200 p-3 outline-none focus:ring-2 focus:ring-emerald-500 resize-none transition"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">
+                    Conclusion
+                  </label>
+                  <textarea
+                    rows={5}
+                    name="conclusion"
+                    value={conclusion}
+                    onChange={(e) => setConclusion(e.target.value)}
+                    placeholder="Conclusion ..."
+                    className="mt-1 w-full rounded-xl border border-gray-200 p-3 outline-none focus:ring-2 focus:ring-emerald-500 resize-none transition"
+                  />
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => ShowReportForm(false)}
+                  className="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-100 transition"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  class="group inline-flex items-center gap-3
+         bg-black text-white font-semibold
+         px-6 py-3 pl-5
+         rounded-full whitespace-nowrap overflow-hidden
+         transition-colors duration-300
+         hover:bg-white hover:text-black"
+                >
+                  <span
+                    class="relative flex-shrink-0
+           w-[25px] h-[25px]
+           grid place-items-center
+           rounded-full
+           bg-white text-black
+           overflow-hidden
+           transition-colors duration-300
+           group-hover:bg-black group-hover:text-white"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="button1__icon-svg absolute w-4 h-4
+             transition-transform duration-300 ease-in-out
+             group-hover:translate-x-[150%] group-hover:-translate-y-[150%]"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 5v14M5 12h14"
+                      />
+                    </svg>
+
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="absolute w-4 h-4
+             translate-x-[-150%] translate-y-[150%]
+             transition-transform duration-300 ease-in-out delay-100
+             group-hover:translate-x-0 group-hover:translate-y-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 5v14M5 12h14"
+                      />
+                    </svg>
+                  </span>
+
+                  <span>Submit Report</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {/* Patient Form Modal with Blur Effect */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop-blur">
@@ -1433,15 +1533,13 @@ export default function NursePage() {
 
                   <span>Add New</span>
                 </button>
-                
               </div>
             </form>
           </div>
         </div>
       )}
 
-     
-      {(showProfileMenu) && (
+      {showProfileMenu && (
         <div
           className="fixed inset-0 z-30"
           onClick={() => {

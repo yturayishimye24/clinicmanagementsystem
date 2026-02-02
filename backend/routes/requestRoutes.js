@@ -1,10 +1,11 @@
 import express from "express"
 import {getRequests,createRequests,removeRequests,changeRequests,approveRequests} from "../controllers/requestController.js"
+import { autheticate } from "../middlewares/autheticateToken.js"
 const requestRouter = express.Router();
 
 requestRouter.get("/showRequests",getRequests)
-requestRouter.post("/createRequests",createRequests)
-requestRouter.delete("/removeRequests/:id",removeRequests)
-requestRouter.put("/changeRequests/:id",changeRequests)
-requestRouter.patch("/approve/:id",approveRequests)
+requestRouter.post("/createRequests",autheticate,createRequests)
+requestRouter.delete("/removeRequests/:id",autheticate,removeRequests)
+requestRouter.put("/changeRequests/:id",autheticate,changeRequests)
+requestRouter.patch("/approve/:id",autheticate,approveRequests)
 export default requestRouter;

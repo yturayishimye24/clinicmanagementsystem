@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import Nurse from "../models/userModel.js";
 import dotenv from "dotenv";
+import {io} from "../server.js"
 
 dotenv.config();
 const userToken = (id, role) => {
@@ -27,6 +28,7 @@ export const loginController = async (req, res) => {
         token,
         username: user.username,
         role: user.role,
+        image: user.image,
       });
     } else {
       res.json({ success: false, message: "Incorrect password" });
@@ -66,6 +68,7 @@ export const signupController = async (req, res) => {
       password: hashedPassword,
     });
     const user = await newUser.save();
+    io.to("admins").emit("newNurse",user);
     const token = userToken(user._id, user.role);
     
     res.json({
@@ -75,6 +78,7 @@ export const signupController = async (req, res) => {
       username: user.username,
       password:user.password,
       role: user.role,
+      image: user.image,
     });
   } catch (error) {
     console.log("Error registering", error);
@@ -88,9 +92,50 @@ export const getNurses = async (req, res) => {
     if (!nurses || nurses.length === 0) {
       return res.status(404).json({ success: false, message: "No nurses Found" });
     }
-    res.status(200).json({ success: true, nurses });
+    const nurseEmails = nurses.map(nurse => nurse.email);
+    const userName = nurses.map(nurse => nurse.username);
+    const role = nurses.map(nurse => nurse.role);
+    const hireDate= nurses.map(nurse => nurse.hireDate)
+    res.status(200).json({ success: true,nurses,hireDate, emails: nurseEmails, usernames: userName, roles: role });
   } catch (error) {
     console.log("Error getting nurses", error.message);
     res.status(500).json({ success: false, message: error.message || "Error getting nurses" });
+};
+};
+
+export const deleteNurses = async (req, res) =>{
+  const {id}=req.params;
+  try{
+ const deletedNurse = await Nurse.findByIdAndDelete(id);
+ if(!deletedNurse){
+  return res.status(404).json({success:false,message:"Nurse not found!"})
+ }
+ io.to("admins").emit("nurseDeleted",id);
+ res.status(200).json({success:true,message:"Nurse deleted successfully!"});
+  }catch(error){
+    console.log("Error deleting nurse", error.message);
+    res.status(500).json({ success: false, message: error.message
+      || "Error deleting Nurse!"
+    })
+  }
+}
+
+export const getCurrentUser = async (req, res) => {
+  try {
+    const userId = req.user.id; // from autheticate middleware
+    const user = await Nurse.findById(userId).select('email username role image');
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.status(200).json({
+      success: true,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+      image: user.image
+    });
+  } catch (error) {
+    console.log("Error getting current user", error.message);
+    res.status(500).json({ success: false, message: error.message || "Error getting user" });
   }
 };

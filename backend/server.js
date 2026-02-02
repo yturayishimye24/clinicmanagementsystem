@@ -1,7 +1,6 @@
 import express, { Router } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { createServer } from "http";
 import nurseRouter from "./routes/userRoutes.js";
 import connectDB from "./config/db.js";
 import addRouter from "./routes/addRoutes.js";

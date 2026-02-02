@@ -21,7 +21,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    hireDate:{
+      type: Date,
 
+    },
+    image: {
+      type: String,
+      default: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
+    },
   },
   { timestamps: true }
 );

@@ -7,7 +7,7 @@ const requestSchema = new mongoose.Schema({
   },
   requestType: {
     type: String,
-    enum: ["Medicine Request", "Equipment Request"],
+    enum: ["Medicine Request", "Equipment Request", "Supply Request", "Blood Request", "Lab Test Request"],
     required: true,
   },
   quantity: {
@@ -36,7 +36,7 @@ const requestSchema = new mongoose.Schema({
   },
   createdBy:{
     type:mongoose.Schema.Types.ObjectId,
-    ref: "Nurse",
+    ref: "User",
   }
 });
 

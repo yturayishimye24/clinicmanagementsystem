@@ -47,6 +47,7 @@ const LoginPage = () => {
           setGoingBack(true);
           localStorage.setItem("token", response.data.token);
           localStorage.setItem("name", response.data.username);
+          localStorage.setItem("image", response.data.image);
           toast.success(response.data.message);
           setTimeout(navigate("/home"), 1000);
         } else {
@@ -64,10 +65,11 @@ const LoginPage = () => {
         });
 
         if (response.data.success) {
-          
+
           setTimeout(setLoading(true), 2000);
           localStorage.setItem("token", response.data.token);
           localStorage.setItem("name", response.data.username);
+          localStorage.setItem("image", response.data.image);
           toast.success("Login successfully!");
           setTimeout(() => navigate("/home"), 100);
         } else {

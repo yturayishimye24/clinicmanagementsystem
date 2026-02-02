@@ -1,8 +1,9 @@
 import request from "../models/requestModel.js";
+import {io} from "../server.js"
 
 export const getRequests = async (req, res) => {
   try {
-    const requests = await request.find().sort({ createdAt: -1 }).populate("createdBy","name");
+    const requests = await request.find().sort({ createdAt: -1 }).populate("createdBy","username");
     if (!requests || requests.length === 0) {
       res.status(404).json({ success: false, message: "Requests not Found!" });
     } else {
@@ -28,10 +29,10 @@ export const createRequests = async (req, res) => {
     if (
       !requestType ||
       !itemName ||
-      !patientCount ||
+      patientCount === null ||
+      patientCount === undefined ||
       !reason ||
       !urgency ||
-      !Status ||
       !quantity
     ) {
       return res
@@ -46,6 +47,7 @@ export const createRequests = async (req, res) => {
       reason,
       urgency,
       Status: Status || "pending",
+      createdBy: req.user.id,
     });
     const savedRequest = await createdRequest.save();
     io.to("admins").emit("requestCreated",savedRequest);
@@ -64,6 +66,7 @@ export const removeRequests = async (req, res) => {
     if (!deletedRequest) {
       res.status(501).json({ success:false, message: "Deleting user throwing error" });
     } else {
+      io.to("admins").emit("requestDeleted",id);
       res.status(200).json({ success:true, message: "Request deletion successfull!" });
     }
   } catch (error) {
@@ -91,6 +94,7 @@ export const changeRequests = async (req, res) => {
     if (!changedRequest) {
       res.status(501).json({ message: "Failed to change Request" });
     } else {
+      io.to("admins").emit("requestChanged",changedRequest);
       res
         .status(200)
         .json({ success: true, message: "Request Updated successfully!" });
@@ -115,7 +119,8 @@ export const approveRequests = async (req, res) => {
 
     reqDoc.Status = "approved";
     await reqDoc.save();
-
+     io.to("admins").emit("requestApproved",reqDoc);
+     io.to("nurses").emit("requestApproved",reqDoc);
     res.status(200).json({ success: true, message: "Request approved!", request: reqDoc });
   } catch (error) {
     console.error("Error approving request:", error);

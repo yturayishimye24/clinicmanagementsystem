@@ -1,6 +1,6 @@
 import * as React from "react";
 import LoginPage from "./pages/LoginPage.jsx";
-import { ToastContainer} from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 import CreatePage from "./pages/CreatePage.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
@@ -11,34 +11,35 @@ import "flowbite";
 import PrivateRoutes from "./utils/PrivateRoutes.jsx";
 import RoleBasedRoutes from "./utils/RoleBasedRoutes.jsx";
 
-
 export const backendUrl = "http://localhost:4000";
 const App = () => {
   return (
-    
+    <AuthContext>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/home" element={<CreatePage />}>
+            <Route index element={<CreatePage />} />{" "}
+            <Route path="patients" element={<PatientsList />} />
+            <Route path="requests" element={<RequestsList />} />
+            <Route path="reports" element={<ReportsList />} />
+          </Route>
 
-        <AuthContext>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/home" element={<CreatePage />} />
-              <Route
-                path="/home/admin"
-                element={
-                  <PrivateRoutes>
-                    <RoleBasedRoutes requiredRole={["admin"]}>
-                      <AdminPage />
-                    </RoleBasedRoutes>
-                  </PrivateRoutes>
-                }
-              />
-            </Routes>
-            <ToastContainer containerStyle={{ zIndex: 99999 }} />
-          </BrowserRouter>
-        </AuthContext>
-
-  
+          <Route
+            path="/home/admin"
+            element={
+              <PrivateRoutes>
+                <RoleBasedRoutes requiredRole={["admin"]}>
+                  <AdminPage />
+                </RoleBasedRoutes>
+              </PrivateRoutes>
+            }
+          />
+        </Routes>
+        <ToastContainer containerStyle={{ zIndex: 99999 }} />
+      </BrowserRouter>
+    </AuthContext>
   );
 };
 

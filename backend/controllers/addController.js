@@ -60,9 +60,10 @@ export const createPatient = async (req, res) => {
       firstName,
       lastName,
       gender,
-      date: new Date(date).getTime(),
+      date: new Date(date),
       disease,
-      Image:req.file ? `/uploads/${req.file.filename}` : null,
+      Image: req.file ? `/uploads/${req.file.filename}` : null,
+      // store the creator's ObjectId so populate() works correctly
       createdBy: req.user._id,
     });
     

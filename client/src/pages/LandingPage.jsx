@@ -9,7 +9,19 @@ import {
   TextInput,
 } from "flowbite-react";
 
-import { Activity, Phone, ArrowRight, Check, X, TrendingUp, Users, FileText, Trash2, BarChart3, Package } from "lucide-react";
+import {
+  Activity,
+  Phone,
+  ArrowRight,
+  Check,
+  X,
+  TrendingUp,
+  Users,
+  FileText,
+  Trash2,
+  BarChart3,
+  Package,
+} from "lucide-react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -83,6 +95,7 @@ const LandingPage = () => {
       if (response.data.success) {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("name", response.data.username);
+        localStorage.setItem("email", response.data.email);
         localStorage.setItem("role", response.data.role);
         const userData = {
           username: response.data.username,
@@ -108,7 +121,7 @@ const LandingPage = () => {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === "Escape" && showLoginModal) {
@@ -119,15 +132,13 @@ const LandingPage = () => {
     return () => document.removeEventListener("keydown", handleEscape);
   }, [showLoginModal]);
 
- 
-
   const services = [
-    { name: "Recording patients", icon: Users},
-    { name: "Requesting medicines from Lab", icon: Package},
-    { name: "Updating patient's infos", icon: FileText},
+    { name: "Recording patients", icon: Users },
+    { name: "Requesting medicines from Lab", icon: Package },
+    { name: "Updating patient's infos", icon: FileText },
     { name: "Deleting patient records", icon: Trash2 },
-    { name: "Reporting", icon: BarChart3},
-    { name: "Statistics", icon: TrendingUp},
+    { name: "Reporting", icon: BarChart3 },
+    { name: "Statistics", icon: TrendingUp },
   ];
 
   return (
@@ -136,7 +147,7 @@ const LandingPage = () => {
         <nav
           className="mx-auto mt-6 max-w-6xl
                backdrop-blur-lg
-               bg-gradient-to-r from-blue-100/70 via-blue-50/70 to-white/60
+              
                border border-white/40
                rounded-full shadow-md
                px-6 py-2.5
@@ -157,7 +168,10 @@ const LandingPage = () => {
 
           {/* Nav */}
           <ul className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-700">
-            <li onClick={goToHome} className="hover:text-black cursor-pointer transition-colors">
+            <li
+              onClick={goToHome}
+              className="hover:text-black cursor-pointer transition-colors"
+            >
               Home
             </li>
             <li
@@ -202,8 +216,14 @@ const LandingPage = () => {
         >
           {/* Decorative blurs */}
           <div className="absolute top-24 left-24 w-32 h-32 bg-blue-300 rounded-full blur-3xl opacity-40 animate-pulse"></div>
-          <div className="absolute top-40 right-32 w-36 h-36 bg-green-300 rounded-full blur-3xl opacity-40 animate-pulse" style={{animationDelay: '1s'}}></div>
-          <div className="absolute bottom-16 left-1/3 w-28 h-28 bg-purple-300 rounded-full blur-3xl opacity-30 animate-pulse" style={{animationDelay: '2s'}}></div>
+          <div
+            className="absolute top-40 right-32 w-36 h-36 bg-green-300 rounded-full blur-3xl opacity-40 animate-pulse"
+            style={{ animationDelay: "1s" }}
+          ></div>
+          <div
+            className="absolute bottom-16 left-1/3 w-28 h-28 bg-purple-300 rounded-full blur-3xl opacity-30 animate-pulse"
+            style={{ animationDelay: "2s" }}
+          ></div>
 
           <div className="flex justify-center items-center gap-10 lg:gap-20 pt-[100px]">
             <div className="pt-20 z-10 max-w-4xl mx-auto">
@@ -215,50 +235,74 @@ const LandingPage = () => {
               </h1>
 
               <p className="text-gray-600 text-base sm:text-lg md:text-xl max-w-3xl mx-auto mb-10">
-                Join a community where every patient feels understood and receives
-                the desired service. Experience seamless healthcare management
-                with our comprehensive platform.
+                Join a community where every patient feels understood and
+                receives the desired service. Experience seamless healthcare
+                management with our comprehensive platform.
               </p>
 
-             <div className="group relative inline-block rounded-2xl p-[2px] overflow-hidden">
-  {/* Rotating gradient border */}
-  <div
-    className="
-      absolute inset-0 rounded-2xl
-      opacity-0 group-hover:opacity-100
-      transition-opacity duration-300
-      animate-[spin_4s_linear_infinite]
-      bg-[conic-gradient(from_0deg,_#4285F4,_#EA4335,_#FBBC05,_#34A853,_#4285F4)]
-    "
-  ></div>
+             
 
-  {/* Actual button */}
-  <button
-    onClick={openLoginModal}
-    className="
-      relative z-10 flex items-center gap-3
-      bg-black text-white
-      px-8 py-4 rounded-2xl
-      text-lg font-semibold
-      hover:bg-gray-900 transition-all
-      shadow-lg hover:shadow-xl
-    "
-  >
-    <span>Get Started Now</span>
+          
+                
+           <button
+                  onClick={openLoginModal}
+                  type="submit"
+                  class="group inline-flex items-center gap-3
+         bg-black text-white font-semibold
+         px-6 py-3 pl-5
+         rounded-full whitespace-nowrap overflow-hidden
+         transition-colors duration-300
+         hover:bg-white hover:text-black"
+                >
+                  <span
+                    class="relative flex-shrink-0
+           w-[25px] h-[25px]
+           grid place-items-center
+           rounded-full
+           bg-white text-black
+           overflow-hidden
+           transition-colors duration-300
+           group-hover:bg-black group-hover:text-white"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="button1__icon-svg absolute w-4 h-4
+             transition-transform duration-300 ease-in-out
+             group-hover:translate-x-[150%] group-hover:-translate-y-[150%]"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 5v14M5 12h14"
+                      />
+                    </svg>
 
-    <ArrowRight
-      size={20}
-      className="
-        transform rotate-[-45deg]
-        group-hover:translate-x-1
-        group-hover:translate-y-[-3px]
-        transition-transform duration-300
-      "
-    />
-  </button>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="absolute w-4 h-4
+             translate-x-[-150%] translate-y-[150%]
+             transition-transform duration-300 ease-in-out delay-100
+             group-hover:translate-x-0 group-hover:translate-y-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 5v14M5 12h14"
+                      />
+                    </svg>
+                  </span>
+                  <span>Get Started</span>
+                </button>
+             
 </div>
-            </div>
-            
             <div className="hidden lg:flex items-center justify-center w-1/4 relative">
               <img
                 src="/images/stethoscope.jpg"
@@ -282,9 +326,6 @@ const LandingPage = () => {
               />
             </div>
           </div>
-
-      
-         
         </section>
 
         <div
@@ -315,22 +356,35 @@ const LandingPage = () => {
                 <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-md">
                   <Activity className="text-black" size={28} />
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-gray-900">Expert Team</h3>
-                <p className="text-gray-600 leading-relaxed">Our experienced professionals ensure top-quality care for every patient.</p>
+                <h3 className="text-xl font-bold mb-3 text-gray-900">
+                  Expert Team
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Our experienced professionals ensure top-quality care for
+                  every patient.
+                </p>
               </div>
               <div className="bg-gradient-to-br from-emerald-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-emerald-100 group">
                 <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-md">
                   <Check className="text-black" size={28} />
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-gray-900">Reliable Services</h3>
-                <p className="text-gray-600 leading-relaxed">Dependable healthcare solutions you can trust every day.</p>
+                <h3 className="text-xl font-bold mb-3 text-gray-900">
+                  Reliable Services
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Dependable healthcare solutions you can trust every day.
+                </p>
               </div>
               <div className="bg-gradient-to-br from-purple-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-purple-100 group">
                 <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-md">
                   <Phone className="text-black" size={28} />
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-gray-900">24/7 Support</h3>
-                <p className="text-gray-600 leading-relaxed">Round-the-clock assistance for all your healthcare needs.</p>
+                <h3 className="text-xl font-bold mb-3 text-gray-900">
+                  24/7 Support
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Round-the-clock assistance for all your healthcare needs.
+                </p>
               </div>
             </div>
           </div>
@@ -349,10 +403,12 @@ const LandingPage = () => {
                 key={index}
                 className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-gray-200 group cursor-pointer"
                 style={{
-                  animation: `fadeInUp 0.5s ease-out ${index * 0.1}s both`
+                  animation: `fadeInUp 0.5s ease-out ${index * 0.1}s both`,
                 }}
               >
-                <div className={` w-14 h-14 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-md`}>
+                <div
+                  className={` w-14 h-14 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-md`}
+                >
                   <service.icon className="text-black" size={24} />
                 </div>
                 <h3 className="text-gray-900 font-semibold text-lg mb-2 group-hover:text-gray-700 transition-colors">
@@ -379,8 +435,8 @@ const LandingPage = () => {
                 className="group relative px-6 sm:px-8 py-3 sm:py-4 bg-white text-black text-base sm:text-lg font-semibold rounded-xl shadow-lg flex items-center gap-3 mx-auto hover:bg-gray-100 transition-all overflow-hidden"
               >
                 <span className="relative z-10">Start Your Journey</span>
-                <ArrowRight 
-                  size={20} 
+                <ArrowRight
+                  size={20}
                   className="relative z-10 transform rotate-[-45deg] group-hover:translate-x-1 group-hover:translate-y-[-3px] transition-transform duration-300"
                 />
               </button>
@@ -390,13 +446,22 @@ const LandingPage = () => {
 
         <div className="bg-white shadow-lg rounded-full py-4 px-6 max-w-2xl mx-auto flex justify-center items-center gap-8 text-gray-600 text-sm mt-10 mb-10 sticky top-3 z-40 border border-gray-200">
           <ul className="flex items-center justify-center gap-8">
-            <li onClick={scrollToServices} className="cursor-pointer hover:text-black transition-colors font-medium">
+            <li
+              onClick={scrollToServices}
+              className="cursor-pointer hover:text-black transition-colors font-medium"
+            >
               What's included
             </li>
-            <li onClick={scrollToFaqs} className="cursor-pointer hover:text-black transition-colors font-medium">
+            <li
+              onClick={scrollToFaqs}
+              className="cursor-pointer hover:text-black transition-colors font-medium"
+            >
               How it works
             </li>
-            <li onClick={scrollToWhyUs} className="cursor-pointer hover:text-black transition-colors font-medium">
+            <li
+              onClick={scrollToWhyUs}
+              className="cursor-pointer hover:text-black transition-colors font-medium"
+            >
               Why us
             </li>
           </ul>
@@ -418,11 +483,11 @@ const LandingPage = () => {
       {showLoginModal && (
         <div className="fixed inset-0 z-[9999] flex justify-center items-center">
           {/* Backdrop */}
-          <div 
+          <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={closeLoginModal}
           ></div>
-          
+
           {/* Modal Content */}
           <div className="relative z-[10000] rounded-2xl shadow-2xl max-w-md w-full mx-4 animate-modalSlideIn">
             <button
@@ -434,14 +499,21 @@ const LandingPage = () => {
 
             <Card className="border-0 shadow-2xl">
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
-                <p className="text-gray-600 mt-2">Sign in to continue to your account</p>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Welcome Back
+                </h2>
+                <p className="text-gray-600 mt-2">
+                  Sign in to continue to your account
+                </p>
               </div>
-              
+
               <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
                 <div>
                   <div className="mb-2 block">
-                    <Label htmlFor="email1" className="text-gray-700 font-medium">
+                    <Label
+                      htmlFor="email1"
+                      className="text-gray-700 font-medium"
+                    >
                       Email Address
                     </Label>
                   </div>
@@ -456,7 +528,10 @@ const LandingPage = () => {
                 </div>
                 <div>
                   <div className="mb-2 block">
-                    <Label htmlFor="password1" className="text-gray-700 font-medium">
+                    <Label
+                      htmlFor="password1"
+                      className="text-gray-700 font-medium"
+                    >
                       Password
                     </Label>
                   </div>
@@ -470,7 +545,10 @@ const LandingPage = () => {
                       required
                     />
                   </div>
-                  <div className="flex items-center justify-start mt-3 gap-2 text-sm text-gray-600 cursor-pointer select-none" onClick={handleShowPassword}>
+                  <div
+                    className="flex items-center justify-start mt-3 gap-2 text-sm text-gray-600 cursor-pointer select-none"
+                    onClick={handleShowPassword}
+                  >
                     {showPassword ? (
                       <FiEye className="text-gray-500" size={18} />
                     ) : (
@@ -482,8 +560,13 @@ const LandingPage = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Checkbox id="remember" className="text-emerald-500 focus:ring-emerald-500" />
-                  <Label htmlFor="remember" className="text-gray-700">Remember me</Label>
+                  <Checkbox
+                    id="remember"
+                    className="text-emerald-500 focus:ring-emerald-500"
+                  />
+                  <Label htmlFor="remember" className="text-gray-700">
+                    Remember me
+                  </Label>
                 </div>
                 <Button
                   type="submit"
@@ -506,7 +589,7 @@ const LandingPage = () => {
       )}
 
       <ToastContainer position="bottom-right" />
-      
+
       <Footer container className="mt-20 bg-white text-white">
         <div className="w-full text-center">
           <div className="w-full justify-between sm:flex sm:items-center sm:justify-between">
@@ -517,14 +600,27 @@ const LandingPage = () => {
               name="Asyv Clinic"
             />
             <FooterLinkGroup>
-              <FooterLink href="#" className="text-gray-300 hover:text-white">Team</FooterLink>
-              <FooterLink href="#" className="text-gray-300 hover:text-white">Services</FooterLink>
-              <FooterLink href="#" className="text-gray-300 hover:text-white">FAQs</FooterLink>
-              <FooterLink href="#" className="text-gray-300 hover:text-white">Contact</FooterLink>
+              <FooterLink href="#" className="text-gray-300 hover:text-white">
+                Team
+              </FooterLink>
+              <FooterLink href="#" className="text-gray-300 hover:text-white">
+                Services
+              </FooterLink>
+              <FooterLink href="#" className="text-gray-300 hover:text-white">
+                FAQs
+              </FooterLink>
+              <FooterLink href="#" className="text-gray-300 hover:text-white">
+                Contact
+              </FooterLink>
             </FooterLinkGroup>
           </div>
           <FooterDivider />
-          <FooterCopyright href="#" by="ASYVClinic™" year={2025} className="text-gray-400" />
+          <FooterCopyright
+            href="#"
+            by="ASYVClinic™"
+            year={2025}
+            className="text-gray-400"
+          />
         </div>
       </Footer>
 
