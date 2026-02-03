@@ -10,6 +10,9 @@ import "./index.css";
 import "flowbite";
 import PrivateRoutes from "./utils/PrivateRoutes.jsx";
 import RoleBasedRoutes from "./utils/RoleBasedRoutes.jsx";
+import PatientList from "./pages/PatientList.jsx";
+import RequestList from "./pages/RequestList.jsx";
+import ReportList from "./pages/ReportList.jsx";
 
 export const backendUrl = "http://localhost:4000";
 const App = () => {
@@ -21,9 +24,9 @@ const App = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/home" element={<CreatePage />}>
             <Route index element={<CreatePage />} />{" "}
-            <Route path="patients" element={<PatientsList />} />
-            <Route path="requests" element={<RequestsList />} />
-            <Route path="reports" element={<ReportsList />} />
+            <Route path="patients" element={<PatientList />} />
+            <Route path="requests" element={<RequestList />} />
+            <Route path="reports" element={<ReportList />} />
           </Route>
 
           <Route
