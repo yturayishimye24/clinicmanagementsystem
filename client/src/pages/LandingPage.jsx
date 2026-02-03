@@ -27,7 +27,7 @@ import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { backendUrl } from "../App.jsx";
-import techImage from "../../images/techImage.png";
+import techImage from "../../public/images/techImage.png";
 import FAQ from "../components/Faqs.jsx";
 import TEAM from "../components/teamSection.jsx";
 

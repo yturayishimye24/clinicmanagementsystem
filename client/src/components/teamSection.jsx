@@ -1,7 +1,7 @@
 import React from "react";
-import BlueCench from "../../images/BlueCench.png";
-import RedCench from "../../images/RedCench.jpeg";
-import patients from "../../images/patients.png";
+import BlueCench from "../../public/images/BlueCench.png";
+import RedCench from "../../public/images/RedCench.jpeg";
+import patients from "../../public/images/patients.png";
 
 import { forwardRef } from "react";
 import { Card, Dropdown, DropdownItem } from "flowbite-react";

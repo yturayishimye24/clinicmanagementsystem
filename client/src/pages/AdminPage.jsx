@@ -412,7 +412,7 @@ useEffect(() => {
                 )}
               </div>
 
-              {/* Profile */}
+              
               <div className="relative">
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}

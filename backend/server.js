@@ -18,12 +18,17 @@ import path from "path";
 dotenv.config();
 
 const port = process.env.PORT || 4000;
-const cors_origin = process.env.CORS_ORIGIN || "http://localhost:5173";
+
+const allowedOrigins = [
+  "http://localhost:5173",
+   "https://asyvvillageclinic-git-main-yturayishimye24s-projects.vercel.app",
+  process.env.CORS_ORIGIN 
+].filter(Boolean); 
 const app = express();
 
 app.use(
   cors({
-    origin: cors_origin,
+    origin: allowedOrigins,
   })
 );
 
@@ -41,7 +46,7 @@ app.use("/api/report",reportRouter)
 const server = http.createServer(app);
 export const io = new Server(server, {
   cors: {
-    origin: cors_origin,
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
   },
 });
