@@ -425,7 +425,7 @@ useEffect(() => {
                   />
                   <div className="hidden sm:block text-left">
                     <p className="text-sm font-medium text-gray-700">
-                      {localStorage.getItem("name") || username || "Admin"}
+                      {localStorage.getItem("role")}
                     </p>
                     <p className="text-xs text-gray-400">
                       {localStorage.getItem("email") || "admin@clinic.com"}
