@@ -28,6 +28,9 @@ import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { backendUrl } from "../App.jsx";
 import techImage from "../../public/images/techImage.png";
+import stethoscope from "../../public/images/stethoscope.png"
+import syringe from "../../public/images/syringe.png"
+import house from "../../public/images/house.png"
 import FAQ from "../components/Faqs.jsx";
 import TEAM from "../components/teamSection.jsx";
 
@@ -143,7 +146,7 @@ const LandingPage = () => {
 
   return (
     <div className="font-sans min-h-screen bg-white">
-      <header className="absolute mb-20 top-0 left-0 w-full z-50">
+      <header className="absolute mb-20 top-0 left-0 w-full z-50 ">
         <nav
           className="mx-auto mt-6 max-w-6xl
                backdrop-blur-lg
@@ -305,24 +308,24 @@ const LandingPage = () => {
 </div>
             <div className="hidden lg:flex items-center justify-center w-1/4 relative">
               <img
-                src="/images/stethoscope.jpg"
+                src={house}
                 alt="Medical equipment"
                 className="absolute w-[300px] rounded-2xl shadow-2xl
-                 transform rotate-[-12deg] -left-10 top-5
+                 transform rotate-[-45deg] -left-20 h-[400px] top-[100px]
                  hover:rotate-[-8deg] transition-transform duration-300"
               />
               <img
-                src="/images/stethoscope.jpg"
+                src={syringe}
                 alt="Healthcare"
                 className="absolute w-[300px] rounded-2xl shadow-2xl
-                 transform rotate-[6deg] left-16 top-0
-                 hover:rotate-[2deg] transition-transform duration-300"
+                 transform rotate-[35deg] left-6 top-[100px]
+                 hover:rotate-[2deg] hover:left-[30px] transition-transform duration-300"
               />
               <img
-                src="/images/syringe.svg"
+                src={stethoscope}
                 alt="Medical care"
-                className="relative w-[300px] rounded-2xl shadow-2xl z-10
-                 hover:-translate-y-2 transition-transform duration-300"
+                className="relative w-[300px] rounded-2xl shadow-2xl z-10 transform rotate-[45deg] top-[100px]
+                 hover:-translate-y-5 transition-transform duration-300"
               />
             </div>
           </div>
