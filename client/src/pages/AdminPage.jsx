@@ -155,7 +155,17 @@ useEffect(() => {
       socket.off("patientCreated");
     };
   }, []);
-
+ const handleNurseDelete = async (e,nurseId) => {
+  if(!window.confirm("Are you sure you want to delete this nurse?")) return;
+  try{
+    const response = await axios.delete(`http://localhost:4000/api/accounts/nurses/${nurseId}`);
+    toast.success("Nurse deleted successfully");
+    fetchNurses();
+  }catch(err){
+    console.log("handleNurseDelete error:", err);
+    toast.error("Error deleting nurse");
+  }
+ }
   const fetchRequests = async () => {
     setLoadingRequests(true);
     try {
@@ -769,6 +779,7 @@ useEffect(() => {
                         <span className="text-xs text-gray-400">
                           {new Date(nurse.hireDate).toLocaleDateString()}
                         </span>
+                        <Trash2 onClick={(e) => handleNurseDelete(e,nurse._id)}/>
                       </div>
                     ))
                   )}

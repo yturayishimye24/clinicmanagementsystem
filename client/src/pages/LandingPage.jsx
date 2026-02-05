@@ -33,7 +33,7 @@ import syringe from "../../public/images/syringe.png"
 import house from "../../public/images/house.png"
 import FAQ from "../components/Faqs.jsx";
 import TEAM from "../components/teamSection.jsx";
-
+import drake from "../../public/images/asyvlogo.png";
 import {
   Footer,
   FooterBrand,
@@ -598,8 +598,8 @@ const LandingPage = () => {
           <div className="w-full justify-between sm:flex sm:items-center sm:justify-between">
             <FooterBrand
               href="https://localhost:5173/"
-              src="images/asyv.png"
-              alt="Asyv Logo"
+              src={drake}
+              alt="Peace of Mind Logo"
               name="Asyv Clinic"
             />
             <FooterLinkGroup>

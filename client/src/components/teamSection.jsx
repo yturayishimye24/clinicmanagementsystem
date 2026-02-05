@@ -2,9 +2,12 @@ import React from "react";
 import BlueCench from "../../public/images/BlueCench.png";
 import RedCench from "../../public/images/RedCench.jpeg";
 import patients from "../../public/images/patients.png";
+import drake from "../../public/images/drake.png";
+
 
 import { forwardRef } from "react";
 import { Card, Dropdown, DropdownItem } from "flowbite-react";
+import { differenceInCalendarISOWeekYears } from "date-fns";
 
 const TeamSection = forwardRef((props, ref) => {
   return (
@@ -59,7 +62,7 @@ const TeamSection = forwardRef((props, ref) => {
           </div>
           <div className="flex flex-col items-center pb-10">
             <img
-              src="/images/Kaze.png"
+              src={drake}
               className="w-24 h-24 mb-3 rounded-full shadow-lg"
             ></img>
             <h5 className="mb-1 text-xl font-medium text-gray-900 dark:text-white">
@@ -115,7 +118,7 @@ const TeamSection = forwardRef((props, ref) => {
           </div>
           <div className="flex flex-col items-center pb-10">
             <img
-              src="/images/RedCench.jpeg"
+              src={RedCench}
               className="w-24 h-24 mb-3 rounded-full shadow-lg"
             ></img>
             <h5 className="mb-1 text-xl font-medium text-gray-900 dark:text-white">
@@ -171,7 +174,7 @@ const TeamSection = forwardRef((props, ref) => {
           </div>
           <div className="flex flex-col items-center pb-10">
             <img
-              src="/images/BlueCench.png"
+              src={BlueCench}
               className="w-24 h-24 mb-3 rounded-full shadow-lg"
             ></img>
             <h5 className="mb-1 text-xl font-medium text-gray-900 dark:text-white">
