@@ -90,13 +90,13 @@ export default function NursePage() {
 
   // Add maritalStatus state
   const [maritalStatus, setMaritalStatus] = useState("");
-
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const fetchPatients = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "http://localhost:4000/api/patients/displayPatients",
+        `${backendUrl}/api/patients/displayPatients`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -135,7 +135,7 @@ export default function NursePage() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "http://localhost:4000/api/report/create_report",
+        `${backendUrl}/api/report/create_report`,
         {
           title,
           body,
@@ -159,7 +159,7 @@ export default function NursePage() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.patch(
-        `http://localhost:4000/api/patients/${patientId}/hospitalize`,
+        `${backendUrl}/api/patients/${patientId}/hospitalize`,
         {},
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -174,7 +174,7 @@ export default function NursePage() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "http://localhost:4000/api/infos/email",
+        `${backendUrl}/api/infos/email`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -197,7 +197,7 @@ export default function NursePage() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "http://localhost:4000/api/requests/showRequests",
+        `${backendUrl}/api/requests/showRequests`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -221,7 +221,7 @@ export default function NursePage() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.delete(
-        `http://localhost:4000/api/requests/removeRequests/${requestId}`,
+        `${backendUrl}/api/requests/removeRequests/${requestId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -245,7 +245,7 @@ export default function NursePage() {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:4000/api/patients/${patientId}`, {
+      await axios.delete(`${backendUrl}/api/patients/${patientId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setPatients((prev) =>
@@ -301,7 +301,7 @@ export default function NursePage() {
 
       if (editingPatientId) {
         const response = await axios.put(
-          `http://localhost:4000/api/patients/${editingPatientId}`,
+          `${backendUrl}/api/patients/${editingPatientId}`,
           patientData,
           { headers: { Authorization: `Bearer ${token}` } },
         );
@@ -323,7 +323,7 @@ export default function NursePage() {
           formData.append("Image", patientImage);
         }
         const response = await axios.post(
-          "http://localhost:4000/api/patients/create",
+          `${backendUrl}/api/patients/create`,
           formData,
           {
             headers: {
@@ -379,7 +379,7 @@ export default function NursePage() {
       };
 
       const response = await axios.post(
-        "http://localhost:4000/api/requests/createRequests",
+        `${backendUrl}/api/requests/createRequests`,
         requestData,
         { headers: { Authorization: `Bearer ${token}` } },
       );

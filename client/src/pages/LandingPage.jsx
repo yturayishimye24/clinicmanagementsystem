@@ -26,7 +26,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
-import { backendUrl } from "../App.jsx";
+// import { backendUrl } from "../App.jsx";
 import techImage from "../../public/images/techImage.png";
 import stethoscope from "../../public/images/stethoscope.png"
 import syringe from "../../public/images/syringe.png"
@@ -45,6 +45,7 @@ import {
 import { useAuth } from "../../context/authContext.jsx";
 
 const LandingPage = () => {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -58,7 +59,7 @@ const LandingPage = () => {
   const servicesRef = useRef(null);
   const whyChooseUsRef = useRef(null);
   const { login } = useAuth();
-
+   
   const handleShowPassword = () => {
     setShowPassword(!showPassword);
   };
