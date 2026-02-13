@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const addSchema = new mongoose.Schema({
+  maritalStatus:{
+    type: String,
+    enum:["single","married","divorced","widowed"],
+    required:true,
+  },
   firstName: {
     type: String,
     required: true,

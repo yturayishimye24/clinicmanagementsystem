@@ -3,1007 +3,754 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
-import { Badge, Button, Spinner } from "flowbite-react";
+import { Popover, Spinner } from "flowbite-react";
 import socket, { connectSocket } from "../socket.js";
-
 import {
-  Bell,
-  Calendar,
-  FileText,
-  X,
   Users,
   Inbox,
   UserPlus,
   RefreshCw,
   Loader2,
-  Home,
   Trash2,
-  ClipboardList,
   MoreVertical,
   Stethoscope,
-  Package,
-  ChevronLeft,
-  ChevronRight,
   Search,
   Plus,
+  X,
+  ArrowUpRight,
+  Check,
+  Clock,
+  AlertCircle,
+  MoreHorizontal,
   LogOut,
   Settings,
-  User,
+  BarChart3,
+  Bell
 } from "lucide-react";
+
+// --- CUSTOM STYLES FOR FONTS ---
+const FontStyles = () => (
+    <style>
+      {`
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+      
+      body, .font-sans {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+      }
+      
+      .cozy-shadow {
+        box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.03);
+      }
+      
+      .cozy-card-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.06);
+      }
+
+      /* Custom Scrollbar for tables */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #e5e7eb;
+        border-radius: 20px;
+      }
+    `}
+    </style>
+);
 
 export default function AdminPage() {
   const navigate = useNavigate();
 
+  // --- STATE ---
   const [patients, setPatients] = useState([]);
   const [requests, setRequests] = useState([]);
+  const [reports, setReports] = useState([]);
   const [nurses, setNurses] = useState([]);
-  const [email, setEmails] = useState("");
-  const [role, setRole] = useState("");
   const [username, setUsername] = useState("");
-  const [image, setImage] = useState("");
   const [loadingPatients, setLoadingPatients] = useState(false);
   const [loadingRequests, setLoadingRequests] = useState(false);
+  const [loadingReports, setLoadingReports] = useState(false);
+  const [loadingNurses, setLoadingNurses] = useState(false);
+
+  // Form States
   const [em, setEmail] = useState("");
-  const [hireDate,setHireDate]=useState(Date.now());
   const [password, setPassword] = useState("");
   const [nurseUsername, setNurseUsername] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [formRole, setFormRole] = useState("");
+  const [hireDate, setHireDate] = useState("");
+  const [adding, setAdding] = useState(false);
   const [approving, setApproving] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+
+  // UI States
+  const [searchTerm, setSearchTerm] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [adding, setAdding] = useState(false);
-  const [loadingNurses, setLoadingNurses] = useState(false);
+
   const nurseRef = useRef(null);
-  const patientRef = useRef(null);
-  const requestRef = useRef(null);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-  const handleGoNurses = () => {
-    nurseRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-  const handleGoPatients = () => {
-    patientRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-  const handleGoRequests = () => {
-    requestRef.current?.scrollIntoView({ behavior: "smooth" });
+  // --- DATA FETCHING ---
+  const fetchPatients = async () => {
+    setLoadingPatients(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${backendUrl}/api/patients/displayPatients`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const d = response.data;
+      setPatients(Array.isArray(d) ? d : (d.users ?? []));
+    } catch (err) {
+      console.error(err);
+      toast.error("Error loading patients");
+    } finally {
+      setLoadingPatients(false);
+    }
   };
 
+  const fetchNurses = async () => {
+    setLoadingNurses(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${backendUrl}/api/accounts/nurses/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNurses(response.data.nurses || []);
+    } catch (err) {
+      console.error(err);
+      toast.error("Error loading nurses");
+    } finally {
+      setLoadingNurses(false);
+    }
+  };
+
+  const fetchRequests = async () => {
+    setLoadingRequests(true);
+    try {
+      const response = await axios.get(`${backendUrl}/api/requests/showRequests`);
+      const d = response.data;
+      setRequests(Array.isArray(d) ? d : (Array.isArray(d.requests) ? d.requests : []));
+    } catch (err) {
+      console.error(err);
+      toast.error("Error loading requests");
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
+
+  const fetchReports = async () => {
+    setLoadingReports(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${backendUrl}/api/report/display_report`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const d = response.data;
+      setReports(Array.isArray(d) ? d : (Array.isArray(d.reports) ? d.reports : []));
+    } catch (err) {
+      console.error(err);
+      toast.error("Error loading reports");
+    } finally {
+      setLoadingReports(false);
+    }
+  };
+
+  const fetchUserInfo = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${backendUrl}/api/infos/email`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUsername(response.data.username);
+      localStorage.setItem("image", response.data.image);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // --- EFFECTS ---
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (!token || role !== "admin") {
+      navigate("/");
+      return;
+    }
+
+    connectSocket();
+    fetchUserInfo();
+    fetchPatients();
+    fetchNurses();
+    fetchRequests();
+    fetchReports();
+
+    // Socket Listeners
+    socket.on("newNurse", (newNurse) => {
+      toast.info("New nurse added");
+      setNurses((prev) => [newNurse, ...prev]);
+    });
+    socket.on("requestCreated", (req) => {
+      toast.info("New request received");
+      setRequests((prev) => [req, ...prev]);
+    });
+    socket.on("requestDeleted", (id) => {
+      setRequests((prev) => prev.filter((r) => r._id !== id));
+    });
+    socket.on("patientCreated", (newPatient) => {
+      toast.info("New patient added");
+      setPatients((prev) => [newPatient, ...prev]);
+    });
+
+    return () => {
+      socket.off("newNurse");
+      socket.off("requestCreated");
+      socket.off("requestDeleted");
+      socket.off("patientCreated");
+    };
+  }, [navigate]);
+
+  // --- HANDLERS ---
   const handleAccount = async (e) => {
     e.preventDefault();
     setAdding(true);
     try {
-      const response = await axios.post(
-        "http://localhost:4000/api/accounts/signup",
-        {
-          username: nurseUsername,
-          email: em,
-          password,
-          role: formRole,
-        },
-      );
+      const response = await axios.post(`${backendUrl}/api/accounts/signup`, {
+        username: nurseUsername,
+        email: em,
+        password,
+        role: formRole,
+      });
       if (response.data.success) {
         toast.success("Account created successfully");
-        // refresh nurses list (do not overwrite admin session/localStorage)
         fetchNurses();
-        setEmail("");
-        setPassword("");
-        setFormRole("");
-        setNurseUsername("");
         setShowForm(false);
+        // Reset form
+        setEmail(""); setPassword(""); setFormRole(""); setNurseUsername("");
       } else {
         toast.error(response.data.message);
       }
     } catch (error) {
-      console.log(error.message);
       toast.error("Error creating account");
     } finally {
       setAdding(false);
     }
   };
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-
-    if (!token) {
-      toast.error("Please login to access dashboard");
-      navigate("/");
-      return;
-    }
-
-    if (role !== "admin") {
-      toast.error("Unauthorized access - Admins only");
-      navigate("/");
-    }
-
-    connectSocket();
-  }, [navigate]);
-
-  useEffect(() => {
-    const handler = (newNurse) => {
-      toast.info("New nurse added");
-      setNurses((prev) => [newNurse, ...prev]);
-    };
-    socket.on("newNurse", handler);
-    return () => socket.off("newNurse", handler);
-  }, []);
-  useEffect(() => {
-    socket.on("requestCreated", (req) => {
-      toast.info("New request received");
-      setRequests((prev) => [req, ...prev]);
-    });
-    return () => socket.off("requestCreated");
-  }, []);
-useEffect(() => {
-  const handler = (requestId) => {
-    toast.info("A request has been deleted");
-    setRequests((prev) => prev.filter((r) => r._id !== requestId));
-  };
-  socket.on("requestDeleted", handler);
-  return () => socket.off("requestDeleted", handler);
-},[])
-  useEffect(() => {
-    socket.on("patientCreated", (newPatient) => {
-      toast.info("New patient added");
-
-      setPatients((prev) => [newPatient, ...prev]);
-    });
-
-    return () => {
-      socket.off("patientCreated");
-    };
-  }, []);
- const handleNurseDelete = async (e,nurseId) => {
-  if(!window.confirm("Are you sure you want to delete this nurse?")) return;
-  try{
-    const response = await axios.delete(`http://localhost:4000/api/accounts/nurses/${nurseId}`);
-    toast.success("Nurse deleted successfully");
-    fetchNurses();
-  }catch(err){
-    console.log("handleNurseDelete error:", err);
-    toast.error("Error deleting nurse");
-  }
- }
-  const fetchRequests = async () => {
-    setLoadingRequests(true);
+  const handleNurseDelete = async (id) => {
+    if (!window.confirm("Delete this nurse?")) return;
     try {
-      const response = await axios.get(
-        "http://localhost:4000/api/requests/showRequests",
-      );
-      const d = response.data;
-      const arr = Array.isArray(d)
-        ? d
-        : Array.isArray(d.requests)
-          ? d.requests
-          : [];
-      setRequests(arr);
+      await axios.delete(`${backendUrl}/api/accounts/nurses/${id}`);
+      toast.success("Deleted successfully");
+      setNurses(prev => prev.filter(n => n._id !== id));
     } catch (err) {
-      console.loge("fetchRequests error:", err);
-      toast.error("Error getting requests");
-      setRequests([]);
-    } finally {
-      setLoadingRequests(false);
+      toast.error("Error deleting nurse");
     }
   };
 
-  const handleDeleteRequests = async (requestId, e) => {
-    e.preventDefault();
-    if (!window.confirm("Are you sure you want to delete this request?")) return;
-    try{
-    const token = localStorage.getItem("token");
-    const response = await axios.delete(`http://localhost:4000/api/requests/removeRequests/${requestId}`,{ headers: { Authorization: `Bearer ${token}` } });
-    const d = response.data;
-    if (d.success) {
-      toast.success("Request deleted successfully");
-      setRequests((prev) => prev.filter((request) => request._id !== requestId));
-    }
-    }catch(err){
-      console.log("handleDeleteRequests error:", err);
-      toast.error("Error deleting request");
-    }
-  }
-  useEffect(() => {
-    const fetchEmail = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(
-          "http://localhost:4000/api/infos/email",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-        setEmails(response.data.email);
-        setUsername(response.data.username);
-        setRole(response.data.role);
-        setImage(response.data.image);
-        localStorage.setItem("image", response.data.image);
-      } catch (error) {
-        console.log("Error fetching email:", error);
-      }
-    };
-    fetchEmail();
-  }, []);
-
-  const fetchPatients = async () => {
-    setLoadingPatients(true);
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        "http://localhost:4000/api/patients/displayPatients",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-      const d = response.data;
-      const arr = Array.isArray(d) ? d : (d.users ?? []);
-      setPatients(arr);
-    } catch (err) {
-      console.error("fetchPatients error:", err.message);
-      toast.error(err.message);
-      setPatients([]);
-    } finally {
-      setLoadingPatients(false);
-    }
-  };
-
-  // Fetch nurses moved to top-level so other handlers (eg. handleAccount) can call it
-  const fetchNurses = async (e) => {
-    if (e && typeof e.preventDefault === "function") e.preventDefault();
-    setLoadingNurses(true);
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        "http://localhost:4000/api/accounts/nurses/",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-      setNurses(response.data.nurses || []);
-    } catch (err) {
-      console.log("fetchNurses error:", err.message);
-      toast.error("Error getting nurses");
-      setNurses([]);
-    } finally {
-      setLoadingNurses(false);
-    }
-  };
-
-  const filteredPatients = patients.filter((patient) => {
-    const fullName =
-      `${patient.firstName} ${patient.lastName || ""}`.toLowerCase();
-    const disease = (patient.disease || "General checkup").toLowerCase();
-    const status = (patient.Status || "").toLowerCase();
-
-    return (
-      fullName.includes(searchTerm.toLowerCase()) ||
-      disease.includes(searchTerm.toLowerCase()) ||
-      status.includes(searchTerm.toLowerCase())
-    );
-  });
-
-  useEffect(() => {
-    fetchPatients();
-    fetchNurses();
-  },[]);
-
-  useEffect(() => {
-    fetchPatients();
-    fetchRequests();
-  }, []);
-
-  const handleLogout = () => {
-    toast.info("Logging out...");
-    setTimeout(() => {
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      navigate("/");
-      toast.success("Successfully logged out!");
-    }, 1000);
-  };
-  const handleDeleteRequest = async (requestId, e) => {
-    e.preventDefault();
-    if (!window.confirm("Are you sure you want to delete this request?"))
-      return;
-    try{
-      const token = localStorage.getItem("token");
-      const deleleteResponse = await axios.delete(`http://localhost:4000/api/requests/removeRequests/${requestId}`,{
-        headers:{ Authorization: `Bearer ${token}` }
-      });
-      if(!deleleteResponse.data.success){
-        toast.error("Error deleting request");
-        return;
-      }
-      toast.success("Request deleted successfully!");
-      fetchRequests();
-    }catch(errr){
-      console.log("handleDeleteRequest error:", errr);
-      toast.error("Error deleting request");
-    }
-  }
-  const handleApprove = async (requestId, e) => {
-    e.preventDefault();
-    if (!window.confirm("Are you sure you want to approve this request?"))
-      return;
-
+  const handleApprove = async (requestId) => {
     try {
       setApproving(true);
-      const response = await axios.patch(
-        `http://localhost:4000/api/requests/approve/${requestId}`,
-      );
-
-      toast.success("Request approved!");
-      fetchRequests();
+      const response = await axios.patch(`${backendUrl}/api/requests/approve/${requestId}`);
+      if (response.data.success) {
+        toast.success("Request approved!");
+        fetchRequests();
+      }
     } catch (error) {
-      console.log(error);
       toast.error("Error approving request");
     } finally {
       setApproving(false);
     }
   };
 
-  const sidebarItems = [
-    { icon: Home, label: "Home", href: "/" },
-    { icon: Users, label: "Patients", href: { handleGoPatients } },
-    {
-      icon: Inbox,
-      label: "Requests",
-      href: { handleGoRequests },
-      badge: requests.length,
-    },
-    { icon: Stethoscope, label: "Nurses", href: { handleGoNurses } },
-  ];
+  const handleDeleteRequest = async (requestId) => {
+    if (!window.confirm("Delete this request?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.delete(
+          `${backendUrl}/api/requests/removeRequests/${requestId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        toast.success("Request deleted");
+        setRequests((prev) => prev.filter((r) => r._id !== requestId));
+      }
+    } catch (err) {
+      toast.error("Error deleting request");
+    }
+  };
+
+  // --- FILTERING ---
+  const filteredPatients = patients.filter((patient) => {
+    const term = searchTerm.toLowerCase();
+    const fullName = `${patient.firstName} ${patient.lastName || ""}`.toLowerCase();
+    return fullName.includes(term) || (patient.disease || "").toLowerCase().includes(term);
+  });
+
+  // --- SUB-COMPONENTS ---
+
+  // 1. Status Badge Component (Visual Match for Requests)
+  const StatusBadge = ({ status }) => {
+    const s = status?.toLowerCase() || "pending";
+    if (s === "approved") {
+      return (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center border border-emerald-200">
+              <Check className="w-4 h-4 text-emerald-600" />
+            </div>
+            <span className="text-emerald-700 font-medium text-sm hidden sm:block">Approved</span>
+          </div>
+      );
+    }
+    if (s === "pending") {
+      return (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center border border-amber-200">
+              <Clock className="w-4 h-4 text-amber-600" />
+            </div>
+            <span className="text-amber-700 font-medium text-sm hidden sm:block">Pending</span>
+          </div>
+      );
+    }
+    return (
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center border border-red-200">
+            <X className="w-4 h-4 text-red-600" />
+          </div>
+          <span className="text-red-700 font-medium text-sm hidden sm:block">Rejected</span>
+        </div>
+    );
+  };
+
+  // --- SUB COMPONENTS ---
+  const SidebarItem = ({ icon: Icon, label, count }) => (
+      <div className="sidebar-item flex flex-col items-center justify-center gap-1.5 p-3 cursor-pointer group w-full text-gray-400 hover:text-emerald-600 transition-colors">
+          <div className="icon-container w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 bg-transparent group-hover:bg-gray-50">
+              <Icon className="w-5 h-5" />
+          </div>
+          <span className="text-[10px] font-semibold tracking-wide">{label}</span>
+          {count > 0 && (
+              <span className="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full"></span>
+          )}
+      </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-100 cozy-shadow">
-        <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-around h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-sm">C</span>
+      <div className="min-h-screen bg-[#F8FAFC] font-sans">
+        <FontStyles />
+        
+        {/* --- NAVBAR --- */}
+        <nav className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 h-[70px]">
+          <div className="flex items-center justify-between h-full px-6">
+            <div className="flex items-center gap-8">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-white shadow-lg shadow-emerald-200">
+                  <Stethoscope className="w-4 h-4" />
+                </div>
+                <span className="text-xl font-bold text-gray-800 tracking-tight">CLINIC</span>
               </div>
-              <span className="text-lg font-semibold text-gray-800 tracking-tight">
-                <span classNae="text-5xl text-green-500">
-                  Admin
-                </span>{" "}
-                Dashboard
-              </span>
+              <div className="hidden md:flex items-center text-sm text-gray-400 font-medium">
+                <span className="hover:text-emerald-600 cursor-pointer transition">Admin Portal</span>
+                <span className="mx-2 text-gray-300">/</span>
+                <span className="text-gray-800">Dashboard</span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
+              <button className="p-2 text-gray-400 hover:text-emerald-600 transition"><Search className="w-5 h-5"/></button>
               <div className="relative">
-                <button
-                  onClick={() => setShowNotifications(!showNotifications)}
-                  className="relative p-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 cozy-transition"
-                >
-                  <Bell className="w-5 h-5 text-gray-600" />
-                  {requests.length > 0 && (
-                    <span className="absolute top-1 right-1 w-5 h-5 bg-red-200 text-red-300 font-medium rounded-full flex items-center justify-center">
-                      {requests.length}
-                    </span>
-                  )}
-                </button>
-
-                {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl cozy-shadow-lg border border-gray-100 overflow-hidden z-50">
-                    <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
-                      <h3 className="font-semibold text-gray-800">
-                        Notifications
-                      </h3>
-                    </div>
-                    <div className="max-h-80 overflow-y-auto custom-scrollbar">
-                      {requests.length === 0 ? (
-                        <div className="px-4 py-8 text-center text-gray-500">
-                          No new notifications
-                        </div>
-                      ) : (
-                        requests.slice(0, 5).map((request, index) => (
-                          <div
-                            key={index}
-                            className="px-4 py-3 hover:bg-gray-50 cozy-transition cursor-pointer border-b border-gray-50 last:border-0"
-                          >
-                            <p className="text-sm text-gray-700">
-                              {request.reason}
-                            </p>
-                            <p className="text-xs text-gray-400 mt-1">
-                              {request.createdAt
-                                ? new Date(
-                                    request.createdAt,
-                                  ).toLocaleDateString()
-                                : "Recently"}
-                            </p>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
+                <button className="p-2 text-gray-400 hover:text-emerald-600 transition"><Bell className="w-5 h-5"/></button>
               </div>
-
-              
               <div className="relative">
-                <button
-                  onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="flex items-center gap-3 p-1.5 pr-3 rounded-xl hover:bg-gray-50 cozy-transition"
-                >
-                  <img
-                    src={localStorage.getItem("image") || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face"}
-                    alt="Profile"
-                    className="w-8 h-8 rounded-lg object-cover"
-                  />
-                  <div className="hidden sm:block text-left">
-                    <p className="text-sm font-medium text-gray-700">
-                      {localStorage.getItem("role")}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {localStorage.getItem("email") || "admin@clinic.com"}
-                    </p>
-                  </div>
+                <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="flex items-center gap-3">
+                  <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=40&h=40&fit=crop&crop=face" alt="Profile" className="w-9 h-9 rounded-full object-cover border border-gray-100 shadow-sm" />
                 </button>
-
                 {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl cozy-shadow-lg border border-gray-100 overflow-hidden z-50">
-                    <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="font-medium text-gray-800">
-                        {localStorage.getItem("name") || username}
-                      </p>
-                      <p className="text-sm text-gray-500">{email}</p>
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl cozy-shadow border border-gray-100 overflow-hidden z-50 py-1">
+                      <div className="px-4 py-2 border-b border-gray-50">
+                        <p className="font-bold text-sm text-gray-800 truncate">{username || "Admin"}</p>
+                      </div>
+                      <button onClick={() => { localStorage.removeItem("token"); navigate("/"); }} className="w-full text-left px-4 py-2 text-sm text-rose-500 hover:bg-rose-50 flex items-center gap-2"><LogOut className="w-4 h-4"/> Sign Out</button>
                     </div>
-                    <div className="py-2">
-                      <button className="w-full px-4 py-2.5 text-left text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-3 cozy-transition">
-                        <User className="w-4 h-4" />
-                        Profile
-                      </button>
-                      <button className="w-full px-4 py-2.5 text-left text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-3 cozy-transition">
-                        <Settings className="w-4 h-4" />
-                        Settings
-                      </button>
-                      <div className="border-t border-gray-100 my-1"></div>
-                      <button
-                        onClick={handleLogout}
-                        className="w-full px-4 py-2.5 text-left text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-3 cozy-transition"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Sign out
-                      </button>
-                    </div>
-                  </div>
                 )}
               </div>
             </div>
           </div>
-        </div>
-      </nav>
+        </nav>
 
-      <div className="flex pt-16">
-        {/* Sidebar */}
-        <aside
-          className={`fixed left-0 top-16 min-h-screen bg-white border-r border-gray-100 cozy-shadow z-30 cozy-transition ${
-            collapsed ? "w-20" : "w-64"
-          }`}
-        >
-          <div className="flex flex-col h-full items-center justify-between">
-            {/* Collapse Button */}
-            <div className="p-4 flex justify-end">
-              <button
-                onClick={() => setCollapsed(!collapsed)}
-                className="p-2 rounded-lg hover:bg-gray-100 cozy-transition"
-              >
-                {collapsed ? (
-                  <ChevronRight className="w-4 h-4 text-gray-500" />
-                ) : (
-                  <ChevronLeft className="w-4 h-4 text-gray-500" />
-                )}
-              </button>
-            </div>
-
-            {/* Navigation Items */}
-            <nav className="flex-1 px-3 space-y-1">
-              {sidebarItems.map((item, index) => (
-                <a
-                  key={index}
-                  onClick={item.href}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 cozy-transition group"
-                >
-                  <item.icon className="w-5 h-5 text-gray-500 group-hover:text-emerald-600 cozy-transition" />
-                  {!collapsed && (
-                    <>
-                      <span className="font-medium text-sm">{item.label}</span>
-                      {item.badge > 0 && (
-                        <span className="ml-auto bg-emerald-100 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded-full">
-                          {item.badge}
-                        </span>
-                      )}
-                    </>
-                  )}
-                </a>
-              ))}
-            </nav>
+        {/* --- SIDEBAR --- */}
+        <aside className="fixed left-0 top-[70px] bottom-0 w-[100px] bg-white border-r border-gray-100 z-30 flex flex-col items-center py-6 gap-2 overflow-y-auto">
+          <SidebarItem icon={Users} label="Dashboard" />
+          <SidebarItem icon={Users} label="Patients" />
+          <SidebarItem icon={UserPlus} label="Staff" />
+          <SidebarItem icon={Inbox} label="Requests" count={requests.length} />
+          <SidebarItem icon={BarChart3} label="Reports" count={reports.length} />
+          <div className="mt-auto">
+            <SidebarItem icon={Settings} label="Settings" />
           </div>
         </aside>
 
-        <main
-          className={`flex-1 cozy-transition ${collapsed ? "ml-[100px]" : "ml-[300px]"}`}
-        >
-          <div className="p-6 lg:p-8">
-            <div className="mb-8">
-              <h1 className="text-2xl font-bold text-gray-800">
-                Welcome back,{" "}
-                {localStorage.getItem("name") || username || "Admin"} 👋
-                {/* <Badge color="Success">{role}</Badge> */}
-              </h1>
-              <p className="text-gray-500 mt-1">
-                Here's what's happening at your clinic today.
-              </p>
+        {/* --- MAIN CONTENT --- */}
+        <main className="ml-[100px] pt-[90px] px-6 lg:px-10 pb-10 max-w-[1600px] mx-auto">
+
+          {/* Header & Actions */}
+          <div className="flex justify-between items-end mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Overview</h1>
+              <p className="text-gray-500 mt-1 font-medium">Welcome back, {username || "Admin"} 👋</p>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition shadow-lg shadow-emerald-200 flex items-center gap-2">
+                <Plus className="w-4 h-4" /> Add Staff
+              </button>
+            </div>
+          </div>
+
+          {/* CARDS SECTION - MATCHING DASHBOARD.PNG */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+
+            {/* CARD 1: DARK GREEN (PRIMARY) */}
+            <div className="bg-emerald-900 rounded-3xl p-6 relative overflow-hidden group transition-all duration-300 hover:shadow-xl hover:shadow-emerald-900/20">
+              {/* Background decoration */}
+              <div className="absolute -right-6 -top-6 w-32 h-32 bg-emerald-800 rounded-full opacity-50 blur-2xl group-hover:scale-110 transition-transform"></div>
+
+              <div className="relative z-10 flex justify-between items-start">
+                <span className="text-emerald-100 font-medium text-sm">Total Patients</span>
+                <div className="w-8 h-8 rounded-full bg-emerald-800/50 flex items-center justify-center border border-emerald-700/50 text-white cursor-pointer hover:bg-emerald-700 transition">
+                  <ArrowUpRight className="w-4 h-4" />
+                </div>
+              </div>
+
+              <div className="relative z-10 mt-4">
+                <h2 className="text-5xl font-bold text-white tracking-tight">{patients.length}</h2>
+              </div>
+
+              <div className="relative z-10 mt-6 flex items-center gap-2">
+              <span className="bg-emerald-800 text-emerald-100 text-xs px-2 py-1 rounded-lg border border-emerald-700">
+                +5
+              </span>
+                <span className="text-emerald-200/80 text-xs">Increased from last month</span>
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-1">
-              <div className="p-1">
+            {/* CARD 2: PENDING REQUESTS */}
+            <div className="bg-white rounded-3xl p-6 border border-gray-100 cozy-shadow cozy-card-hover transition-all">
+              <div className="flex justify-between items-start">
+                <span className="text-gray-500 font-medium text-sm">Pending Requests</span>
+                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-gray-100 text-gray-400 hover:text-emerald-600 hover:border-emerald-200 transition cursor-pointer">
+                  <ArrowUpRight className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <h2 className="text-5xl font-bold text-gray-800 tracking-tight">
+                  {requests.filter((r) => r.Status === "pending").length}
+                </h2>
+              </div>
+              <div className="mt-6 flex items-center gap-2">
+              <span className="bg-amber-50 text-amber-600 text-xs px-2 py-1 rounded-lg border border-amber-100">
+                Needs Review
+              </span>
+                <span className="text-gray-400 text-xs">Active Tasks</span>
+              </div>
+            </div>
+
+            {/* CARD 3: NURSES */}
+            <div className="bg-white rounded-3xl p-6 border border-gray-100 cozy-shadow cozy-card-hover transition-all">
+              <div className="flex justify-between items-start">
+                <span className="text-gray-500 font-medium text-sm">Active Nurses</span>
+                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-gray-100 text-gray-400 hover:text-emerald-600 hover:border-emerald-200 transition cursor-pointer">
+                  <ArrowUpRight className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <h2 className="text-5xl font-bold text-gray-800 tracking-tight">{nurses.length}</h2>
+              </div>
+              <div className="mt-6 flex items-center gap-2">
+               <span className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-lg border border-blue-100">
+                Staff
+              </span>
+                <span className="text-gray-400 text-xs">Currently hired</span>
+              </div>
+            </div>
+
+            {/* CARD 4: REPORTS */}
+            <div className="bg-white rounded-3xl p-6 border border-gray-100 cozy-shadow cozy-card-hover transition-all">
+              <div className="flex justify-between items-start">
+                <span className="text-gray-500 font-medium text-sm">Total Reports</span>
+                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-gray-100 text-gray-400 hover:text-emerald-600 hover:border-emerald-200 transition cursor-pointer">
+                  <ArrowUpRight className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <h2 className="text-5xl font-bold text-gray-800 tracking-tight">{reports.length}</h2>
+              </div>
+              <div className="mt-6 flex items-center gap-2">
+               <span className="bg-purple-50 text-purple-600 text-xs px-2 py-1 rounded-lg border border-purple-100">
+                Generated
+              </span>
+                <span className="text-gray-400 text-xs">This month</span>
+              </div>
+            </div>
+
+            {/* CARD 5: ACTIONS SHORTCUT */}
+            <div className="bg-white rounded-3xl p-6 border border-gray-100 cozy-shadow cozy-card-hover transition-all flex flex-col justify-between">
+              <div className="flex justify-between items-start">
+                <span className="text-gray-500 font-medium text-sm">Quick Actions</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mt-2">
                 <button
-                  className="btn btn-soft btn-secondary"
-                  onClick={() => setShowForm(true)}
+                    onClick={() => setShowForm(true)}
+                    className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gray-50 hover:bg-emerald-50 hover:text-emerald-600 transition-colors gap-2"
                 >
-                  Add new Nurse
-                  <Plus size={24} className="ml-2" />
+                  <UserPlus className="w-5 h-5" />
+                  <span className="text-xs font-semibold">Add Staff</span>
+                </button>
+                <button onClick={fetchReports} className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gray-50 hover:bg-blue-50 hover:text-blue-600 transition-colors gap-2">
+                  <RefreshCw className="w-5 h-5" />
+                  <span className="text-xs font-semibold">Sync</span>
                 </button>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              <div className="bg-white rounded-2xl p-5 cozy-shadow border border-gray-100 flex items-center gap-4 hover:border-emerald-200 cozy-transition cursor-pointer">
-                <div className="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center">
-                  <UserPlus className="w-6 h-6 text-emerald-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800">Add New Nurse</h3>
-                  <p className="text-sm text-gray-500">
-                    Record a new patient visit
-                  </p>
-                </div>
-              </div>
-              <div className="bg-white rounded-2xl p-5 cozy-shadow border border-gray-100 flex items-center gap-4 hover:border-blue-200 cozy-transition cursor-pointer">
-                <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800">
-                    Schedule Appointment
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    Book a new appointment
-                  </p>
-                </div>
-              </div>
-            </div>
+          </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 sm:grid-cols-3 gap-4 mb-8">
-              <div className="bg-white rounded-2xl p-5 cozy-shadow border border-gray-100">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-gray-500 text-sm">Total Patients</span>
-                  <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
-                    <Users className="w-4 h-4 text-emerald-600" />
-                  </div>
-                </div>
-                <p className="text-2xl font-bold text-gray-800">
-                  {patients.length}
-                </p>
-              </div>
-              <div className="bg-white rounded-2xl p-5 cozy-shadow border border-gray-100">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-gray-500 text-sm">
-                    Pending Requests
-                  </span>
-                  <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center">
-                    <Inbox className="w-4 h-4 text-amber-600" />
-                  </div>
-                </div>
-                <p className="text-2xl font-bold text-gray-800">
-                  {requests.filter((r) => r.Status === "pending").length}
-                </p>
-              </div>
-              <div className="bg-white rounded-2xl p-5 cozy-shadow border border-gray-100">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-gray-500 text-sm">Active Nurses</span>
-                  <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                    <Stethoscope className="w-4 h-4 text-blue-600" />
-                  </div>
-                </div>
-                <p className="text-2xl font-bold text-gray-800">
-                  {nurses.length}
-                </p>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
 
-            <div className="grid grid-cols-3 xl:grid-cols-3 gap-6">
-              {/* Patients Table */}
-              <div className="xl:col-span-2 bg-white rounded-2xl cozy-shadow border border-gray-100 overflow-hidden">
-                <div className="p-5 border-b border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-gray-800">
-                      Current Patients
-                    </h2>
-                    <div className="flex items-center gap-2">
-                      <div className="relative">
-                        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                        <input
-                          name={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          type="search"
-                          placeholder="Search..."
-                          className="pl-9 pr-4 py-2 text-sm bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white w-48"
-                        />
-                      </div>
-                      <button
-                        onClick={fetchPatients}
-                        className="p-2 rounded-xl hover:bg-gray-50 cozy-transition"
-                      >
-                        <RefreshCw className="w-4 h-4 text-gray-500" />
-                      </button>
-                    </div>
+            {/* LEFT COLUMN: REQUESTS & PATIENTS */}
+            <div className="xl:col-span-2 space-y-8">
+
+              {/* REQUESTS TABLE - MATCHING REQUESTS.PNG */}
+              <div className="bg-white rounded-3xl border border-gray-100 cozy-shadow overflow-hidden">
+                <div className="p-6 border-b border-gray-50 flex items-center justify-between">
+                  <h3 className="font-bold text-lg text-gray-800">Recent Requests</h3>
+                  <div className="flex gap-2">
+                    <button onClick={fetchRequests} className="p-2 hover:bg-gray-50 rounded-lg text-gray-400 hover:text-emerald-600 transition">
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
 
-                <div className="overflow-auto max-h-96 custom-scrollbar">
+                <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-150 sticky top-0">
-                      <tr>
-                        <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Patient
-                        </th>
-                        <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Created By
-                        </th>
-                        <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Condition
-                        </th>
-                        <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                      </tr>
+                    <thead>
+                    <tr className="text-left border-b border-gray-50">
+                      <th className="pl-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider w-16">Image</th>
+                      <th className="px-4 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Message</th>
+                      <th className="px-4 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</th>
+                      <th className="px-4 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                      <th className="pr-6 py-4 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
+                    </tr>
                     </thead>
                     <tbody>
-                      {loadingPatients ? (
-                        <tr>
-                          <td colSpan="3" className="px-5 py-12 text-center">
-                            <div className="flex flex-col items-center text-gray-400">
-                              <Loader2 className="w-6 h-6 animate-spin mb-2" />
-                              <p className="text-sm">Loading patients...</p>
-                            </div>
-                          </td>
-                        </tr>
-                      ) : patients.length === 0 ? (
-                        <tr>
-                          <td colSpan="3" className="px-5 py-12 text-center">
-                            <div className="flex flex-col items-center text-gray-400">
-                              <Users className="w-6 h-6 mb-2" />
-                              <p className="text-sm">No patients found</p>
-                            </div>
-                          </td>
-                        </tr>
-                      ) : (
-                        filteredPatients.map((patient) => (
-                          <tr
-                            key={patient._id}
-                            className="hover:bg-gray-100 border-b-green-300 cozy-transition cursor-pointer"
-                          >
-                            
-                            <td className="px-5 py-4">
-                              <div className="flex items-center gap-3">
+                    {loadingRequests ? (
+                        <tr><td colSpan="5" className="py-10 text-center text-gray-400"><Spinner /></td></tr>
+                    ) : requests.length === 0 ? (
+                        <tr><td colSpan="5" className="py-10 text-center text-gray-400">No requests found</td></tr>
+                    ) : (
+                        requests.map((req) => (
+                            <tr key={req._id} className="group hover:bg-gray-50/50 transition-colors border-b border-gray-50 last:border-0">
+                              <td className="pl-6 py-4">
                                 <img
-                                  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJcAAACUCAMAAACp1UvlAAAAaVBMVEX///8AAAD6+vrr6+v09PTIyMjS0tLY2NhVVVX39/fx8fGamppbW1ukpKR1dXXCwsIsLCyTk5M7OztJSUlqamoUFBTe3t5DQ0NkZGSFhYWysrK4uLiNjY0lJSVvb28fHx8LCwszMzN9fX3bX5ZcAAAGLUlEQVR4nO1caZOqOhAl7IvIpiCMjqP//0deGd/cYclyOgSuVc/z1TJ1gE4vpzuxrDfeeOONTRA5deD7flA70b+m0iNygizZVzkbIq/2SRb8O4JuVpwaJkJzKjJ3e05+IqY0IJf4W3Jzkh1A6old4mxEKgthUk+E2frUnBT5flM06brM6rMGqSfO9Wqs4uSiTYuxSxKvwspJF5B6Yo2v6enY1RSNZ5hV/GmAVY9Pox8zM/GynmgyY6yiwhirHoWhyOngzh3Dzoj5ezfDtBi7GTD/zjirHt1CVra+g5fjbC+i1a5Ei7F2AbFovxotxvba29K+r0iLsbvmG1v1bfXQfGPr2dYPWh1ayeq0GEvotD42oMXYB5WWf92E19Wn0XLKTWgxVtJi5WkjWoydKLSWp8w4UpyW/7Uhry/YxKJqQ1qMVah7NZueqlGAX3FjWoxhX5IqPzxMJA/bzvdr3+/aMKcbZ4jQIjv6S5sNi684a8llOeD2XeLrunVzz+h0N9oioVolo+Xz15SfRNkpLY4p832bFIB2YpGmJlV3pSpHJHn6s3QpUsmi8Pou5SlVEYTyjDu5hWWEpdQ1IMVW5bIF4XUh8ZbwxnaydWp8nT1Ay7IIpYtM58Rz+grL5xw8BZDk+jG+Cpqc4MG2Eit2HrzIJ0jLsnChUSzyHNAlrgHMK4Ad/0G0hH1cvMSShz2KfD7uvCi6Gm4cIheG56kEWpYFryrIW/EYhPmuH8A+TBCLnFz91ydoKiQcjXK+T4QN4Yjvxh4BvJ34Zgs7+5LWGqvhlI7v8mHzCmm9lBjOzPmxG64WTjQB0obFjgvv7w76b5JX7QF7VsYz/OAFePE2FF43rvYduXUknluuZvfcHBiPQjein7jBK/MiES6LH2miqA/7VZ5wbhNScYLEZ5GKD07gjfBdQ8hWexBa44e5ROdSpF7KhrQJ657mGUVMqbQpCQWluN3NdzphNz88Bd5xikjrLuSFa8g0bZvHi6QLQcrjN0gyH+c7kuxeJXP8giLEcO2e4iceyDGfX8O5+Tc4foLiV3tI9Ze/II6E8Aoaant2r3Zi1GflNnDJXQ51m8LIkvQemmIEQmP4ghd4NRrHnzJitsbIGC8vxPPoX0gGgLTGjXh5NF53DNHya2RHb8iBu5jmsGUbTJ1OFGiOXnDrNKqv+YuvQzp0snV60G338n3ikkGO665Nu6xL292S+Qa+DoALaGuBv4twnWklCHQmUm9oDYh6RLSwcSmr5ib5PW+qkrbFRYGNkivtusCJnToTja7ds/rxe9BRvoEop8N18tOvhUZpNXULX1X669I8ON8U6uSo8FJ9jFZwvWTYv6kSb2Qn9gfY3RHLRJCnuPDMIKofzqt4uLCaVykVkJ2JYy3Stwp1zh3UQPUh6VsBLl9z6BoY/ZbN9Kn6okf9+eFOtamk30G+rXOacD9GIA8n8jpG6sKqZUdaaqn1ygtSWSwKF41aP2BLrF8xpyCpPsLl0/yOmJhK6hPOwZQmDozEwtWV30IgVxG1XhFEGrB6n/PnrIhSrxh8ERiYs+LXkeR54RWW57ww+eASDZwxJ0xNm49iVEs9xBD23I2BRjKNZcT+rAqz/i04Jzqbq0X/h2Ly3PBc7USrLU0f3XVHXoygIY+9vsahAgVG6RSpqTNMyi+mfNcP/GH6SppzH58LADVeFCMtmHguYHyOwlAQ+o/WbbAy9RzFJE7m5s6feqP0UCP/HRnn1RQxb6T3aG2psbhmZleOCxutc03Tc2D35QlYPFYNdE/OTc7NNUvDUTA+Pax7bm72xq60vvYUkxFz/XOG89bAQd/F+hPxY8m5zAexSYw9ah7yj5NJElEsTZ2m+eWxo4dxd1ZsG8h/Z42LMiPO52TTKsjEOWneufKywwNT3c1qMzPnyrlizO2O7QD/Pn3b5s7hW/x7C5rCkz+34xW8v5m7t8AS3PPwVR7SWnAepk4PJa8dY/aeB0tyL0Z4TrP+AqTYdd24vw4pS88iHcL4vRiW/B6RY142VRVWVVPmEv1tpVthXvPelR6veU9Nj9e81+eb2Uveg/Sk9or3Rn3D9RNkGrvc9p6tJ2LlvWTrbUAFXvIetyFe7N67N9544/+AP9ylWZ1BH5fJAAAAAElFTkSuQmCC"
-                                  alt={patient.firstName}
-                                  className="w-10 h-10 rounded-xl object-cover"
+                                    src={req.senderImage || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop"}
+                                    alt="Avatar"
+                                    className="w-10 h-10 rounded-full object-cover border border-gray-100"
                                 />
-                                <div>
-                                  <p className="font-medium text-gray-800">
-                                    {patient.firstName} {patient.lastName || ""}
-                                  </p>
+                              </td>
+                              <td className="px-4 py-4">
+                                <p className="text-sm font-semibold text-gray-800">{req.reason || "General Request"}</p>
+                                <p className="text-xs text-gray-400 mt-0.5">ID: #{req._id.slice(-4)}</p>
+                              </td>
+                              <td className="px-4 py-4">
+                             <span className="text-sm text-gray-500 font-medium">
+                               {new Date(req.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric'})}
+                             </span>
+                              </td>
+                              <td className="px-4 py-4">
+                                <StatusBadge status={req.Status} />
+                              </td>
+                              <td className="pr-6 py-4 text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  {req.Status === 'pending' && (
+                                      <button
+                                          onClick={(e) => { e.preventDefault(); handleApprove(req._id); }}
+                                          className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition"
+                                          title="Approve"
+                                      >
+                                        {approving ? <Loader2 className="w-4 h-4 animate-spin"/> : <Check className="w-4 h-4"/>}
+                                      </button>
+                                  )}
+                                  <button
+                                      onClick={(e) => { e.preventDefault(); handleDeleteRequest(req._id); }}
+                                      className="w-8 h-8 rounded-full bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 flex items-center justify-center transition"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
                                 </div>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="badge badge-soft badge-warning">Nurse, {patient.createdBy?.username || patient.createdBy || "Unknown"}</div>
-                            </td>
-                            <td className="px-5 py-4">
-                              <span className="text-sm text-gray-600">
-                                {patient.disease || "General checkup"}
-                              </span>
-                            </td>
-                            <td className="px-5 py-4 w-1/20">
-                              {patient.Status === "hospitalized" ? (
-                                <Badge color="failure">{patient.Status}</Badge>
-                              ) : (
-                                <Badge color="success">
-                                  {patient.Status || "Active"}
-                                </Badge>
-                              )}
-                            </td>
-                          </tr>
+                              </td>
+                            </tr>
                         ))
-                      )}
+                    )}
                     </tbody>
                   </table>
                 </div>
               </div>
 
-              <div
-                className="sticky top-0 left-0 bg-white rounded-2xl cozy-shadow border border-gray-100 overflow-hidden"
-                ref={nurseRef}
-              >
-                <div className="p-5 border-b border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-gray-800">
-                      Nursing Staff
-                    </h3>
-                    <button
-                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-                      onClick={(e) => fetchNurses(e)}
-                    >
-                      View all
-                    </button>
+              {/* PATIENTS TABLE - CLEAN MODERN LIST */}
+              <div className="bg-white rounded-3xl border border-gray-100 cozy-shadow overflow-hidden">
+                <div className="p-6 border-b border-gray-50 flex items-center justify-between flex-wrap gap-4">
+                  <h3 className="font-bold text-lg text-gray-800">Current Patients</h3>
+                  <div className="relative">
+                    <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                        type="text"
+                        placeholder="Search patients..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-9 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm w-48 focus:ring-2 focus:ring-emerald-500/20"
+                    />
                   </div>
                 </div>
 
-                <div className="p-4 space-y-2 max-h-80 overflow-y-auto custom-scrollbar">
-                  {loadingNurses ? (
-                    <div className="flex flex-col items-center py-8 text-gray-400">
-                      <Loader2 className="w-5 h-5 animate-spin mb-2" />
-                      <p className="text-sm">Loading...</p>
-                    </div>
-                  ) : nurses.length === 0 ? (
-                    <div className="flex flex-col items-center py-8 text-gray-400">
-                      <Users className="w-5 h-5 mb-2" />
-                      <p className="text-sm">No nurses found</p>
-                    </div>
-                  ) : (
-                    nurses.map((nurse, index) => (
-                      <div
-                        key={nurse._id || index}
-                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cozy-transition"
-                      >
-                        <img
-                          src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=40&h=40&fit=crop&crop=face"
-                          alt={nurse.username}
-                          className="w-10 h-10 rounded-xl object-cover"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-800 text-sm truncate">
-                            {nurse.username}
-                          </p>
-                          <p className="text-xs text-gray-500 truncate">
-                            {nurse.email}
-                          </p>
-                        </div>
-                        <span className="text-xs text-gray-400">
-                          {new Date(nurse.hireDate).toLocaleDateString()}
-                        </span>
-                        <Trash2 onClick={(e) => handleNurseDelete(e,nurse._id)}/>
-                      </div>
-                    ))
-                  )}
+                <div className="overflow-x-auto max-h-[500px] custom-scrollbar">
+                  <table className="w-full text-left">
+                    <thead className="bg-gray-50/50 sticky top-0 backdrop-blur-sm z-10">
+                    <tr>
+                      <th className="pl-6 py-4 text-xs font-semibold text-gray-500 uppercase">Patient Name</th>
+                      <th className="px-4 py-4 text-xs font-semibold text-gray-500 uppercase">Condition</th>
+                      <th className="px-4 py-4 text-xs font-semibold text-gray-500 uppercase">Status</th>
+                      <th className="pr-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase">Managed By</th>
+                    </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                    {loadingPatients ? (
+                        <tr><td colSpan="4" className="py-10 text-center"><Spinner /></td></tr>
+                    ) : filteredPatients.map((p) => (
+                        <tr key={p._id} className="hover:bg-gray-50 transition cursor-pointer">
+                          <td className="pl-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-gray-200 overflow-hidden">
+                                <img src={p.Image ? `${backendUrl}${p.Image}` : `https://ui-avatars.com/api/?name=${p.firstName}&background=random`} className="w-full h-full object-cover" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-bold text-gray-900">{p.firstName} {p.lastName}</p>
+                                <p className="text-xs text-gray-400">{p.email || "No email"}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                             <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded-md">
+                               {p.disease || "Checkup"}
+                             </span>
+                          </td>
+                          <td className="px-4 py-4">
+                              <span className={`text-xs font-bold px-2 py-1 rounded-full border ${
+                                  p.Status === 'hospitalized'
+                                      ? 'bg-rose-50 text-rose-600 border-rose-100'
+                                      : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                              }`}>
+                                {p.Status || "Active"}
+                              </span>
+                          </td>
+                          <td className="pr-6 py-4 text-right">
+                              <span className="text-xs font-medium text-gray-400">
+                                {typeof p.createdBy === 'object' ? p.createdBy.username : "Staff"}
+                              </span>
+                          </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
 
-        
-<div className="mt-6 bg-white rounded-2xl shadow border border-gray-100 overflow-hidden">
- 
-  <div className="p-5 flex items-center justify-between">
-    <h2 className="text-lg font-semibold text-gray-800">
-      Recent Requests
-    </h2>
+            {/* RIGHT COLUMN: NURSES & PROFILE */}
+            <div className="space-y-8">
+              <div className="bg-white rounded-3xl border border-gray-100 cozy-shadow p-6 sticky top-24">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-bold text-lg text-gray-800">Nursing Staff</h3>
+                  <button onClick={fetchNurses} className="text-xs font-bold text-emerald-600 hover:underline">View All</button>
+                </div>
 
-    <button
-      onClick={fetchRequests}
-      className="flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-    >
-      <RefreshCw className="w-4 h-4" />
-      Refresh
-    </button>
-  </div>
+                <div className="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
+                  {loadingNurses ? <Spinner /> : nurses.map((nurse, i) => (
+                      <div key={nurse._id || i} className="flex items-center gap-3 p-3 rounded-2xl border border-transparent hover:border-gray-100 hover:bg-gray-50 transition-all group">
+                        <img
+                            src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&h=100&fit=crop&crop=face"
+                            alt="Nurse"
+                            className="w-10 h-10 rounded-full object-cover shadow-sm"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-bold text-gray-800 truncate">{nurse.username}</h4>
+                          <p className="text-xs text-gray-400 truncate">{nurse.email}</p>
+                        </div>
+                        <button
+                            onClick={() => handleNurseDelete(nurse._id)}
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                  ))}
+                </div>
 
- 
-  <div className="hidden md:grid grid-cols-6 gap-4 px-6 py-3 text-xs font-semibold text-gray-500 border-b bg-gray-50">
-    <span>Image</span>
-    <span className="col-span-2">Message</span>
-    <span>Status</span>
-    <span className="text-right">Actions</span>
-  </div>
-
- 
-  <div>
-    {loadingRequests ? (
-      <div className="flex flex-col items-center py-8 text-gray-400">
-        <Loader2 className="w-5 h-5 animate-spin mb-2" />
-        Loading requests...
-      </div>
-    ) : requests.length === 0 ? (
-      <div className="flex flex-col items-center py-8 text-gray-400">
-        <Inbox className="w-5 h-5 mb-2" />
-        No requests found
-      </div>
-    ) : (
-      requests.map((request) => (
-        <div
-          key={request._id}
-          className="grid md:grid-cols-6 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition"
-        >
-          {/* Avatar */}
-          <div className="flex items-center gap-3">
-            <img
-              src="/images/default-avatar.png"
-              alt="avatar"
-              className="w-10 h-10 rounded-full object-cover"
-            />
-          </div>
-
-
-          {/* Message */}
-          <div className="col-span-2">
-            <p className="text-sm font-medium text-gray-800 truncate">
-              {request.reason || request.itemName}
-            </p>
-            <p className="text-xs text-gray-400">
-              {new Date(request.createdAt).toLocaleDateString()}
-            </p>
-          </div>
-
-          {/* Status */}
-          <span
-            className={`text-xs px-3 py-1 rounded-full font-medium w-fit ${
-              request.Status === "approved"
-                ? "bg-emerald-100 text-emerald-700"
-                : request.Status === "rejected"
-                ? "bg-rose-100 text-rose-700"
-                : "bg-amber-100 text-amber-700"
-            }`}
-          >
-            {request.Status}
-          </span>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-3">
-            <Trash2
-              className="w-4 h-4 text-red-500 cursor-pointer hover:text-red-700"
-              onClick={(e) => handleDeleteRequest(request._id, e)}
-            />
-            <MoreVertical className="w-4 h-4 text-gray-500 cursor-pointer" />
-          </div>
-        </div>
-      ))
-    )}
-  </div>
-</div>
+                <button
+                    onClick={() => setShowForm(true)}
+                    className="w-full mt-6 py-3 rounded-xl border border-dashed border-gray-300 text-gray-500 font-medium hover:border-emerald-500 hover:text-emerald-600 transition flex items-center justify-center gap-2"
+                >
+                  <Plus className="w-4 h-4" /> Add New Staff
+                </button>
+              </div>
+            </div>
 
           </div>
         </main>
-      </div>
 
-      {/* Add Nurse Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-rgba(0,0,0,0.2) backdrop-blur-xl bg-opacity-10 flex items-center justify-center z-10 p-4 w-full">
-          <div className="bg-white rounded-2xl cozy-shadow-lg max-w-md w-full overflow-hidden">
-            <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-800">
-                Create Account
-              </h2>
-              <button
-                onClick={() => setShowForm(false)}
-                className="p-2 rounded-xl hover:bg-gray-100 cozy-transition"
-              >
-                <X className="w-4 h-4 text-gray-500" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAccount} className="p-5 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter username"
-                  value={nurseUsername}
-                  onChange={(e) => setNurseUsername(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white text-sm"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  placeholder="example@clinic.com"
-                  value={em}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white text-sm"
-                  required
-                />
-              </div>
-                 <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Hire Date
-                </label>
-                <input
-                  type="date"
-                  placeholder="Enter hire date"
-                  value={hireDate}
-                  onChange={(e) => setHireDate(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white text-sm"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  placeholder=""
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white text-sm"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Role
-                </label>
-                <select
-                  value={formRole}
-                  onChange={(e) => setFormRole(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white text-sm"
-                  required
-                >
-                  <option value="">Select role</option>
-                  <option value="nurse">Nurse</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                disabled={adding}
-                className="w-full py-3 text-black font-medium rounded-xl hover:from-emerald-600 hover:to-teal-600 cozy-transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {adding ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <button className="btn btn-soft btn-success">
-                    Create Account
-                    <Plus size={16} className="ml-2" />
+        {/* MODAL: ADD NURSE */}
+        {showForm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-gray-900/20 backdrop-blur-sm" onClick={() => setShowForm(false)}></div>
+              <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md relative z-10 overflow-hidden animation-fade-in-up">
+                <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                  <h3 className="text-xl font-bold text-gray-800">Create Account</h3>
+                  <button onClick={() => setShowForm(false)} className="p-2 rounded-full hover:bg-gray-100 text-gray-500"><X className="w-5 h-5"/></button>
+                </div>
+                <form onSubmit={handleAccount} className="p-6 space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Username</label>
+                    <input type="text" required value={nurseUsername} onChange={e => setNurseUsername(e.target.value)} className="w-full rounded-xl border-gray-200 bg-gray-50 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Email</label>
+                    <input type="email" required value={em} onChange={e => setEmail(e.target.value)} className="w-full rounded-xl border-gray-200 bg-gray-50 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-500 uppercase">Role</label>
+                      <select required value={formRole} onChange={e => setFormRole(e.target.value)} className="w-full rounded-xl border-gray-200 bg-gray-50 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition">
+                        <option value="">Select...</option>
+                        <option value="nurse">Nurse</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-500 uppercase">Password</label>
+                      <input type="password" required value={password} onChange={e => setPassword(e.target.value)} className="w-full rounded-xl border-gray-200 bg-gray-50 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition" />
+                    </div>
+                  </div>
+                  <button type="submit" disabled={adding} className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-lg shadow-emerald-200 transition mt-4 flex items-center justify-center gap-2">
+                    {adding ? <Loader2 className="animate-spin"/> : "Create Account"}
                   </button>
-                )}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+                </form>
+              </div>
+            </div>
+        )}
 
-      {(showNotifications || showProfileMenu) && (
-        <div
-          className="fixed inset-0 z-30"
-          onClick={() => {
-            setShowNotifications(false);
-            setShowProfileMenu(false);
-          }}
-        />
-      )}
-
-      <ToastContainer
-        position="bottom-right"
-        toastClassName="!bg-white !text-gray-800 !rounded-xl !shadow-lg"
-      />
-    </div>
+        <ToastContainer position="bottom-right" />
+      </div>
   );
 }

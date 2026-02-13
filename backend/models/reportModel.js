@@ -24,7 +24,7 @@ const reportSchema = new mongoose.Schema({
         type: Date,
         default:Date.now(),
     }
-},{timestamps:true})
+})
 
 const Report = mongoose.model("Report",reportSchema);
 export default Report;
