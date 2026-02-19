@@ -5,10 +5,17 @@ export const getRequests = async (req, res) => {
   try {
     const requests = await request.find().sort({ createdAt: -1 }).populate("createdBy","username");
     if (!requests || requests.length === 0) {
-      res.status(404).json({ success: false, message: "Requests not Found!" });
-    } else {
-      res.status(200).json({ success: true, requests: requests });
+      return res.status(200).json({ success: true, requests: [] });
     }
+
+    // Normalize status field for frontend (some components expect `status` lowercase)
+    const normalized = requests.map((r) => {
+      const obj = r.toObject ? r.toObject() : r;
+      obj.status = obj.status || obj.Status || "pending";
+      return obj;
+    });
+
+    res.status(200).json({ success: true, requests: normalized });
   } catch (error) {
     console.log("Error getting requests", error.message);
     res.status(500).json({ success: false, message: "Server error" });
@@ -47,11 +54,15 @@ export const createRequests = async (req, res) => {
       reason,
       urgency,
       Status: Status || "pending",
+      status: Status || "pending",
       createdBy: req.user.id,
     });
     const savedRequest = await createdRequest.save();
-    io.to("admins").emit("requestCreated",savedRequest);
-    res.status(201).json({ success: true, request: savedRequest });
+    // emit normalized object
+    const payload = savedRequest.toObject ? savedRequest.toObject() : savedRequest;
+    payload.status = payload.status || payload.Status || "pending";
+    io.to("admins").emit("requestCreated", payload);
+    res.status(201).json({ success: true, request: payload });
   } catch (error) {
     res
       .status(501)
@@ -87,6 +98,7 @@ export const changeRequests = async (req, res) => {
         patientCount,
         reason,
         Status,
+        status: Status,
         urgency,
       },
       { new: true }
@@ -94,10 +106,10 @@ export const changeRequests = async (req, res) => {
     if (!changedRequest) {
       res.status(501).json({ message: "Failed to change Request" });
     } else {
-      io.to("admins").emit("requestChanged",changedRequest);
-      res
-        .status(200)
-        .json({ success: true, message: "Request Updated successfully!" });
+      const payload = changedRequest.toObject ? changedRequest.toObject() : changedRequest;
+      payload.status = payload.status || payload.Status || "pending";
+      io.to("admins").emit("requestChanged", payload);
+      res.status(200).json({ success: true, message: "Request Updated successfully!", request: payload });
     }
   } catch (error) {
     console.log("Error updating request", error.message);
@@ -113,15 +125,22 @@ export const approveRequests = async (req, res) => {
       return res.status(404).json({ message: "Request not found!" });
     }
 
-    if (reqDoc.Status === "approved") {
+    const currentStatus = reqDoc.status || reqDoc.Status;
+    if (currentStatus === "approved") {
       return res.status(400).json({ message: "Already approved!" });
     }
 
+    // set both fields for backwards compatibility
     reqDoc.Status = "approved";
+    reqDoc.status = "approved";
     await reqDoc.save();
-     io.to("admins").emit("requestApproved",reqDoc);
-     io.to("nurses").emit("requestApproved",reqDoc);
-    res.status(200).json({ success: true, message: "Request approved!", request: reqDoc });
+
+    const payload = reqDoc.toObject ? reqDoc.toObject() : reqDoc;
+    payload.status = payload.status || payload.Status || "approved";
+
+    io.to("admins").emit("requestApproved", payload);
+    io.to("nurses").emit("requestApproved", payload);
+    res.status(200).json({ success: true, message: "Request approved!", request: payload });
   } catch (error) {
     console.error("Error approving request:", error);
     res.status(500).json({ message: "Error approving request" });

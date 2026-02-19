@@ -12,23 +12,19 @@ import {
   RefreshCw,
   Loader2,
   Trash2,
-  MoreVertical,
   Stethoscope,
   Search,
   Plus,
   X,
   ArrowUpRight,
   Check,
-  Clock,
-  AlertCircle,
-  MoreHorizontal,
-  LogOut,
-  Settings,
+  Bell,
   BarChart3,
-  Bell
+  Settings,
+  LogOut
 } from "lucide-react";
 
-// --- CUSTOM STYLES FOR FONTS ---
+// --- CUSTOM STYLES ---
 const FontStyles = () => (
     <style>
       {`
@@ -83,16 +79,13 @@ export default function AdminPage() {
   const [nurseUsername, setNurseUsername] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [formRole, setFormRole] = useState("");
-  const [hireDate, setHireDate] = useState("");
   const [adding, setAdding] = useState(false);
   const [approving, setApproving] = useState(false);
 
   // UI States
   const [searchTerm, setSearchTerm] = useState("");
-  const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  const nurseRef = useRef(null);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   // --- DATA FETCHING ---
@@ -256,7 +249,10 @@ export default function AdminPage() {
   const handleApprove = async (requestId) => {
     try {
       setApproving(true);
-      const response = await axios.patch(`${backendUrl}/api/requests/approve/${requestId}`);
+      const token = localStorage.getItem("token");
+      const response = await axios.patch(`${backendUrl}/api/requests/approve/${requestId}`, null, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (response.data.success) {
         toast.success("Request approved!");
         fetchRequests();
@@ -294,49 +290,40 @@ export default function AdminPage() {
 
   // --- SUB-COMPONENTS ---
 
-  // 1. Status Badge Component (Visual Match for Requests)
+  // Status Badge Component
   const StatusBadge = ({ status }) => {
     const s = status?.toLowerCase() || "pending";
     if (s === "approved") {
       return (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center border border-emerald-200">
-              <Check className="w-4 h-4 text-emerald-600" />
-            </div>
-            <span className="text-emerald-700 font-medium text-sm hidden sm:block">Approved</span>
+          <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-emerald-100 border border-emerald-200 gap-1.5">
+            <Check className="w-3 h-3 text-emerald-600" />
+            <span className="text-emerald-700 font-bold text-xs">Approved</span>
           </div>
       );
     }
     if (s === "pending") {
       return (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center border border-amber-200">
-              <Clock className="w-4 h-4 text-amber-600" />
-            </div>
-            <span className="text-amber-700 font-medium text-sm hidden sm:block">Pending</span>
+          <div className="inline-flex items-center px-3 py-1 rounded-full bg-amber-50 border border-amber-200 gap-1.5 shadow-sm">
+             <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
+            <span className="text-amber-600 font-bold text-xs uppercase tracking-wide">Pending</span>
           </div>
       );
     }
     return (
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center border border-red-200">
-            <X className="w-4 h-4 text-red-600" />
-          </div>
-          <span className="text-red-700 font-medium text-sm hidden sm:block">Rejected</span>
+        <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-red-100 border border-red-200 gap-1.5">
+          <X className="w-3 h-3 text-red-600" />
+          <span className="text-red-700 font-bold text-xs">Rejected</span>
         </div>
     );
   };
 
-  // --- SUB COMPONENTS ---
+  // Sidebar Component
   const SidebarItem = ({ icon: Icon, label, count }) => (
       <div className="sidebar-item flex flex-col items-center justify-center gap-1.5 p-3 cursor-pointer group w-full text-gray-400 hover:text-emerald-600 transition-colors">
           <div className="icon-container w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 bg-transparent group-hover:bg-gray-50">
               <Icon className="w-5 h-5" />
           </div>
           <span className="text-[10px] font-semibold tracking-wide">{label}</span>
-          {count > 0 && (
-              <span className="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full"></span>
-          )}
       </div>
   );
 
@@ -398,38 +385,52 @@ export default function AdminPage() {
         {/* --- MAIN CONTENT --- */}
         <main className="ml-[100px] pt-[90px] px-6 lg:px-10 pb-10 max-w-[1600px] mx-auto">
 
-          {/* Header & Actions */}
-          <div className="flex justify-between items-end mb-8">
+          {/* HEADER SECTION */}
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Overview</h1>
-              <p className="text-gray-500 mt-1 font-medium">Welcome back, {username || "Admin"} 👋</p>
+              <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+                Dashboard
+              </h1>
+              <p className="text-gray-500 mt-1 text-sm font-medium">
+                Plan, prioritize, and accomplish your tasks with ease.
+              </p>
             </div>
-            <div className="flex gap-3">
-              <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition shadow-lg shadow-emerald-200 flex items-center gap-2">
-                <Plus className="w-4 h-4" /> Add Staff
-              </button>
+            
+            {/* QUICK ACTIONS */}
+            <div className="flex items-center gap-3">
+                  <button
+                      onClick={() => setShowForm(true)}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:border-emerald-500 hover:text-emerald-600 transition-all font-semibold text-sm shadow-sm"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    <span>Add Staff</span>
+                  </button>
+                
+                  <button 
+                    onClick={fetchReports} 
+                    className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:border-blue-500 hover:text-blue-600 transition-all font-semibold text-sm shadow-sm"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    <span>Sync Data</span>
+                  </button>
             </div>
-          </div>
-
-          {/* CARDS SECTION - MATCHING DASHBOARD.PNG */}
+          </div>        
+            
+          {/* STATS GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-
+              
             {/* CARD 1: DARK GREEN (PRIMARY) */}
             <div className="bg-emerald-900 rounded-3xl p-6 relative overflow-hidden group transition-all duration-300 hover:shadow-xl hover:shadow-emerald-900/20">
-              {/* Background decoration */}
               <div className="absolute -right-6 -top-6 w-32 h-32 bg-emerald-800 rounded-full opacity-50 blur-2xl group-hover:scale-110 transition-transform"></div>
-
               <div className="relative z-10 flex justify-between items-start">
                 <span className="text-emerald-100 font-medium text-sm">Total Patients</span>
                 <div className="w-8 h-8 rounded-full bg-emerald-800/50 flex items-center justify-center border border-emerald-700/50 text-white cursor-pointer hover:bg-emerald-700 transition">
                   <ArrowUpRight className="w-4 h-4" />
                 </div>
               </div>
-
               <div className="relative z-10 mt-4">
                 <h2 className="text-5xl font-bold text-white tracking-tight">{patients.length}</h2>
               </div>
-
               <div className="relative z-10 mt-6 flex items-center gap-2">
               <span className="bg-emerald-800 text-emerald-100 text-xs px-2 py-1 rounded-lg border border-emerald-700">
                 +5
@@ -496,26 +497,6 @@ export default function AdminPage() {
                 <span className="text-gray-400 text-xs">This month</span>
               </div>
             </div>
-
-            {/* CARD 5: ACTIONS SHORTCUT */}
-            <div className="bg-white rounded-3xl p-6 border border-gray-100 cozy-shadow cozy-card-hover transition-all flex flex-col justify-between">
-              <div className="flex justify-between items-start">
-                <span className="text-gray-500 font-medium text-sm">Quick Actions</span>
-              </div>
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <button
-                    onClick={() => setShowForm(true)}
-                    className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gray-50 hover:bg-emerald-50 hover:text-emerald-600 transition-colors gap-2"
-                >
-                  <UserPlus className="w-5 h-5" />
-                  <span className="text-xs font-semibold">Add Staff</span>
-                </button>
-                <button onClick={fetchReports} className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gray-50 hover:bg-blue-50 hover:text-blue-600 transition-colors gap-2">
-                  <RefreshCw className="w-5 h-5" />
-                  <span className="text-xs font-semibold">Sync</span>
-                </button>
-              </div>
-            </div>
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -523,14 +504,14 @@ export default function AdminPage() {
             {/* LEFT COLUMN: REQUESTS & PATIENTS */}
             <div className="xl:col-span-2 space-y-8">
 
-              {/* REQUESTS TABLE - MATCHING REQUESTS.PNG */}
+              {/* REQUESTS TABLE */}
               <div className="bg-white rounded-3xl border border-gray-100 cozy-shadow overflow-hidden">
                 <div className="p-6 border-b border-gray-50 flex items-center justify-between">
                   <h3 className="font-bold text-lg text-gray-800">Recent Requests</h3>
                   <div className="flex gap-2">
-                    <button onClick={fetchRequests} className="p-2 hover:bg-gray-50 rounded-lg text-gray-400 hover:text-emerald-600 transition">
-                      <RefreshCw className="w-4 h-4" />
-                    </button>
+                      <button onClick={fetchRequests} className="p-2 hover:bg-gray-50 rounded-lg text-gray-400 hover:text-emerald-600 transition">
+                        <RefreshCw className="w-4 h-4" />
+                      </button>
                   </div>
                 </div>
 
@@ -573,22 +554,22 @@ export default function AdminPage() {
                                 <StatusBadge status={req.Status} />
                               </td>
                               <td className="pr-6 py-4 text-right">
-                                <div className="flex items-center justify-end gap-2">
+                                <div className="flex items-center justify-end gap-3">
                                   {req.Status === 'pending' && (
-                                      <button
-                                          onClick={(e) => { e.preventDefault(); handleApprove(req._id); }}
-                                          className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition"
-                                          title="Approve"
-                                      >
-                                        {approving ? <Loader2 className="w-4 h-4 animate-spin"/> : <Check className="w-4 h-4"/>}
-                                      </button>
+                                        <button
+                                            onClick={(e) => { e.preventDefault(); handleApprove(req._id); }}
+                                            className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-all shadow-sm shadow-emerald-200"
+                                        >
+                                            {approving ? <Loader2 className="w-3 h-3 animate-spin"/> : <Check className="w-3 h-3"/>}
+                                            <span>Approve</span>
+                                        </button>
                                   )}
-                                  <button
-                                      onClick={(e) => { e.preventDefault(); handleDeleteRequest(req._id); }}
-                                      className="w-8 h-8 rounded-full bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 flex items-center justify-center transition"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
+                                    <button
+                                        onClick={(e) => { e.preventDefault(); handleDeleteRequest(req._id); }}
+                                        className="p-1.5 rounded-lg text-gray-300 hover:bg-red-50 hover:text-red-500 transition"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
                                 </div>
                               </td>
                             </tr>
@@ -599,7 +580,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* PATIENTS TABLE - CLEAN MODERN LIST */}
+              {/* PATIENTS TABLE */}
               <div className="bg-white rounded-3xl border border-gray-100 cozy-shadow overflow-hidden">
                 <div className="p-6 border-b border-gray-50 flex items-center justify-between flex-wrap gap-4">
                   <h3 className="font-bold text-lg text-gray-800">Current Patients</h3>
@@ -647,18 +628,18 @@ export default function AdminPage() {
                              </span>
                           </td>
                           <td className="px-4 py-4">
-                              <span className={`text-xs font-bold px-2 py-1 rounded-full border ${
-                                  p.Status === 'hospitalized'
-                                      ? 'bg-rose-50 text-rose-600 border-rose-100'
-                                      : 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                              }`}>
-                                {p.Status || "Active"}
-                              </span>
+                             <span className={`text-xs font-bold px-2 py-1 rounded-full border ${
+                                 p.Status === 'hospitalized'
+                                     ? 'bg-rose-50 text-rose-600 border-rose-100'
+                                     : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                             }`}>
+                               {p.Status || "Active"}
+                             </span>
                           </td>
                           <td className="pr-6 py-4 text-right">
-                              <span className="text-xs font-medium text-gray-400">
-                                {typeof p.createdBy === 'object' ? p.createdBy.username : "Staff"}
-                              </span>
+                             <span className="text-xs font-medium text-gray-400">
+                               {typeof p.createdBy === 'object' ? p.createdBy.username : "Staff"}
+                             </span>
                           </td>
                         </tr>
                     ))}
@@ -688,12 +669,12 @@ export default function AdminPage() {
                           <h4 className="text-sm font-bold text-gray-800 truncate">{nurse.username}</h4>
                           <p className="text-xs text-gray-400 truncate">{nurse.email}</p>
                         </div>
-                        <button
-                            onClick={() => handleNurseDelete(nurse._id)}
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                          <button
+                              onClick={() => handleNurseDelete(nurse._id)}
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                       </div>
                   ))}
                 </div>

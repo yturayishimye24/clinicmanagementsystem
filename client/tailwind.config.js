@@ -54,4 +54,5 @@ export default {
     // 2. Add the TAOS plugin here
     require('taos/plugin'),
   ],
+  
 };

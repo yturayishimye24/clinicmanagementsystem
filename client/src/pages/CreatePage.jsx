@@ -91,6 +91,7 @@ export default function NursePage() {
     const [body, setBody] = useState("");
     const [conclusion, setConclusion] = useState("");
     const [reporting, setReporting] = useState(false);
+    const [reports,setReports] = useState(false);
     const [reportForm, ShowReportForm] = useState(false);
 
     // Request Form States
@@ -103,7 +104,6 @@ export default function NursePage() {
 
     // UI & Data States
     const [myRequests, setMyRequests] = useState([]);
-    const [reports, setReports] = useState([]);
     const [email, setEmail] = useState("");
     const [username, setUsername] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
@@ -139,19 +139,6 @@ export default function NursePage() {
         }
     };
 
-    const fetchReports = async () => {
-        try {
-            const token = localStorage.getItem("token");
-            const response = await axios.get(`${backendUrl}/api/report/display_report`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const d = response.data;
-            setReports(Array.isArray(d) ? d : (Array.isArray(d.reports) ? d.reports : []));
-        } catch (error) {
-            console.error("Error fetching reports:", error);
-        }
-    };
-
     const fetchEmail = async () => {
         try {
             const token = localStorage.getItem("token");
@@ -181,7 +168,6 @@ export default function NursePage() {
         fetchEmail();
         fetchPatients();
         fetchRequests();
-        fetchReports();
     }, [navigate]);
 
     // --- ACTIONS ---
@@ -202,6 +188,7 @@ export default function NursePage() {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             toast.success("Report generated!");
+
             ShowReportForm(false);
             setReportTitle(""); setBody(""); setConclusion("");
         } catch (error) {
@@ -210,7 +197,17 @@ export default function NursePage() {
             setReporting(false);
         }
     };
-
+    const displayReports = async (e)=>{
+        e.preventDefault();
+        try{
+           const response= await axios.get(`${backendurl}/api/report/display-report`);
+           if(response.data.success){
+            setReports(response.data.report)
+           }
+        }catch(error){
+            console.log("Error displaying reports",error)
+        }
+    }
     const handleHospitalize = async (patientId) => {
         if (!window.confirm("Hospitalize this patient?")) return;
         try {
@@ -238,7 +235,7 @@ export default function NursePage() {
             toast.error("Error deleting patient");
         }
     };
-
+   
     const handleDeleteRequest = async (requestId, e) => {
         e.preventDefault();
         if (!window.confirm("Delete this request?")) return;
@@ -371,7 +368,7 @@ export default function NursePage() {
                             <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-white shadow-lg shadow-emerald-200">
                                 <Play className="w-4 h-4 fill-white" />
                             </div>
-                            <span className="text-xl font-bold text-gray-800 tracking-tight">GOGO</span>
+                            <span className="text-xl font-bold text-gray-800 tracking-tight">CLINIC</span>
                         </div>
                         <div className="hidden md:flex items-center text-sm text-gray-400 font-medium">
                             <span className="hover:text-emerald-600 cursor-pointer transition">Nurse Portal</span>
@@ -496,7 +493,7 @@ export default function NursePage() {
                         </div>
                         <h2 className="text-5xl font-bold text-gray-800 mt-4">{reports.length}</h2>
                         <div className="mt-4 flex items-center gap-2">
-                            <span className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-lg">This Month</span>
+                            <span className="bg-blue-50 text-blue-600 text-px-2 py-1 rounded-lg">This Month</span>
                         </div>
                     </div>
                 </div>
@@ -529,7 +526,7 @@ export default function NursePage() {
                                         <tr key={patient._id} className="hover:bg-gray-50/50 transition group">
                                             <td className="pl-6 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <img src={`${backendUrl}${patient.Image}`} alt="" className="w-10 h-10 rounded-xl object-cover bg-gray-100" onError={(e) => e.target.src = 'https://via.placeholder.com/40'} />
+                                                    <img src={`${backendUrl}/uploads/${patient.image}`} alt="" className="w-10 h-10 rounded-xl object-cover bg-gray-100" />
                                                     <div>
                                                         <p className="font-bold text-sm text-gray-800">{patient.firstName} {patient.lastName}</p>
                                                         <p className="text-xs text-gray-400">{patient.gender}, {new Date().getFullYear() - new Date(patient.date).getFullYear()} yrs</p>
@@ -652,33 +649,8 @@ export default function NursePage() {
                                 </select>
                             </div>
                             <div className="md:col-span-2 space-y-1">
-                                <label className="text-xs font-bold text-gray-500 uppercase">Patient Photo</label>
-                                <div className="flex items-center gap-4">
-                                    {patientImage && (
-                                        <img src={URL.createObjectURL(patientImage)} alt="preview" className="w-16 h-16 rounded-lg object-cover" />
-                                    )}
-                                    <input 
-                                        type="file" 
-                                        required 
-                                        accept="image/*" 
-                                        onChange={e => setPatientImage(e.target.files[0])} 
-                                        className="flex-1 p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-emerald-500/20"
-                                    />
-                                </div>
-                            </div>
-                            <div className="md:col-span-2 space-y-1">
                                 <label className="text-xs font-bold text-gray-500 uppercase">Condition / Disease</label>
                                 <input type="text" required value={disease} onChange={e => setDisease(e.target.value)} className="w-full p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-emerald-500/20"/>
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-gray-500 uppercase">Marital Status</label>
-                                <select required value={maritalStatus} onChange={e => setMaritalStatus(e.target.value)} className="w-full p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-emerald-500/20">
-                                    <option value="">Select...</option>
-                                    <option value="single">Single</option>
-                                    <option value="married">Married</option>
-                                    <option value="divorced">Divorced</option>
-                                    <option value="widowed">Widowed</option>
-                                </select>
                             </div>
                             <div className="md:col-span-2 border-t border-gray-100 pt-6 flex justify-end gap-3">
                                 <button type="button" onClick={() => setShowForm(false)} className="px-6 py-3 text-gray-500 font-bold hover:bg-gray-50 rounded-xl">Cancel</button>

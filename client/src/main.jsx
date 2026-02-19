@@ -6,6 +6,7 @@ import {AuthContext} from "../context/authContext.jsx";
 import "./index.css";
 import "flowbite";
 
+
 createRoot(document.getElementById("root")).render(
     <React.StrictMode>
         <AuthContext>

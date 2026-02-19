@@ -34,6 +34,7 @@ import house from "../../public/images/house.png"
 import FAQ from "../components/Faqs.jsx";
 import TEAM from "../components/teamSection.jsx";
 import drake from "../../public/images/asyvlogo.png";
+import ContactUs from "../components/ContactUs.jsx";
 import {
   Footer,
   FooterBrand,
@@ -52,14 +53,19 @@ const LandingPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [toggleBg,setToggleBg] = useState(false);
 
   const teamRef = useRef(null);
   const faqRef = useRef(null);
   const HomeRef = useRef(null);
   const servicesRef = useRef(null);
   const whyChooseUsRef = useRef(null);
+  const contactUsRef = useRef(null);
   const { login } = useAuth();
    
+  const handleToggleBg = () => {
+    setToggleBg(!toggleBg);
+  }
   const handleShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -74,6 +80,10 @@ const LandingPage = () => {
   const scrollToWhyUs = () => {
     whyChooseUsRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+  const scrollToContactUs = () => {
+    contactUsRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
+  
   const openLoginModal = () => setShowLoginModal(true);
   const closeLoginModal = () => {
     setShowLoginModal(false);
@@ -147,17 +157,18 @@ const LandingPage = () => {
 
   return (
     <div className="font-sans min-h-screen bg-white">
+      
       <header className="absolute mb-20 top-0 left-0 w-full z-50 ">
         <nav
           className="mx-auto mt-6 max-w-6xl
                backdrop-blur-lg
-              
+               bg-transparent
                border border-white/40
                rounded-full shadow-md
                px-6 py-2.5
                flex items-center justify-between"
         >
-          {/* Logo */}
+         
           <div
             onClick={goToHome}
             className="flex items-center gap-2 cursor-pointer"
@@ -171,10 +182,13 @@ const LandingPage = () => {
           </div>
 
           {/* Nav */}
-          <ul className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-700">
+          <ul className="hidden md:flex items-center gap-6 text-sm font-poppins text-gray-700">
             <li
-              onClick={goToHome}
-              className="hover:text-black cursor-pointer transition-colors"
+              onClick={()=> {
+                goToHome();
+                handleToggleBg();
+              }}
+              className={`hover:text-black cursor-pointer transition-colors bg-blue-200 px-10 py-3 rounded-full ${toggleBg ? 'bg-green-200' : ''}`}
             >
               Home
             </li>
@@ -190,8 +204,14 @@ const LandingPage = () => {
             >
               Team
             </li>
+            <li
+              onClick={scrollToContactUs}
+              className="hover:text-black cursor-pointer transition-colors"
+            >
+              Contact Us
+            </li>
           </ul>
-
+          
           {/* CTA */}
           <button
             onClick={openLoginModal}
@@ -356,7 +376,7 @@ const LandingPage = () => {
           </h2>
           <div className="max-w-6xl mx-auto px-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-              <div className="bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-100 group">
+              <div>
                 <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-md">
                   <Activity className="text-black" size={28} />
                 </div>
@@ -593,7 +613,7 @@ const LandingPage = () => {
       )}
 
       <ToastContainer position="bottom-right" />
-
+       <ContactUs ref={contactUsRef}/>
       <Footer container className="mt-20 bg-white text-white">
         <div className="w-full text-center">
           <div className="w-full justify-between sm:flex sm:items-center sm:justify-between">

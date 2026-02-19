@@ -4,7 +4,7 @@ const addSchema = new mongoose.Schema({
   maritalStatus:{
     type: String,
     enum:["single","married","divorced","widowed"],
-    required:true,
+    required:false,
   },
   firstName: {
     type: String,
