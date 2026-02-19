@@ -359,7 +359,7 @@ export default function NursePage() {
         <div className="min-h-screen bg-[#F8FAFC] font-sans">
             <FontStyles />
 
-            {/* --- NAVBAR (Based on GOGO Screenshot) --- */}
+           
             <nav className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 h-[70px]">
                 <div className="flex items-center justify-between h-full px-6">
                     {/* Left: Logo & Breadcrumb */}
@@ -601,15 +601,15 @@ export default function NursePage() {
                         <form onSubmit={Report} className="space-y-4">
                             <div>
                                 <label className="text-xs font-bold text-gray-500 uppercase">Title</label>
-                                <input type="text" required value={reportTitle} onChange={e => setReportTitle(e.target.value)} className="w-full mt-1 p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-emerald-500/20" />
+                                <input type="text" required value={reportTitle} onChange={e => setReportTitle(e.target.value)} className="w-full mt-1 p-3 rounded-xl  border-gray-200 focus:border-3 focus:border-emerald-400/20" />
                             </div>
                             <div>
                                 <label className="text-xs font-bold text-gray-500 uppercase">Observations</label>
-                                <textarea required rows={4} value={body} onChange={e => setBody(e.target.value)} className="w-full mt-1 p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-emerald-500/20 resize-none"></textarea>
+                                <textarea required rows={4} value={body} onChange={e => setBody(e.target.value)} className="w-full mt-1 p-3  rounded-xl border-gray-200 focus:border-3 focus:border-emerald-400/20 resize-none"></textarea>
                             </div>
                             <div>
                                 <label className="text-xs font-bold text-gray-500 uppercase">Conclusion</label>
-                                <textarea required rows={2} value={conclusion} onChange={e => setConclusion(e.target.value)} className="w-full mt-1 p-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-emerald-500/20 resize-none"></textarea>
+                                <textarea required rows={2} value={conclusion} onChange={e => setConclusion(e.target.value)} className="w-full mt-1 p-3 border-gray-200 rounded-xl  focus:border-3 focus:border-emerald-400/20 resize-none"></textarea>
                             </div>
                             <div className="flex justify-end pt-4">
                                 <button type="submit" className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition">{reporting ? <Loader2 className="animate-spin"/> : "Submit Report"}</button>

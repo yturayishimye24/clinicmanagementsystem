@@ -53,7 +53,7 @@ const LandingPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [toggleBg,setToggleBg] = useState(false);
+ const [activeTab, setActiveTab] = useState("home");
 
   const teamRef = useRef(null);
   const faqRef = useRef(null);
@@ -84,6 +84,41 @@ const LandingPage = () => {
     contactUsRef.current?.scrollIntoView({ behavior: "smooth" });
   }
   
+  // INTERSECTION OBSERVER FOR CARDS
+
+ useEffect(() => {
+    const sections = [
+      { ref: HomeRef, name: "home" },
+      { ref: servicesRef, name: "services" },
+      { ref: teamRef, name: "team" },
+      { ref: contactUsRef, name: "contact" },
+    ];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        console.log(entries);
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const activeSection = sections.find(
+              (sec) => sec.ref.current === entry.target
+            );
+            if (activeSection) {
+              setActiveTab(activeSection.name);
+            }
+          }
+        });
+      },
+      { threshold: 0.5 } // Triggers when 50% of the section is visible
+    );
+
+    sections.forEach((sec) => {
+      if (sec.ref.current) {
+        observer.observe(sec.ref.current);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, []);
   const openLoginModal = () => setShowLoginModal(true);
   const closeLoginModal = () => {
     setShowLoginModal(false);
@@ -186,9 +221,9 @@ const LandingPage = () => {
             <li
               onClick={()=> {
                 goToHome();
-                handleToggleBg();
+              
               }}
-              className={`hover:text-black cursor-pointer transition-colors bg-blue-200 px-10 py-3 rounded-full ${toggleBg ? 'bg-green-200' : ''}`}
+              className={`hover:text-black cursor-pointer transition-colors bg-blue-200 px-10 py-3 rounded-full ${activeTab === "home" ? "bg-blue-300 text-gray-900" : ""}`}
             >
               Home
             </li>
@@ -367,82 +402,129 @@ const LandingPage = () => {
           </div>
         </div>
 
-        <div
-          ref={whyChooseUsRef}
-          className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-white"
-        >
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-10 sm:mb-16 text-gray-800">
-            Why Choose Us
-          </h2>
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-              <div>
-                <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-md">
-                  <Activity className="text-black" size={28} />
+       {/* Why Choose Us Section */}
+        <div ref={whyChooseUsRef} className="py-16 sm:py-24 px-4 sm:px-6 bg-white overflow-hidden">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+            <div className="max-w-2xl">
+              <h2 className="text-4xl sm:text-5xl font-medium text-gray-900 tracking-tight mb-4">
+                Why Choose Us
+              </h2>
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Experience healthcare management designed with precision, security, and the modern professional in mind.
+              </p>
+            </div>
+          </div>
+          
+          <div className="max-w-7xl mx-auto">
+            <div className="flex overflow-x-auto gap-6 pb-12 pt-4 snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              
+              {/* Card 1 */}
+              <div className="bg-white rounded-[2rem] p-8 border border-gray-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between min-h-[320px] w-[85vw] sm:w-[400px] flex-shrink-0 snap-center group">
+                <div>
+                  <div className="w-14 h-14 rounded-2xl bg-blue-50/50 flex items-center justify-center mb-8 group-hover:bg-blue-50 transition-colors">
+                    <Activity className="text-blue-600" size={26} />
+                  </div>
+                  <h3 className="text-2xl font-medium text-gray-900 mb-3">Expert Team</h3>
+                  <p className="text-base text-gray-600 leading-relaxed">
+                    Our experienced professionals ensure top-quality care and seamless operational efficiency for every single patient.
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-gray-900">
-                  Expert Team
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Our experienced professionals ensure top-quality care for
-                  every patient.
-                </p>
-              </div>
-              <div className="bg-gradient-to-br from-emerald-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-emerald-100 group">
-                <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-md">
-                  <Check className="text-black" size={28} />
+                <div className="flex items-center gap-2 mt-8 text-blue-600 font-medium cursor-pointer w-max group/btn">
+                  <span>Learn more</span>
+                  <ArrowRight size={18} className="transform group-hover/btn:translate-x-1 transition-transform" />
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-gray-900">
-                  Reliable Services
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Dependable healthcare solutions you can trust every day.
-                </p>
               </div>
-              <div className="bg-gradient-to-br from-purple-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-purple-100 group">
-                <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-md">
-                  <Phone className="text-black" size={28} />
+
+              {/* Card 2 */}
+              <div className="bg-white rounded-[2rem] p-8 border border-gray-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between min-h-[320px] w-[85vw] sm:w-[400px] flex-shrink-0 snap-center group">
+                <div>
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-50/50 flex items-center justify-center mb-8 group-hover:bg-emerald-50 transition-colors">
+                    <Check className="text-emerald-600" size={26} />
+                  </div>
+                  <h3 className="text-2xl font-medium text-gray-900 mb-3">Reliable Services</h3>
+                  <p className="text-base text-gray-600 leading-relaxed">
+                    Dependable healthcare software solutions you can trust every day, backed by enterprise-grade stability.
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-gray-900">
-                  24/7 Support
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Round-the-clock assistance for all your healthcare needs.
-                </p>
+                <div className="flex items-center gap-2 mt-8 text-emerald-600 font-medium cursor-pointer w-max group/btn">
+                  <span>Learn more</span>
+                  <ArrowRight size={18} className="transform group-hover/btn:translate-x-1 transition-transform" />
+                </div>
               </div>
+
+              {/* Card 3 */}
+              <div className="bg-white rounded-[2rem] p-8 border border-gray-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between min-h-[320px] w-[85vw] sm:w-[400px] flex-shrink-0 snap-center group">
+                <div>
+                  <div className="w-14 h-14 rounded-2xl bg-purple-50/50 flex items-center justify-center mb-8 group-hover:bg-purple-50 transition-colors">
+                    <Phone className="text-purple-600" size={26} />
+                  </div>
+                  <h3 className="text-2xl font-medium text-gray-900 mb-3">24/7 Support</h3>
+                  <p className="text-base text-gray-600 leading-relaxed">
+                    Round-the-clock technical assistance and medical triage support for all your operational needs.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 mt-8 text-purple-600 font-medium cursor-pointer w-max group/btn">
+                  <span>Learn more</span>
+                  <ArrowRight size={18} className="transform group-hover/btn:translate-x-1 transition-transform" />
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
 
-        <div
-          ref={servicesRef}
-          className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-gray-50"
-        >
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-10 sm:mb-16 text-gray-800">
-            Our Services
-          </h2>
-          <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {services.map((service, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-gray-200 group cursor-pointer"
-                style={{
-                  animation: `fadeInUp 0.5s ease-out ${index * 0.1}s both`,
-                }}
-              >
+        {/* Our Services Section */}
+        <div ref={servicesRef} className="py-16 sm:py-24 px-4 sm:px-6 bg-gray-50/50 overflow-hidden">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-6">
+            <div className="max-w-2xl">
+              <h2 className="text-4xl sm:text-5xl font-medium text-gray-900 tracking-tight mb-4">
+                Explore our services
+              </h2>
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Everything you need to manage your clinic efficiently in one centralized, secure location.
+              </p>
+            </div>
+            <button className="hidden sm:block border-2 border-gray-200 text-gray-900 px-6 py-3 rounded-full font-medium hover:border-gray-900 hover:bg-gray-900 hover:text-white transition-all duration-300">
+              Explore all services
+            </button>
+          </div>
+          
+          <div className="max-w-7xl mx-auto">
+            <div className="flex overflow-x-auto gap-6 pb-12 pt-4 snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {services.map((service, index) => (
                 <div
-                  className={` w-14 h-14 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-md`}
+                  key={index}
+                  className="bg-white rounded-[2rem] p-8 border border-gray-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between min-h-[320px] w-[85vw] sm:w-[400px] flex-shrink-0 snap-center group"
+                  style={{
+                    animation: `fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.1}s both`,
+                  }}
                 >
-                  <service.icon className="text-black" size={24} />
+                  <div>
+                    <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
+                      <service.icon className="text-gray-900" size={26} />
+                    </div>
+                    <h3 className="text-2xl font-medium text-gray-900 mb-3">{service.name}</h3>
+                    <p className="text-base text-gray-600 leading-relaxed">
+                      Simplify and manage {service.name.toLowerCase()} efficiently in one location. Built for speed and accuracy.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 mt-8 text-gray-900 font-medium cursor-pointer w-max group/btn">
+                    <span>Learn more</span>
+                    <ArrowRight size={18} className="transform group-hover/btn:translate-x-1 transition-transform" />
+                  </div>
                 </div>
-                <h3 className="text-gray-900 font-semibold text-lg mb-2 group-hover:text-gray-700 transition-colors">
-                  {service.name}
-                </h3>
-                <div className="h-1 w-12 bg-gradient-to-r from-green-400 to-orange-500 rounded-full group-hover:w-full transition-all duration-300"></div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+          
+          <div className="max-w-7xl mx-auto mt-2 sm:hidden">
+            <button className="w-full border-2 border-gray-200 text-gray-900 px-6 py-3 rounded-full font-medium hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all duration-300">
+              Explore all services
+            </button>
           </div>
         </div>
+
+    
 
         <div className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-white text-center">
           <div className="max-w-4xl mx-auto bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden">
@@ -504,110 +586,128 @@ const LandingPage = () => {
       </main>
 
       {/* Login Modal with fixed z-index */}
+      {/* Login Modal with fixed z-index */}
       {showLoginModal && (
         <div className="fixed inset-0 z-[9999] flex justify-center items-center">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
             onClick={closeLoginModal}
           ></div>
 
           {/* Modal Content */}
-          <div className="relative z-[10000] rounded-2xl shadow-2xl max-w-md w-full mx-4 animate-modalSlideIn">
+          <div className="relative z-[10000] bg-white rounded-md shadow-[0_24px_38px_3px_rgba(0,0,0,0.14),0_9px_46px_8px_rgba(0,0,0,0.12),0_11px_15px_-7px_rgba(0,0,0,0.2)] max-w-[450px] w-full mx-4 animate-modalSlideIn overflow-hidden p-10">
+            
+            {/* Close Button */}
             <button
               onClick={closeLoginModal}
-              className="absolute -top-12 left-1/2 transform -translate-x-1/2 text-white bg-red-500 hover:bg-red-600 flex items-center justify-center rounded-full w-10 h-10 transition-colors shadow-lg"
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 hover:bg-red-100 p-2 rounded-md transition-colors"
             >
-              <X size={24} />
+              <X size={24} strokeWidth={1.5} />
             </button>
 
-            <Card className="border-0 shadow-2xl">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Welcome Back
-                </h2>
-                <p className="text-gray-600 mt-2">
-                  Sign in to continue to your account
-                </p>
+            {/* Header */}
+            <div className="text-center mb-10 mt-2">
+              <div className="w-12 h-12 bg-[#f0f4f9] rounded-full flex items-center justify-center mx-auto mb-4">
+                <Activity className="text-[#33cc82]" size={24} />
+              </div>
+              <h2 className="text-[32px] font-normal text-gray-900 mb-2">
+                Sign in
+              </h2>
+              <p className="text-[16px] text-gray-600 font-poppins">
+                to continue to Clinic Workspace
+              </p>
+            </div>
+
+            {/* Form */}
+            <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+              
+              {/* Floating Label Input: Email */}
+              <div className="relative mt-2">
+                <input
+                  type="email"
+                  id="email1"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  /* The 'peer' class is crucial here. 'placeholder-transparent' hides the real HTML placeholder but triggers the CSS state */
+                  className="block px-4 pb-3.5 pt-4 w-full text-[16px] text-gray-900 bg-transparent rounded-md border border-gray-400 appearance-none focus:outline-none focus:ring-0 focus:border-2 focus:border-[#1a73e8] peer"
+                  placeholder=" "
+                  required
+                />
+                <label
+                  htmlFor="email1"
+                  className="absolute text-[16px] text-gray-500 bg-white px-1 duration-200 transform -translate-y-5 scale-75 top-2 z-10 origin-[0] left-3 peer-focus:text-[#1a73e8] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-5 cursor-text"
+                >
+                  Email Address
+                </label>
               </div>
 
-              <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-                <div>
-                  <div className="mb-2 block">
-                    <Label
-                      htmlFor="email1"
-                      className="text-gray-700 font-medium"
-                    >
-                      Email Address
-                    </Label>
-                  </div>
-                  <TextInput
-                    id="email1"
-                    type="email"
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className="focus:ring-emerald-500 focus:border-emerald-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <div className="mb-2 block">
-                    <Label
-                      htmlFor="password1"
-                      className="text-gray-700 font-medium"
-                    >
-                      Password
-                    </Label>
-                  </div>
-                  <div className="relative">
-                    <TextInput
-                      id="password1"
-                      type={showPassword ? "text" : "password"}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
-                      className="focus:ring-emerald-500 focus:border-emerald-500"
-                      required
-                    />
-                  </div>
-                  <div
-                    className="flex items-center justify-start mt-3 gap-2 text-sm text-gray-600 cursor-pointer select-none"
-                    onClick={handleShowPassword}
-                  >
-                    {showPassword ? (
-                      <FiEye className="text-gray-500" size={18} />
-                    ) : (
-                      <FiEyeOff className="text-gray-500" size={18} />
-                    )}
-                    <span className="hover:text-gray-900">
-                      {showPassword ? "Hide password" : "Show password"}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox
+              {/* Floating Label Input: Password */}
+              <div className="relative mt-2">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password1"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="block px-4 pb-3.5 pt-4 w-full text-[16px] text-gray-900 bg-transparent rounded-md border border-gray-400 appearance-none focus:outline-none focus:ring-0 focus:border-2 focus:border-[#1a73e8] peer pr-12"
+                  placeholder=" "
+                  required
+                />
+                <label
+                  htmlFor="password1"
+                  className="absolute text-[16px] text-gray-500 bg-white px-1 duration-200 transform -translate-y-5 scale-75 top-2 z-10 origin-[0] left-3 peer-focus:text-[#1a73e8] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-5 cursor-text"
+                >
+                  Password
+                </label>
+                
+                {/* Eye Icon inside the input */}
+                <button
+                  type="button"
+                  className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-500 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  onClick={handleShowPassword}
+                >
+                  {showPassword ? <FiEye size={20} /> : <FiEyeOff size={20} />}
+                </button>
+              </div>
+
+              {/* Options */}
+              <div className="flex items-center justify-between mt-2 px-1">
+                <div className="flex items-center gap-3">
+                  <input
                     id="remember"
-                    className="text-emerald-500 focus:ring-emerald-500"
+                    type="checkbox"
+                    className="w-4 h-4 text-[#33cc82] bg-white border-gray-400 rounded focus:ring-[#33cc82] focus:ring-2 cursor-pointer transition-all"
                   />
-                  <Label htmlFor="remember" className="text-gray-700">
+                  <label htmlFor="remember" className="text-[14px] text-gray-700 cursor-pointer font-medium">
                     Remember me
-                  </Label>
+                  </label>
                 </div>
-                <Button
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-between items-center mt-8">
+                <button
+                  type="button"
+                  className="text-[#33cc82] text-[14px] font-medium hover:bg-green-50 px-4 py-2 rounded-full transition-colors"
+                >
+                  Forgot password?
+                </button>
+                <button
                   type="submit"
-                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all py-2.5 rounded-lg"
+                  className="bg-[#33cc82] hover:bg-[#33cc82] text-white font-medium text-[14px] px-6 py-2.5 rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-colors tracking-wide"
                   disabled={loading}
                 >
                   {loading ? (
                     <div className="flex items-center gap-2">
-                      <ClipLoader color="white" size={20} />
+                      <ClipLoader color="white" size={16} />
                       <span>Signing in...</span>
                     </div>
                   ) : (
-                    "Sign In"
+                    "Next"
                   )}
-                </Button>
-              </form>
-            </Card>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
