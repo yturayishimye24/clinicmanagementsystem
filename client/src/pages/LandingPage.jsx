@@ -28,13 +28,20 @@ import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 // import { backendUrl } from "../App.jsx";
 import techImage from "../../public/images/techImage.png";
-import stethoscope from "../../public/images/stethoscope.png"
-import syringe from "../../public/images/syringe.png"
-import house from "../../public/images/house.png"
+import stethoscope from "../../public/images/stethoscope.png";
+import syringe from "../../public/images/syringe.png";
+import house from "../../public/images/house.png";
 import FAQ from "../components/Faqs.jsx";
 import TEAM from "../components/teamSection.jsx";
 import drake from "../../public/images/asyvlogo.png";
 import ContactUs from "../components/ContactUs.jsx";
+import monGradient from "../../public/images/MonGradient.jpg";
+import monGreen from "../../public/images/MonGreen.jpg";
+import monLightGreen from "../../public/images/MonLightGreen.jpg";
+import monLightOrange from "../../public/images/MonLightOrange.jpg";
+import monOrange from "../../public/images/MonOrange.jpg";
+import monPink from "../../public/images/MonPink.jpg";
+import monLightPurple from "../../public/images/MonLightPurple.jpg";
 import {
   Footer,
   FooterBrand,
@@ -53,7 +60,7 @@ const LandingPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
- const [activeTab, setActiveTab] = useState("home");
+  const [activeTab, setActiveTab] = useState("home");
 
   const teamRef = useRef(null);
   const faqRef = useRef(null);
@@ -62,10 +69,10 @@ const LandingPage = () => {
   const whyChooseUsRef = useRef(null);
   const contactUsRef = useRef(null);
   const { login } = useAuth();
-   
+
   const handleToggleBg = () => {
     setToggleBg(!toggleBg);
-  }
+  };
   const handleShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -82,11 +89,11 @@ const LandingPage = () => {
   };
   const scrollToContactUs = () => {
     contactUsRef.current?.scrollIntoView({ behavior: "smooth" });
-  }
-  
+  };
+
   // INTERSECTION OBSERVER FOR CARDS
 
- useEffect(() => {
+  useEffect(() => {
     const sections = [
       { ref: HomeRef, name: "home" },
       { ref: servicesRef, name: "services" },
@@ -100,7 +107,7 @@ const LandingPage = () => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const activeSection = sections.find(
-              (sec) => sec.ref.current === entry.target
+              (sec) => sec.ref.current === entry.target,
             );
             if (activeSection) {
               setActiveTab(activeSection.name);
@@ -108,7 +115,7 @@ const LandingPage = () => {
           }
         });
       },
-      { threshold: 0.5 } // Triggers when 50% of the section is visible
+      { threshold: 0.5 }, // Triggers when 50% of the section is visible
     );
 
     sections.forEach((sec) => {
@@ -128,10 +135,9 @@ const LandingPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setTimeout(()=>{
-     setLoading(true);
+    setTimeout(() => {
+      setLoading(true);
     }, 2000);
-    
 
     try {
       if (!email.trim() || !password.trim()) {
@@ -185,17 +191,40 @@ const LandingPage = () => {
   }, [showLoginModal]);
 
   const services = [
-    { name: "Recording patients", icon: Users },
-    { name: "Requesting medicines from Lab", icon: Package },
-    { name: "Updating patient's infos", icon: FileText },
-    { name: "Deleting patient records", icon: Trash2 },
-    { name: "Reporting", icon: BarChart3 },
-    { name: "Statistics", icon: TrendingUp },
+    {
+      name: "Recording patients",
+      icon: Users,
+      backgroundImageServiceCards: `url(${monGreen})`,
+    },
+    {
+      name: "Requesting medicines from Lab",
+      icon: Package,
+      backgroundImageServiceCards: `url(${monLightGreen})`,
+    },
+    {
+      name: "Updating patient's infos",
+      icon: FileText,
+      backgroundImageServiceCards: `url(${monLightOrange})`,
+    },
+    {
+      name: "Deleting patient records",
+      icon: Trash2,
+      backgroundImageServiceCards: `url(${monLightPurple})`,
+    },
+    {
+      name: "Reporting",
+      icon: BarChart3,
+      backgroundImageServiceCards: `url(${monOrange})`,
+    },
+    {
+      name: "Statistics",
+      icon: TrendingUp,
+      backgroundImageServiceCards: `url(${monPink})`,
+    },
   ];
 
   return (
     <div className="font-sans min-h-screen bg-white">
-      
       <header className="absolute mb-20 top-0 left-0 w-full z-50 ">
         <nav
           className="mx-auto mt-6 max-w-6xl
@@ -206,7 +235,6 @@ const LandingPage = () => {
                px-6 py-2.5
                flex items-center justify-between"
         >
-         
           <div
             onClick={goToHome}
             className="flex items-center gap-2 cursor-pointer"
@@ -222,9 +250,8 @@ const LandingPage = () => {
           {/* Nav */}
           <ul className="hidden md:flex items-center gap-6 text-sm font-poppins text-gray-700">
             <li
-              onClick={()=> {
+              onClick={() => {
                 goToHome();
-              
               }}
               className={`hover:text-black cursor-pointer transition-colors bg-blue-200 px-10 py-3 rounded-full ${activeTab === "home" ? "bg-blue-300 text-gray-900" : ""}`}
             >
@@ -249,7 +276,7 @@ const LandingPage = () => {
               Contact Us
             </li>
           </ul>
-          
+
           {/* CTA */}
           <button
             onClick={openLoginModal}
@@ -302,22 +329,18 @@ const LandingPage = () => {
                 management with our comprehensive platform.
               </p>
 
-             
-
-          
-                
-           <button
-                  onClick={openLoginModal}
-                  type="submit"
-                  class="group inline-flex items-center gap-3
+              <button
+                onClick={openLoginModal}
+                type="submit"
+                class="group inline-flex items-center gap-3
          bg-black text-white font-semibold
          px-6 py-3 pl-5
          rounded-full whitespace-nowrap overflow-hidden
          transition-colors duration-300
          hover:bg-white hover:text-black"
-                >
-                  <span
-                    class="relative flex-shrink-0
+              >
+                <span
+                  class="relative flex-shrink-0
            w-[25px] h-[25px]
            grid place-items-center
            rounded-full
@@ -325,46 +348,45 @@ const LandingPage = () => {
            overflow-hidden
            transition-colors duration-300
            group-hover:bg-black group-hover:text-white"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="button1__icon-svg absolute w-4 h-4
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="button1__icon-svg absolute w-4 h-4
              transition-transform duration-300 ease-in-out
              group-hover:translate-x-[150%] group-hover:-translate-y-[150%]"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M12 5v14M5 12h14"
-                      />
-                    </svg>
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 5v14M5 12h14"
+                    />
+                  </svg>
 
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="absolute w-4 h-4
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="absolute w-4 h-4
              translate-x-[-150%] translate-y-[150%]
              transition-transform duration-300 ease-in-out delay-100
              group-hover:translate-x-0 group-hover:translate-y-0"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M12 5v14M5 12h14"
-                      />
-                    </svg>
-                  </span>
-                  <span>Get Started</span>
-                </button>
-             
-</div>
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 5v14M5 12h14"
+                    />
+                  </svg>
+                </span>
+                <span>Get Started</span>
+              </button>
+            </div>
             <div className="hidden lg:flex items-center justify-center w-1/4 relative">
               <img
                 src={house}
@@ -405,36 +427,57 @@ const LandingPage = () => {
           </div>
         </div>
 
-     
-        <div ref={whyChooseUsRef} className="py-16 sm:py-24 px-4 sm:px-6 bg-white overflow-hidden">
+        <div
+          ref={whyChooseUsRef}
+          className="py-16 sm:py-24 px-4 sm:px-6 bg-white overflow-hidden"
+        >
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
             <div className="max-w-2xl text-center md:text-left">
               <h2 className="text-10xl sm:text-5xl text-black font-poppins tracking-tight mb-4">
                 Why Choose Us
               </h2>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Experience healthcare management designed with precision, security, and the modern professional in mind.
+                Experience healthcare management designed with precision,
+                security, and the modern professional in mind.
               </p>
             </div>
           </div>
-          
+
           <div className="max-w-7xl mx-auto">
             <div className="flex overflow-x-auto gap-6 pb-12 pt-4 snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-              
               {/* Card 1 */}
               <div className="bg-white rounded-[2rem] p-8 border border-gray-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between min-h-[320px] w-[85vw] sm:w-[400px] flex-shrink-0 snap-center group">
                 <div>
                   <div className="w-14 h-14 rounded-2xl bg-blue-50/50 flex items-center justify-center mb-8 group-hover:bg-blue-50 transition-colors">
                     <Activity className="text-blue-600" size={26} />
                   </div>
-                  <h3 className="text-2xl font-medium text-gray-900 mb-3">Expert Team</h3>
+                  <h3 className="text-2xl font-medium text-gray-900 mb-3">
+                    Expert Team
+                  </h3>
                   <p className="text-base text-gray-600 leading-relaxed">
-                    Our experienced professionals ensure top-quality care and seamless operational efficiency for every single patient.
+                    Our experienced professionals ensure top-quality care and
+                    seamless operational efficiency for every single patient.
                   </p>
                 </div>
                 <div className="flex items-center gap-2 mt-8 text-blue-600 font-medium cursor-pointer w-max group/btn">
-                  <span onClick={() => setShowLoginModal(true)}>Learn more</span>
-                  <ArrowRight size={18} className="transform group-hover/btn:translate-x-1 transition-transform" />
+                  <span onClick={() => setShowLoginModal(true)}>
+                    <button class="relative flex items-center px-6 py-3 overflow-hidden font-medium transition-all bg-indigo-500 rounded-md group">
+                      <span class="absolute top-0 right-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-mr-4 group-hover:-mt-4">
+                        <span class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
+                      </span>
+                      <span class="absolute bottom-0 rotate-180 left-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-ml-4 group-hover:-mb-4">
+                        <span class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
+                      </span>
+                      <span class="absolute bottom-0 left-0 w-full h-full transition-all duration-500 ease-in-out delay-200 -translate-x-full bg-indigo-600 rounded-md group-hover:translate-x-0"></span>
+                      <span class="relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-white">
+                       Learn more
+                      </span>
+                    </button>
+                  </span>
+                  <ArrowRight
+                    size={18}
+                    className="transform group-hover/btn:translate-x-1 transition-transform"
+                  />
                 </div>
               </div>
 
@@ -444,14 +487,33 @@ const LandingPage = () => {
                   <div className="w-14 h-14 rounded-2xl bg-emerald-50/50 flex items-center justify-center mb-8 group-hover:bg-emerald-50 transition-colors">
                     <Check className="text-emerald-600" size={26} />
                   </div>
-                  <h3 className="text-2xl font-medium text-gray-900 mb-3">Reliable Services</h3>
+                  <h3 className="text-2xl font-medium text-gray-900 mb-3">
+                    Reliable Services
+                  </h3>
                   <p className="text-base text-gray-600 leading-relaxed">
-                    Dependable healthcare software solutions you can trust every day, backed by enterprise-grade stability.
+                    Dependable healthcare software solutions you can trust every
+                    day, backed by enterprise-grade stability.
                   </p>
                 </div>
                 <div className="flex items-center gap-2 mt-8 text-emerald-600 font-medium cursor-pointer w-max group/btn">
-                  <span onClick={() => setShowLoginModal(true)}>Learn more</span>
-                  <ArrowRight size={18} className="transform group-hover/btn:translate-x-1 transition-transform" />
+                  <span onClick={() => setShowLoginModal(true)}>
+                    <button class="relative flex items-center px-6 py-3 overflow-hidden font-medium transition-all bg-indigo-500 rounded-md group">
+                      <span class="absolute top-0 right-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-mr-4 group-hover:-mt-4">
+                        <span class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
+                      </span>
+                      <span class="absolute bottom-0 rotate-180 left-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-ml-4 group-hover:-mb-4">
+                        <span class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
+                      </span>
+                      <span class="absolute bottom-0 left-0 w-full h-full transition-all duration-500 ease-in-out delay-200 -translate-x-full bg-indigo-600 rounded-md group-hover:translate-x-0"></span>
+                      <span class="relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-white">
+                        Learn more
+                      </span>
+                    </button>
+                  </span>
+                  <ArrowRight
+                    size={18}
+                    className="transform group-hover/btn:translate-x-1 transition-transform"
+                  />
                 </div>
               </div>
 
@@ -461,38 +523,65 @@ const LandingPage = () => {
                   <div className="w-14 h-14 rounded-2xl bg-purple-50/50 flex items-center justify-center mb-8 group-hover:bg-purple-50 transition-colors">
                     <Phone className="text-purple-600" size={26} />
                   </div>
-                  <h3 className="text-2xl font-medium text-gray-900 mb-3">24/7 Support</h3>
+                  <h3 className="text-2xl font-medium text-gray-900 mb-3">
+                    24/7 Support
+                  </h3>
                   <p className="text-base text-gray-600 leading-relaxed">
-                    Round-the-clock technical assistance and medical triage support for all your operational needs.
+                    Round-the-clock technical assistance and medical triage
+                    support for all your operational needs.
                   </p>
                 </div>
                 <div className="flex items-center gap-2 mt-8 text-purple-600 font-medium cursor-pointer w-max group/btn">
-                  <span onClick={() => setShowLoginModal(true)}>Learn more</span>
-                  <ArrowRight size={18} className="transform group-hover/btn:translate-x-1 transition-transform" />
+                  <span onClick={() => setShowLoginModal(true)}>
+                    <button class="relative flex items-center px-6 py-3 overflow-hidden font-medium transition-all bg-indigo-500 rounded-md group">
+                      <span class="absolute top-0 right-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-mr-4 group-hover:-mt-4">
+                        <span class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
+                      </span>
+                      <span class="absolute bottom-0 rotate-180 left-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-ml-4 group-hover:-mb-4">
+                        <span class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
+                      </span>
+                      <span class="absolute bottom-0 left-0 w-full h-full transition-all duration-500 ease-in-out delay-200 -translate-x-full bg-indigo-600 rounded-md group-hover:translate-x-0"></span>
+                      <span class="relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-white">
+                        Learn more
+                      </span>
+                    </button>
+                  </span>
+                  <ArrowRight
+                    size={18}
+                    className="transform group-hover/btn:translate-x-1 transition-transform"
+                  />
                 </div>
               </div>
-
             </div>
           </div>
         </div>
 
         {/* Our Services Section */}
-        <div ref={servicesRef} className="py-16 sm:py-24 px-4 sm:px-6 bg-gray-50/50 overflow-hidden">
+        <div
+          ref={servicesRef}
+          className="py-16 sm:py-24 px-4 sm:px-6 bg-gray-50/50 overflow-hidden"
+          style={{
+            backgroundImage: `url(${monGradient})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-6">
             <div className="max-w-2xl">
               <h2 className="text-4xl sm:text-5xl font-medium text-gray-900 tracking-tight mb-4">
                 Explore our services
               </h2>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Everything you need to manage your clinic efficiently in one centralized, secure location.
+                Everything you need to manage your clinic efficiently in one
+                centralized, secure location.
               </p>
             </div>
             <button className="hidden sm:block border-2 border-gray-200 text-gray-900 px-6 py-3 rounded-full font-medium hover:border-gray-900 hover:bg-gray-900 hover:text-white transition-all duration-300">
               Explore all services
             </button>
           </div>
-          
-          <div className="max-w-7xl mx-auto">
+
+          <div className="w-full">
             <div className="flex overflow-x-auto gap-6 pb-12 pt-4 snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               {services.map((service, index) => (
                 <div
@@ -500,34 +589,41 @@ const LandingPage = () => {
                   className="bg-white rounded-[2rem] p-8 border border-gray-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between min-h-[320px] w-[85vw] sm:w-[400px] flex-shrink-0 snap-center group"
                   style={{
                     animation: `fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.1}s both`,
+                    backgroundImage: service.backgroundImageServiceCards,
                   }}
                 >
                   <div>
                     <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
                       <service.icon className="text-gray-900" size={26} />
                     </div>
-                    <h3 className="text-2xl font-medium text-gray-900 mb-3">{service.name}</h3>
+                    <h3 className="text-2xl font-medium text-gray-900 mb-3">
+                      {service.name}
+                    </h3>
                     <p className="text-base text-gray-600 leading-relaxed">
-                      Simplify and manage {service.name.toLowerCase()} efficiently in one location. Built for speed and accuracy.
+                      Simplify and manage {service.name.toLowerCase()}{" "}
+                      efficiently in one location. Built for speed and accuracy.
                     </p>
                   </div>
                   <div className="flex items-center gap-2 mt-8 text-gray-900 font-medium cursor-pointer w-max group/btn">
-                    <span onClick={() => setShowLoginModal(true)}>Learn more</span>
-                    <ArrowRight size={18} className="transform group-hover/btn:translate-x-1 transition-transform" />
+                    <span onClick={() => setShowLoginModal(true)}>
+                      Learn more
+                    </span>
+                    <ArrowRight
+                      size={18}
+                      className="transform group-hover/btn:translate-x-1 transition-transform"
+                    />
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          
+
           <div className="max-w-7xl mx-auto mt-2 sm:hidden">
             <button className="w-full border-2 border-gray-200 text-gray-900 px-6 py-3 rounded-full font-medium hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all duration-300">
               Explore all services
             </button>
           </div>
         </div>
-
-    
 
         <div className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 bg-white text-center">
           <div className="max-w-4xl mx-auto bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden">
@@ -588,19 +684,14 @@ const LandingPage = () => {
         </div>
       </main>
 
-
       {showLoginModal && (
         <div className="fixed inset-0 z-[9999] flex justify-center items-center">
-        
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
             onClick={closeLoginModal}
           ></div>
 
-          
           <div className="relative z-[10000] bg-white rounded-md shadow-[0_24px_38px_3px_rgba(0,0,0,0.14),0_9px_46px_8px_rgba(0,0,0,0.12),0_11px_15px_-7px_rgba(0,0,0,0.2)] max-w-[450px] w-full mx-4 animate-modalSlideIn overflow-hidden p-10">
-            
-          
             <button
               onClick={closeLoginModal}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 hover:bg-red-100 p-2 rounded-md transition-colors"
@@ -608,7 +699,6 @@ const LandingPage = () => {
               <X size={24} strokeWidth={1.5} />
             </button>
 
-          
             <div className="text-center mb-10 mt-2">
               <div className="w-12 h-12 bg-[#f0f4f9] rounded-full flex items-center justify-center mx-auto mb-4">
                 <Activity className="text-[#33cc82]" size={24} />
@@ -621,10 +711,7 @@ const LandingPage = () => {
               </p>
             </div>
 
-          
             <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-              
-           
               <div className="relative mt-2">
                 <input
                   type="email"
@@ -643,7 +730,6 @@ const LandingPage = () => {
                 </label>
               </div>
 
-            
               <div className="relative mt-2">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -660,8 +746,7 @@ const LandingPage = () => {
                 >
                   Password
                 </label>
-                
-                
+
                 <button
                   type="button"
                   className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-500 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -671,7 +756,6 @@ const LandingPage = () => {
                 </button>
               </div>
 
-            
               <div className="flex items-center justify-between mt-2 px-1">
                 <div className="flex items-center gap-3">
                   <input
@@ -679,7 +763,10 @@ const LandingPage = () => {
                     type="checkbox"
                     className="w-4 h-4 text-[#33cc82] bg-white border-gray-400 rounded focus:ring-[#33cc82] focus:ring-2 cursor-pointer transition-all"
                   />
-                  <label htmlFor="remember" className="text-[14px] text-gray-700 cursor-pointer font-medium">
+                  <label
+                    htmlFor="remember"
+                    className="text-[14px] text-gray-700 cursor-pointer font-medium"
+                  >
                     Remember me
                   </label>
                 </div>
@@ -713,7 +800,7 @@ const LandingPage = () => {
       )}
 
       <ToastContainer position="bottom-right" />
-       <ContactUs ref={contactUsRef}/>
+      <ContactUs ref={contactUsRef} />
       <Footer container className="mt-20 bg-white text-white">
         <div className="w-full text-center">
           <div className="w-full justify-between sm:flex sm:items-center sm:justify-between">
