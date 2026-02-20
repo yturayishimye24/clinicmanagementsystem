@@ -128,7 +128,10 @@ const LandingPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setTimeout(()=>{
+     setLoading(true);
+    }, 2000);
+    
 
     try {
       if (!email.trim() || !password.trim()) {
@@ -402,11 +405,11 @@ const LandingPage = () => {
           </div>
         </div>
 
-       {/* Why Choose Us Section */}
+     
         <div ref={whyChooseUsRef} className="py-16 sm:py-24 px-4 sm:px-6 bg-white overflow-hidden">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
-            <div className="max-w-2xl">
-              <h2 className="text-4xl sm:text-5xl font-medium text-gray-900 tracking-tight mb-4">
+            <div className="max-w-2xl text-center md:text-left">
+              <h2 className="text-10xl sm:text-5xl text-black font-poppins tracking-tight mb-4">
                 Why Choose Us
               </h2>
               <p className="text-lg text-gray-600 leading-relaxed">
@@ -430,7 +433,7 @@ const LandingPage = () => {
                   </p>
                 </div>
                 <div className="flex items-center gap-2 mt-8 text-blue-600 font-medium cursor-pointer w-max group/btn">
-                  <span>Learn more</span>
+                  <span onClick={() => setShowLoginModal(true)}>Learn more</span>
                   <ArrowRight size={18} className="transform group-hover/btn:translate-x-1 transition-transform" />
                 </div>
               </div>
@@ -447,7 +450,7 @@ const LandingPage = () => {
                   </p>
                 </div>
                 <div className="flex items-center gap-2 mt-8 text-emerald-600 font-medium cursor-pointer w-max group/btn">
-                  <span>Learn more</span>
+                  <span onClick={() => setShowLoginModal(true)}>Learn more</span>
                   <ArrowRight size={18} className="transform group-hover/btn:translate-x-1 transition-transform" />
                 </div>
               </div>
@@ -464,7 +467,7 @@ const LandingPage = () => {
                   </p>
                 </div>
                 <div className="flex items-center gap-2 mt-8 text-purple-600 font-medium cursor-pointer w-max group/btn">
-                  <span>Learn more</span>
+                  <span onClick={() => setShowLoginModal(true)}>Learn more</span>
                   <ArrowRight size={18} className="transform group-hover/btn:translate-x-1 transition-transform" />
                 </div>
               </div>
@@ -509,7 +512,7 @@ const LandingPage = () => {
                     </p>
                   </div>
                   <div className="flex items-center gap-2 mt-8 text-gray-900 font-medium cursor-pointer w-max group/btn">
-                    <span>Learn more</span>
+                    <span onClick={() => setShowLoginModal(true)}>Learn more</span>
                     <ArrowRight size={18} className="transform group-hover/btn:translate-x-1 transition-transform" />
                   </div>
                 </div>
@@ -585,20 +588,19 @@ const LandingPage = () => {
         </div>
       </main>
 
-      {/* Login Modal with fixed z-index */}
-      {/* Login Modal with fixed z-index */}
+
       {showLoginModal && (
         <div className="fixed inset-0 z-[9999] flex justify-center items-center">
-          {/* Backdrop */}
+        
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
             onClick={closeLoginModal}
           ></div>
 
-          {/* Modal Content */}
+          
           <div className="relative z-[10000] bg-white rounded-md shadow-[0_24px_38px_3px_rgba(0,0,0,0.14),0_9px_46px_8px_rgba(0,0,0,0.12),0_11px_15px_-7px_rgba(0,0,0,0.2)] max-w-[450px] w-full mx-4 animate-modalSlideIn overflow-hidden p-10">
             
-            {/* Close Button */}
+          
             <button
               onClick={closeLoginModal}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 hover:bg-red-100 p-2 rounded-md transition-colors"
@@ -606,7 +608,7 @@ const LandingPage = () => {
               <X size={24} strokeWidth={1.5} />
             </button>
 
-            {/* Header */}
+          
             <div className="text-center mb-10 mt-2">
               <div className="w-12 h-12 bg-[#f0f4f9] rounded-full flex items-center justify-center mx-auto mb-4">
                 <Activity className="text-[#33cc82]" size={24} />
@@ -619,37 +621,36 @@ const LandingPage = () => {
               </p>
             </div>
 
-            {/* Form */}
+          
             <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
               
-              {/* Floating Label Input: Email */}
+           
               <div className="relative mt-2">
                 <input
                   type="email"
                   id="email1"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  /* The 'peer' class is crucial here. 'placeholder-transparent' hides the real HTML placeholder but triggers the CSS state */
-                  className="block px-4 pb-3.5 pt-4 w-full text-[16px] text-gray-900 bg-transparent rounded-md border border-gray-400 appearance-none focus:outline-none focus:ring-0 focus:border-2 focus:border-[#1a73e8] peer"
+                  className="block px-4 pb-3.5 pt-4 w-full text-[16px] text-gray-900 bg-transparent rounded-md border border-gray-400 appearance-none focus:outline-none focus:ring-0 focus:border-2 focus:border-[#1bc247] peer"
                   placeholder=" "
                   required
                 />
                 <label
                   htmlFor="email1"
-                  className="absolute text-[16px] text-gray-500 bg-white px-1 duration-200 transform -translate-y-5 scale-75 top-2 z-10 origin-[0] left-3 peer-focus:text-[#1a73e8] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-5 cursor-text"
+                  className="absolute text-[16px] text-gray-500 bg-white px-1 duration-200 transform -translate-y-5 scale-75 top-2 z-10 origin-[0] left-3 peer-focus:text-[#1bc247] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-5 cursor-text"
                 >
                   Email Address
                 </label>
               </div>
 
-              {/* Floating Label Input: Password */}
+            
               <div className="relative mt-2">
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password1"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block px-4 pb-3.5 pt-4 w-full text-[16px] text-gray-900 bg-transparent rounded-md border border-gray-400 appearance-none focus:outline-none focus:ring-0 focus:border-2 focus:border-[#1a73e8] peer pr-12"
+                  className="block px-4 pb-3.5 pt-4 w-full text-[16px] text-gray-900 bg-transparent rounded-md border border-gray-400 appearance-none focus:outline-none focus:ring-0 focus:border-2 focus:border-[#1bc24s7] peer pr-12"
                   placeholder=" "
                   required
                 />
@@ -660,7 +661,7 @@ const LandingPage = () => {
                   Password
                 </label>
                 
-                {/* Eye Icon inside the input */}
+                
                 <button
                   type="button"
                   className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-500 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -670,7 +671,7 @@ const LandingPage = () => {
                 </button>
               </div>
 
-              {/* Options */}
+            
               <div className="flex items-center justify-between mt-2 px-1">
                 <div className="flex items-center gap-3">
                   <input
@@ -684,7 +685,6 @@ const LandingPage = () => {
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="flex justify-between items-center mt-8">
                 <button
                   type="button"

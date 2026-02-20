@@ -91,7 +91,7 @@ export default function NursePage() {
     const [body, setBody] = useState("");
     const [conclusion, setConclusion] = useState("");
     const [reporting, setReporting] = useState(false);
-    const [reports,setReports] = useState(false);
+    const [reports,setReports] = useState([]);
     const [reportForm, ShowReportForm] = useState(false);
 
     // Request Form States
@@ -198,9 +198,10 @@ export default function NursePage() {
         }
     };
     const displayReports = async (e)=>{
+        
         e.preventDefault();
         try{
-           const response= await axios.get(`${backendurl}/api/report/display-report`);
+           const response= await axios.get(`${backendUrl}/api/report/display-report`);
            if(response.data.success){
             setReports(response.data.report)
            }
@@ -364,12 +365,7 @@ export default function NursePage() {
                 <div className="flex items-center justify-between h-full px-6">
                     {/* Left: Logo & Breadcrumb */}
                     <div className="flex items-center gap-8 pl-0 lg:pl-4">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-white shadow-lg shadow-emerald-200">
-                                <Play className="w-4 h-4 fill-white" />
-                            </div>
-                            <span className="text-xl font-bold text-gray-800 tracking-tight">CLINIC</span>
-                        </div>
+                        <Link to="/" className="flex items-center gap-2">CLINIC</Link>
                         <div className="hidden md:flex items-center text-sm text-gray-400 font-medium">
                             <span className="hover:text-emerald-600 cursor-pointer transition">Nurse Portal</span>
                             <span className="mx-2 text-gray-300">/</span>
@@ -557,7 +553,7 @@ export default function NursePage() {
                     <div className="bg-white rounded-3xl border border-gray-100 cozy-shadow flex flex-col h-[600px]">
                         <div className="p-6 border-b border-gray-50 flex justify-between items-center">
                             <h3 className="font-bold text-lg text-gray-800">My Requests</h3>
-                            <button onClick={fetchRequests} className="text-gray-400 hover:text-emerald-600"><Loader2 className="w-4 h-4"/></button>
+                            <button onClick={fetchRequests} className="text-gray-400 hover:text-emerald-600"> Refresh</button>
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
