@@ -1,12 +1,7 @@
 @import "tailwindcss";
 @plugin "daisyui";
-@plugin "daisyui" {
-   themes: light --default, dark --prefersdark;
- }
-@custom-variant taos (&.taos-init:where(:not(.taos-animate)));
 
-html.js :where([class*="taos:"]:not(.taos-init)) {
-  visibility: hidden;
-}
 
-@source inline('!duration-[0ms] !delay-[0ms]');
+
+
+
