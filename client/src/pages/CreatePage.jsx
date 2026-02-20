@@ -365,7 +365,7 @@ export default function NursePage() {
                 <div className="flex items-center justify-between h-full px-6">
                     {/* Left: Logo & Breadcrumb */}
                     <div className="flex items-center gap-8 pl-0 lg:pl-4">
-                        <Link to="/" className="flex items-center gap-2">CLINIC</Link>
+                        {/* <Link to="/" className="flex items-center gap-2">CLINIC</Link> */}
                         <div className="hidden md:flex items-center text-sm text-gray-400 font-medium">
                             <span className="hover:text-emerald-600 cursor-pointer transition">Nurse Portal</span>
                             <span className="mx-2 text-gray-300">/</span>

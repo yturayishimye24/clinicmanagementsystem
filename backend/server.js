@@ -21,7 +21,7 @@ const port = process.env.PORT || 4000;
 
 const allowedOrigins = [
   "http://localhost:5173",
-   "https://asyvvillageclinic-git-main-yturayishimye24s-projects.vercel.app",
+   "https://asyvvillageclinic.vercel.app",
   process.env.CORS_ORIGIN 
 ].filter(Boolean); 
 const app = express();
@@ -48,6 +48,7 @@ export const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
     methods: ["GET", "POST"],
+
   },
 });
 
