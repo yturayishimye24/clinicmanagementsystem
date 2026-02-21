@@ -26,7 +26,6 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
-// import { backendUrl } from "../App.jsx";
 import techImage from "../../public/images/techImage.png";
 import stethoscope from "../../public/images/stethoscope.png";
 import syringe from "../../public/images/syringe.png";
@@ -42,6 +41,8 @@ import monLightOrange from "../../public/images/MonLightOrange.jpg";
 import monOrange from "../../public/images/MonOrange.jpg";
 import monPink from "../../public/images/MonPink.jpg";
 import monLightPurple from "../../public/images/MonLightPurple.jpg";
+import LoginBg from "../../public/images/LoginBg.jpg";
+
 import {
   Footer,
   FooterBrand,
@@ -61,6 +62,7 @@ const LandingPage = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
+  const [toggleBg, setToggleBg] = useState(false);
 
   const teamRef = useRef(null);
   const faqRef = useRef(null);
@@ -91,8 +93,7 @@ const LandingPage = () => {
     contactUsRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // INTERSECTION OBSERVER FOR CARDS
-
+  // INTERSECTION OBSERVERS FOR SECTIONS AND ANIMATIONS
   useEffect(() => {
     const sections = [
       { ref: HomeRef, name: "home" },
@@ -101,13 +102,13 @@ const LandingPage = () => {
       { ref: contactUsRef, name: "contact" },
     ];
 
-    const observer = new IntersectionObserver(
+    // Observer for Active Navigation Tabs
+    const tabObserver = new IntersectionObserver(
       (entries) => {
-        console.log(entries);
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const activeSection = sections.find(
-              (sec) => sec.ref.current === entry.target,
+              (sec) => sec.ref.current === entry.target
             );
             if (activeSection) {
               setActiveTab(activeSection.name);
@@ -115,17 +116,36 @@ const LandingPage = () => {
           }
         });
       },
-      { threshold: 0.5 }, // Triggers when 50% of the section is visible
+      { threshold: 0.5 }
     );
 
     sections.forEach((sec) => {
       if (sec.ref.current) {
-        observer.observe(sec.ref.current);
+        tabObserver.observe(sec.ref.current);
       }
     });
 
-    return () => observer.disconnect();
+    // Observer for Scroll Animations
+    const animationObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+          }
+        });
+      },
+      { threshold: 0.1 } // Triggers slightly before element is fully in view
+    );
+
+    const animatedElements = document.querySelectorAll(".animate-on-scroll");
+    animatedElements.forEach((el) => animationObserver.observe(el));
+
+    return () => {
+      tabObserver.disconnect();
+      animationObserver.disconnect();
+    };
   }, []);
+
   const openLoginModal = () => setShowLoginModal(true);
   const closeLoginModal = () => {
     setShowLoginModal(false);
@@ -253,25 +273,27 @@ const LandingPage = () => {
               onClick={() => {
                 goToHome();
               }}
-              className={`hover:text-black cursor-pointer transition-colors bg-blue-200 px-10 py-3 rounded-full ${activeTab === "home" ? "bg-blue-300 text-gray-900" : ""}`}
+              className={`hover:text-black cursor-pointer transition-colors bg-blue-200 px-10 py-3 rounded-full ${
+                activeTab === "home" ? "bg-blue-300 text-gray-900" : ""
+              }`}
             >
               Home
             </li>
             <li
               onClick={scrollToServices}
-              className="hover:text-black cursor-pointer transition-colors"
+              className="hover:text-black cursor-pointer hover:bg-[#bddbfc] transition-colors px-10 py-3 rounded-full"
             >
               Services
             </li>
             <li
               onClick={scrollToTeam}
-              className="hover:text-black cursor-pointer transition-colors"
+              className="hover:text-black hover:bg-[#bddbfc] cursor-pointer transition-colors px-10 py-3 rounded-full"
             >
               Team
             </li>
             <li
               onClick={scrollToContactUs}
-              className="hover:text-black cursor-pointer transition-colors"
+              className="hover:text-black hover:bg-[#bddbfc] cursor-pointer transition-colors px-10 py-3 rounded-full"
             >
               Contact Us
             </li>
@@ -316,14 +338,20 @@ const LandingPage = () => {
 
           <div className="flex justify-center items-center gap-10 lg:gap-20 pt-[100px]">
             <div className="pt-20 z-10 max-w-4xl mx-auto">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-tight mb-6">
-                Manage Patients <br />
-                <span className="text-6xl font-extrabold bg-gradient-to-r from-green-500 via-orange-500 to-tan-500 bg-clip-text text-transparent transition-transform">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-tight mb-6 flex flex-col items-center">
+                {/* Scroll Animation applied to "Manage Patients" */}
+                <span className="animate-on-scroll opacity-0 -translate-x-[200px] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:translate-x-0">
+                  Manage Patients
+                </span>
+                
+                {/* Scroll Animation applied to "Better Communication" */}
+                <span className="animate-on-scroll opacity-0 translate-x-[100%] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:translate-x-0 text-6xl font-extrabold bg-gradient-to-r from-green-500 via-orange-500 to-tan-500 bg-clip-text text-transparent transition-transform">
                   Better Communication
                 </span>
               </h1>
 
-              <p className="text-gray-600 text-base sm:text-lg md:text-xl max-w-3xl mx-auto mb-10">
+              {/* Scroll Animation applied to paragraph */}
+              <p className="animate-on-scroll opacity-0 -translate-y-[100%] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:translate-y-0 text-gray-600 text-base sm:text-lg md:text-xl max-w-3xl mx-auto mb-10">
                 Join a community where every patient feels understood and
                 receives the desired service. Experience seamless healthcare
                 management with our comprehensive platform.
@@ -332,7 +360,7 @@ const LandingPage = () => {
               <button
                 onClick={openLoginModal}
                 type="submit"
-                class="group inline-flex items-center gap-3
+                className="group inline-flex items-center gap-3
          bg-black text-white font-semibold
          px-6 py-3 pl-5
          rounded-full whitespace-nowrap overflow-hidden
@@ -340,7 +368,7 @@ const LandingPage = () => {
          hover:bg-white hover:text-black"
               >
                 <span
-                  class="relative flex-shrink-0
+                  className="relative flex-shrink-0
            w-[25px] h-[25px]
            grid place-items-center
            rounded-full
@@ -351,35 +379,35 @@ const LandingPage = () => {
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="button1__icon-svg absolute w-4 h-4
+                    className="button1__icon-svg absolute w-4 h-4
              transition-transform duration-300 ease-in-out
              group-hover:translate-x-[150%] group-hover:-translate-y-[150%]"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    stroke-width="2"
+                    strokeWidth="2"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="M12 5v14M5 12h14"
                     />
                   </svg>
 
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="absolute w-4 h-4
+                    className="absolute w-4 h-4
              translate-x-[-150%] translate-y-[150%]
              transition-transform duration-300 ease-in-out delay-100
              group-hover:translate-x-0 group-hover:translate-y-0"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    stroke-width="2"
+                    strokeWidth="2"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="M12 5v14M5 12h14"
                     />
                   </svg>
@@ -433,7 +461,7 @@ const LandingPage = () => {
         >
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
             <div className="max-w-2xl text-center md:text-left">
-              <h2 className="text-10xl sm:text-5xl text-black font-poppins tracking-tight mb-4">
+              <h2 className="text-4xl sm:text-5xl text-black font-poppins tracking-tight mb-4">
                 Why Choose Us
               </h2>
               <p className="text-lg text-gray-600 leading-relaxed">
@@ -445,8 +473,9 @@ const LandingPage = () => {
 
           <div className="max-w-7xl mx-auto">
             <div className="flex overflow-x-auto gap-6 pb-12 pt-4 snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-              {/* Card 1 */}
-              <div className="bg-white rounded-[2rem] p-8 border border-gray-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between min-h-[320px] w-[85vw] sm:w-[400px] flex-shrink-0 snap-center group">
+              
+              {/* Card 1 - Added 3d Transform / Scale Scroll Animation */}
+              <div className="animate-on-scroll opacity-0 [transform:translate3d(-200px,0,0)_scale(0.6)] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:[transform:translate3d(0,0,0)_scale(1)] bg-white rounded-[2rem] p-8 border border-gray-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 flex flex-col justify-between min-h-[320px] w-[85vw] sm:w-[400px] flex-shrink-0 snap-center group">
                 <div>
                   <div className="w-14 h-14 rounded-2xl bg-blue-50/50 flex items-center justify-center mb-8 group-hover:bg-blue-50 transition-colors">
                     <Activity className="text-blue-600" size={26} />
@@ -461,15 +490,15 @@ const LandingPage = () => {
                 </div>
                 <div className="flex items-center gap-2 mt-8 text-blue-600 font-medium cursor-pointer w-max group/btn">
                   <span onClick={() => setShowLoginModal(true)}>
-                    <button class="relative flex items-center px-6 py-3 overflow-hidden font-medium transition-all bg-indigo-500 rounded-md group">
-                      <span class="absolute top-0 right-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-mr-4 group-hover:-mt-4">
-                        <span class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
+                    <button className="relative flex items-center px-6 py-3 overflow-hidden font-medium transition-all bg-indigo-500 rounded-md group">
+                      <span className="absolute top-0 right-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-mr-4 group-hover:-mt-4">
+                        <span className="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
                       </span>
-                      <span class="absolute bottom-0 rotate-180 left-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-ml-4 group-hover:-mb-4">
-                        <span class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
+                      <span className="absolute bottom-0 rotate-180 left-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-ml-4 group-hover:-mb-4">
+                        <span className="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
                       </span>
-                      <span class="absolute bottom-0 left-0 w-full h-full transition-all duration-500 ease-in-out delay-200 -translate-x-full bg-indigo-600 rounded-md group-hover:translate-x-0"></span>
-                      <span class="relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-white">
+                      <span className="absolute bottom-0 left-0 w-full h-full transition-all duration-500 ease-in-out delay-200 -translate-x-full bg-indigo-600 rounded-md group-hover:translate-x-0"></span>
+                      <span className="relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-white">
                        Learn more
                       </span>
                     </button>
@@ -481,8 +510,8 @@ const LandingPage = () => {
                 </div>
               </div>
 
-              {/* Card 2 */}
-              <div className="bg-white rounded-[2rem] p-8 border border-gray-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between min-h-[320px] w-[85vw] sm:w-[400px] flex-shrink-0 snap-center group">
+              {/* Card 2 - Added 3d Transform / Scale Scroll Animation */}
+              <div className="animate-on-scroll opacity-0 [transform:translate3d(-200px,0,0)_scale(0.6)] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:[transform:translate3d(0,0,0)_scale(1)] bg-white rounded-[2rem] p-8 border border-gray-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 flex flex-col justify-between min-h-[320px] w-[85vw] sm:w-[400px] flex-shrink-0 snap-center group">
                 <div>
                   <div className="w-14 h-14 rounded-2xl bg-emerald-50/50 flex items-center justify-center mb-8 group-hover:bg-emerald-50 transition-colors">
                     <Check className="text-emerald-600" size={26} />
@@ -497,15 +526,15 @@ const LandingPage = () => {
                 </div>
                 <div className="flex items-center gap-2 mt-8 text-emerald-600 font-medium cursor-pointer w-max group/btn">
                   <span onClick={() => setShowLoginModal(true)}>
-                    <button class="relative flex items-center px-6 py-3 overflow-hidden font-medium transition-all bg-indigo-500 rounded-md group">
-                      <span class="absolute top-0 right-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-mr-4 group-hover:-mt-4">
-                        <span class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
+                    <button className="relative flex items-center px-6 py-3 overflow-hidden font-medium transition-all bg-indigo-500 rounded-md group">
+                      <span className="absolute top-0 right-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-mr-4 group-hover:-mt-4">
+                        <span className="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
                       </span>
-                      <span class="absolute bottom-0 rotate-180 left-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-ml-4 group-hover:-mb-4">
-                        <span class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
+                      <span className="absolute bottom-0 rotate-180 left-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-ml-4 group-hover:-mb-4">
+                        <span className="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
                       </span>
-                      <span class="absolute bottom-0 left-0 w-full h-full transition-all duration-500 ease-in-out delay-200 -translate-x-full bg-indigo-600 rounded-md group-hover:translate-x-0"></span>
-                      <span class="relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-white">
+                      <span className="absolute bottom-0 left-0 w-full h-full transition-all duration-500 ease-in-out delay-200 -translate-x-full bg-indigo-600 rounded-md group-hover:translate-x-0"></span>
+                      <span className="relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-white">
                         Learn more
                       </span>
                     </button>
@@ -517,8 +546,8 @@ const LandingPage = () => {
                 </div>
               </div>
 
-              {/* Card 3 */}
-              <div className="bg-white rounded-[2rem] p-8 border border-gray-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between min-h-[320px] w-[85vw] sm:w-[400px] flex-shrink-0 snap-center group">
+              {/* Card 3 - Added 3d Transform / Scale Scroll Animation */}
+              <div className="animate-on-scroll opacity-0 [transform:translate3d(-200px,0,0)_scale(0.6)] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:[transform:translate3d(0,0,0)_scale(1)] bg-white rounded-[2rem] p-8 border border-gray-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 flex flex-col justify-between min-h-[320px] w-[85vw] sm:w-[400px] flex-shrink-0 snap-center group">
                 <div>
                   <div className="w-14 h-14 rounded-2xl bg-purple-50/50 flex items-center justify-center mb-8 group-hover:bg-purple-50 transition-colors">
                     <Phone className="text-purple-600" size={26} />
@@ -533,15 +562,15 @@ const LandingPage = () => {
                 </div>
                 <div className="flex items-center gap-2 mt-8 text-purple-600 font-medium cursor-pointer w-max group/btn">
                   <span onClick={() => setShowLoginModal(true)}>
-                    <button class="relative flex items-center px-6 py-3 overflow-hidden font-medium transition-all bg-indigo-500 rounded-md group">
-                      <span class="absolute top-0 right-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-mr-4 group-hover:-mt-4">
-                        <span class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
+                    <button className="relative flex items-center px-6 py-3 overflow-hidden font-medium transition-all bg-indigo-500 rounded-md group">
+                      <span className="absolute top-0 right-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-mr-4 group-hover:-mt-4">
+                        <span className="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
                       </span>
-                      <span class="absolute bottom-0 rotate-180 left-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-ml-4 group-hover:-mb-4">
-                        <span class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
+                      <span className="absolute bottom-0 rotate-180 left-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-indigo-700 rounded group-hover:-ml-4 group-hover:-mb-4">
+                        <span className="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
                       </span>
-                      <span class="absolute bottom-0 left-0 w-full h-full transition-all duration-500 ease-in-out delay-200 -translate-x-full bg-indigo-600 rounded-md group-hover:translate-x-0"></span>
-                      <span class="relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-white">
+                      <span className="absolute bottom-0 left-0 w-full h-full transition-all duration-500 ease-in-out delay-200 -translate-x-full bg-indigo-600 rounded-md group-hover:translate-x-0"></span>
+                      <span className="relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-white">
                         Learn more
                       </span>
                     </button>
@@ -586,9 +615,9 @@ const LandingPage = () => {
               {services.map((service, index) => (
                 <div
                   key={index}
-                  className="bg-white rounded-[2rem] p-8 border border-gray-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between min-h-[320px] w-[85vw] sm:w-[400px] flex-shrink-0 snap-center group"
+                  // Added 3d Transform / Scale Scroll Animation
+                  className="animate-on-scroll opacity-0 [transform:translate3d(-200px,0,0)_scale(0.6)] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:[transform:translate3d(0,0,0)_scale(1)] bg-white rounded-[2rem] p-8 border border-gray-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 flex flex-col justify-between min-h-[320px] w-[85vw] sm:w-[400px] flex-shrink-0 snap-center group"
                   style={{
-                    animation: `fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.1}s both`,
                     backgroundImage: service.backgroundImageServiceCards,
                   }}
                 >
@@ -691,7 +720,7 @@ const LandingPage = () => {
             onClick={closeLoginModal}
           ></div>
 
-          <div className="relative z-[10000] bg-white rounded-md shadow-[0_24px_38px_3px_rgba(0,0,0,0.14),0_9px_46px_8px_rgba(0,0,0,0.12),0_11px_15px_-7px_rgba(0,0,0,0.2)] max-w-[450px] w-full mx-4 animate-modalSlideIn overflow-hidden p-10">
+          <div className="relative z-[10000] rounded-md shadow-[0_24px_38px_3px_rgba(0,0,0,0.14),0_9px_46px_8px_rgba(0,0,0,0.12),0_11px_15px_-7px_rgba(0,0,0,0.2)] max-w-[450px] w-full mx-4 animate-modalSlideIn overflow-hidden p-10" style={{backgroundImage: `url(${LoginBg})`, backgroundSize: 'cover', backgroundPosition: 'center'}}>
             <button
               onClick={closeLoginModal}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 hover:bg-red-100 p-2 rounded-md transition-colors"
@@ -742,7 +771,7 @@ const LandingPage = () => {
                 />
                 <label
                   htmlFor="password1"
-                  className="absolute text-[16px] text-gray-500 bg-white px-1 duration-200 transform -translate-y-5 scale-75 top-2 z-10 origin-[0] left-3 peer-focus:text-[#1a73e8] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-5 cursor-text"
+                  className="absolute text-[16px] text-gray-500 bg-white px-1 duration-200 transform -translate-y-5 scale-75 top-2 z-10 origin-[0] left-3 peer-focus:text-[#33cc82] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-5 cursor-text"
                 >
                   Password
                 </label>
@@ -836,17 +865,6 @@ const LandingPage = () => {
       </Footer>
 
       <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
         @keyframes modalSlideIn {
           from {
             opacity: 0;
