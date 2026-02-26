@@ -96,7 +96,7 @@ export const deletePatient = async (req, res) => {
 
 export const updatePatient = async (req, res) => {
   try{
-  const{firstName,lastName,gender,date,maritalStatus,disease}=req.body;
+  const{firstName,lastName,gender,date,disease}=req.body;
   const updatedPatient = await addedPatient.findByIdAndUpdate(req.params.id,{
     firstName,lastName,date,gender,disease,
   },{new:true})

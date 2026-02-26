@@ -1,11 +1,6 @@
 import mongoose from "mongoose";
 
 const addSchema = new mongoose.Schema({
-  maritalStatus:{
-    type: String,
-    enum:["single","married","divorced","widowed"],
-    required:false,
-  },
   firstName: {
     type: String,
     required: true,
@@ -38,7 +33,7 @@ const addSchema = new mongoose.Schema({
     type: String,
     enum: ["active", "hospitalized", "released"],
   },
-  Image: { type: String, default: "" },
+  // Image: { type: String, default: "" },
 });
 const addedPatient = mongoose.model("addedPatient", addSchema);
 export default addedPatient;

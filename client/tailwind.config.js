@@ -1,4 +1,6 @@
 import flowbite from "flowbite-react/tailwind";
+import daisyui from "daisyui";
+import plugin from "tailwindcss/plugin";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -7,7 +9,6 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
     flowbite.content(),
   ],
-  // 1. Add the Safelist here (Required for TAOS to work properly)
   safelist: [
     '!duration-[0ms]',
     '!delay-[0ms]',
@@ -19,10 +20,12 @@ export default {
         poppins: ["Poppins", "sans-serif"],
       },
       fontFamily: {
-        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        // 1. Added Plus Jakarta Sans as the primary sans font
+        sans: ['"Plus Jakarta Sans"', "Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
       },
       boxShadow: {
-        cozy: "0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06)",
+        // 2. Updated the cozy shadow to your new values
+        cozy: "0px 4px 20px rgba(0, 0, 0, 0.03)",
         "cozy-lg": "0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)",
       },
       transitionTimingFunction: {
@@ -51,8 +54,81 @@ export default {
   darkMode: "class",
   plugins: [
     flowbite.plugin(),
-    // 2. Add the TAOS plugin here
+    daisyui,
     require('taos/plugin'),
+    // 3. Added Tailwind plugin to inject your custom CSS classes
+    plugin(function ({ addComponents }) {
+      addComponents({
+        '.cozy-transition': {
+          transition: 'all 0.2s ease-in-out',
+        },
+        '.sidebar-item': {
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px 20px',
+          borderRadius: '24px',
+          gap: '8px',
+          transition: 'background-color 0.2s ease-in-out',
+          cursor: 'pointer',
+          width: 'fit-content',
+          '&:hover': {
+            backgroundColor: '#f4f5f7',
+          },
+          '&:hover .menu-text': {
+            background: 'linear-gradient(to right, #65a30d, #06b6d4)',
+            '-webkit-background-clip': 'text',
+            '-webkit-text-fill-color': 'transparent',
+            'background-clip': 'text',
+            fontWeight: '500',
+          },
+          '&:hover .icon': {
+            fill: '#65a30d',
+          },
+        },
+        '.modal-backdrop-blur': {
+          backdropFilter: 'blur(8px)',
+          '-webkit-backdrop-filter': 'blur(8px)',
+        },
+      });
+    }),
   ],
-  
+  daisyui: {
+    themes: [
+      "light",
+      "dark",
+      "cupcake",
+      "bumblebee",
+      "emerald",
+      "corporate",
+      "synthwave",
+      "retro",
+      "cyberpunk",
+      "valentine",
+      "halloween",
+      "garden",
+      "forest",
+      "aqua",
+      "lofi",
+      "pastel",
+      "fantasy",
+      "wireframe",
+      "black",
+      "luxury",
+      "dracula",
+      "cmyk",
+      "autumn",
+      "business",
+      "acid",
+      "lemonade",
+      "night",
+      "coffee",
+      "winter",
+      "dim",
+      "nord",
+      "sunset",
+    ],
+    darkMode: "class",
+  },
 };

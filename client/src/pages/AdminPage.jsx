@@ -318,69 +318,70 @@ export default function AdminPage() {
   };
 
   // Sidebar Component
-  const SidebarItem = ({ icon: Icon, label, count }) => (
-      <div className="sidebar-item flex flex-col items-center justify-center gap-1.5 p-3 cursor-pointer group w-full text-gray-400 hover:text-emerald-600 transition-colors">
-          <div className="icon-container w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 bg-transparent group-hover:bg-gray-50">
+  const SidebarItem = ({ icon: Icon, label, count, onClick }) => (
+      <div onClick={onClick} className="sidebar-item flex flex-col items-center justify-center gap-1.5 p-3 cursor-pointer group w-full text-base-content/60 hover:text-primary transition-colors">
+          <div className="icon-container w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 group-hover:bg-base-200">
               <Icon className="w-5 h-5" />
+              {count > 0 && <span className="badge badge-sm badge-primary absolute">{count}</span>}
           </div>
           <span className="text-[10px] font-semibold tracking-wide">{label}</span>
       </div>
   );
 
   return (
-      <div className="min-h-screen bg-[#F8FAFC] font-sans">
+      <div className="min-h-screen bg-base-200 font-sans flex">
         <FontStyles />
         
+        {/* --- SIDEBAR (Full height from top) --- */}
+        <aside className="fixed left-0 top-0 h-screen w-[100px] bg-base-100 border-r border-base-300 z-40 flex flex-col items-center py-6 gap-2 overflow-y-auto shadow-lg">
+          <SidebarItem icon={Users} label="Dashboard" onClick={() => {}} />
+          <SidebarItem icon={Users} label="Patients" onClick={() => {}} />
+          <SidebarItem icon={UserPlus} label="Staff" onClick={() => {}} />
+          <SidebarItem icon={Inbox} label="Requests" count={requests.length} onClick={() => {}} />
+          <SidebarItem icon={BarChart3} label="Reports" count={reports.length} onClick={() => {}} />
+          <div className="mt-auto">
+            <SidebarItem icon={Settings} label="Settings" onClick={() => {}} />
+          </div>
+        </aside>
+
+        {/* --- Main Container (Sidebar + Content) --- */}
+        <div className="flex-1 flex flex-col ml-[100px]">
         {/* --- NAVBAR --- */}
-        <nav className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 h-[70px]">
+        <nav className="sticky top-0 z-30 bg-base-100/80 backdrop-blur-md border-b border-base-300 h-[70px] shadow-sm">
           <div className="flex items-center justify-between h-full px-6">
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-2">
-                <span className="text-xl font-bold text-gray-800 tracking-tight">CLINIC</span>
+                <span className="text-xl font-bold text-base-content tracking-tight">CLINIC</span>
               </div>
-              <div className="hidden md:flex items-center text-sm text-gray-400 font-medium">
-                <span className="hover:text-emerald-600 cursor-pointer transition">Admin Portal</span>
-                <span className="mx-2 text-gray-300">/</span>
-                <span className="text-gray-800">Dashboard</span>
+              <div className="hidden md:flex items-center text-sm text-base-content/60 font-medium">
+                <span className="hover:text-primary cursor-pointer transition">Admin Portal</span>
+                <span className="mx-2 text-base-content/30">/</span>
+                <span className="text-base-content">Dashboard</span>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              <button className="p-2 text-gray-400 hover:text-emerald-600 transition"><Search className="w-5 h-5"/></button>
+              <button className="btn btn-ghost btn-circle btn-sm"><Search className="w-5 h-5"/></button>
               <div className="relative">
-                <button className="p-2 text-gray-400 hover:text-emerald-600 transition"><Bell className="w-5 h-5"/></button>
+                <button className="btn btn-ghost btn-circle btn-sm"><Bell className="w-5 h-5"/></button>
               </div>
-              <div className="relative">
-                <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="flex items-center gap-3">
-                  <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=40&h=40&fit=crop&crop=face" alt="Profile" className="w-9 h-9 rounded-full object-cover border border-gray-100 shadow-sm" />
+              <div className="dropdown dropdown-end">
+                <button className="flex items-center gap-3 btn btn-ghost">
+                  <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=40&h=40&fit=crop&crop=face" alt="Profile" className="w-8 h-8 rounded-full object-cover border border-base-300" />
                 </button>
-                {showProfileMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl cozy-shadow border border-gray-100 overflow-hidden z-50 py-1">
-                      <div className="px-4 py-2 border-b border-gray-50">
-                        <p className="font-bold text-sm text-gray-800 truncate">{username || "Admin"}</p>
-                      </div>
-                      <button onClick={() => { localStorage.removeItem("token"); navigate("/"); }} className="w-full text-left px-4 py-2 text-sm text-rose-500 hover:bg-rose-50 flex items-center gap-2"><LogOut className="w-4 h-4"/> Sign Out</button>
-                    </div>
-                )}
+                <ul className="dropdown-content z-50 menu p-2 bg-base-100 rounded-box shadow border border-base-300">
+                    <li className="menu-title">
+                      <span className="font-bold truncate">{username || "Admin"}</span>
+                    </li>
+                    <li><a onClick={() => { localStorage.removeItem("token"); navigate("/"); }}><LogOut className="w-4 h-4"/> Sign Out</a></li>
+                </ul>
               </div>
             </div>
           </div>
         </nav>
 
-        {/* --- SIDEBAR --- */}
-        <aside className="fixed left-0 top-[70px] bottom-0 w-[100px] bg-white border-r border-gray-100 z-30 flex flex-col items-center py-6 gap-2 overflow-y-auto">
-          <SidebarItem icon={Users} label="Dashboard" />
-          <SidebarItem icon={Users} label="Patients" />
-          <SidebarItem icon={UserPlus} label="Staff" />
-          <SidebarItem icon={Inbox} label="Requests" count={requests.length} />
-          <SidebarItem icon={BarChart3} label="Reports" count={reports.length} />
-          <div className="mt-auto">
-            <SidebarItem icon={Settings} label="Settings" />
-          </div>
-        </aside>
-
         {/* --- MAIN CONTENT --- */}
-        <main className="ml-[100px] pt-[90px] px-6 lg:px-10 pb-10 max-w-[1600px] mx-auto">
+        <main className="flex-1 pt-4 px-6 lg:px-10 pb-10 overflow-y-auto">
 
           {/* HEADER SECTION */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
@@ -729,6 +730,8 @@ export default function AdminPage() {
         )}
 
         <ToastContainer position="bottom-right" />
-      </div>
+        </div>
+        </div>
+      
   );
 }

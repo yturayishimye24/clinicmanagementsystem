@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,Link } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import techImage from "../../public/images/techImage.png";
 import stethoscope from "../../public/images/stethoscope.png";
@@ -308,11 +308,13 @@ const LandingPage = () => {
                  text-sm font-medium
                  hover:bg-gray-900 transition-all overflow-hidden"
           >
-            <span className="relative z-10">Get Started</span>
+            <Link to={"/login"}>
+              <span className="relative z-10">Login</span>
             <ArrowRight
               size={16}
-              className="relative z-10 transform rotate-[-45deg] group-hover:translate-x-0.5 group-hover:translate-y-[-2px] transition-transform duration-300"
+              className="relative z-10 transform  group-hover:translate-x-0.5 group-hover:translate-y-[-2px] transition-transform duration-300"
             />
+            </Link>
             <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-black opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </button>
         </nav>
@@ -720,7 +722,7 @@ const LandingPage = () => {
             onClick={closeLoginModal}
           ></div>
 
-          <div className="relative z-[10000] rounded-md shadow-[0_24px_38px_3px_rgba(0,0,0,0.14),0_9px_46px_8px_rgba(0,0,0,0.12),0_11px_15px_-7px_rgba(0,0,0,0.2)] max-w-[450px] w-full mx-4 animate-modalSlideIn overflow-hidden p-10" style={{backgroundImage: `url(${LoginBg})`, backgroundSize: 'cover', backgroundPosition: 'center'}}>
+          <div className="relative flex flex-col z-[10000] rounded-md shadow-[0_24px_38px_3px_rgba(0,0,0,0.14),0_9px_46px_8px_rgba(0,0,0,0.12),0_11px_15px_-7px_rgba(0,0,0,0.2)] max-w-[450px] w-full mx-4 animate-modalSlideIn overflow-hidden p-10" style={{backgroundImage: `url(${LoginBg})`, backgroundSize: 'cover', backgroundPosition: 'center'}}>
             <button
               onClick={closeLoginModal}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 hover:bg-red-100 p-2 rounded-md transition-colors"
@@ -771,7 +773,7 @@ const LandingPage = () => {
                 />
                 <label
                   htmlFor="password1"
-                  className="absolute text-[16px] text-gray-500 bg-white px-1 duration-200 transform -translate-y-5 scale-75 top-2 z-10 origin-[0] left-3 peer-focus:text-[#33cc82] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-5 cursor-text"
+                  className="absolute text-[16px] text-gray-500 bg-white px-1 duration-200 transform -translate-y-5 scale-75 top-2 z-10 origin-[0] left-3 peer-focus:text-[#33cc82] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:border-[#33cc82] peer-focus:-translate-y-5 cursor-text"
                 >
                   Password
                 </label>
