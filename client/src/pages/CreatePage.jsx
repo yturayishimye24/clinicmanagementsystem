@@ -565,7 +565,7 @@ export default function NursePage() {
           </a>
         </li>
         <li><a>Settings</a></li>
-        <li className="text-error"><a>Logout</a></li>
+        <li className="text-error" onClick={()=>handleLogout()}><a>Logout</a></li>
       </ul>
     </div>
   </div>

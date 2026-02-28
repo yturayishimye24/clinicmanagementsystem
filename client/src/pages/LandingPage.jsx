@@ -42,7 +42,8 @@ import monOrange from "../../public/images/MonOrange.jpg";
 import monPink from "../../public/images/MonPink.jpg";
 import monLightPurple from "../../public/images/MonLightPurple.jpg";
 import LoginBg from "../../public/images/LoginBg.jpg";
-
+import GoogleSimilar from "../../public/images/GoogleSimilar.jpg"
+import LandingVid from "../../public/images/LandingVid.mp4"
 import {
   Footer,
   FooterBrand,
@@ -259,8 +260,8 @@ const LandingPage = () => {
             onClick={goToHome}
             className="flex items-center gap-2 cursor-pointer"
           >
-            <div className="w-9 h-9 bg-black rounded-full flex items-center justify-center">
-              <Activity size={15} className="text-white" />
+            <div className="w-9 h-9">
+              <img src={GoogleSimilar} alt="Logo" className="w-auto h-auto" />
             </div>
             <span className="text-sm font-semibold text-gray-900">
               Clinic Workspace
@@ -273,50 +274,35 @@ const LandingPage = () => {
               onClick={() => {
                 goToHome();
               }}
-              className={`hover:text-black cursor-pointer transition-colors bg-blue-200 px-10 py-3 rounded-full ${
-                activeTab === "home" ? "bg-blue-300 text-gray-900" : ""
+              className={`hover:text-black cursor-pointer transition-colors bg-gray-100 px-10 py-3 rounded-full ${
+                activeTab === "home" ? "bg-gray-100 text-gray-900" : ""
               }`}
             >
               Home
             </li>
             <li
               onClick={scrollToServices}
-              className="hover:text-black cursor-pointer hover:bg-[#bddbfc] transition-colors px-10 py-3 rounded-full"
+              className="hover:text-black cursor-pointer hover:bg-gray-100 transition-colors px-10 py-3 rounded-full"
             >
               Services
             </li>
             <li
               onClick={scrollToTeam}
-              className="hover:text-black hover:bg-[#bddbfc] cursor-pointer transition-colors px-10 py-3 rounded-full"
+              className="hover:text-black hover:bg-gray-100 cursor-pointer transition-colors px-10 py-3 rounded-full"
             >
               Team
             </li>
             <li
               onClick={scrollToContactUs}
-              className="hover:text-black hover:bg-[#bddbfc] cursor-pointer transition-colors px-10 py-3 rounded-full"
+              className="hover:text-black hover:bg-gray-100 cursor-pointer transition-colors px-10 py-3 rounded-full"
             >
               Contact Us
             </li>
           </ul>
 
           {/* CTA */}
-          <button
-            onClick={openLoginModal}
-            className="group relative flex items-center gap-2
-                 bg-black text-white
-                 px-5 py-2 rounded-full
-                 text-sm font-medium
-                 hover:bg-gray-900 transition-all overflow-hidden"
-          >
-            <Link to={"/login"}>
-              <span className="relative z-10">Login</span>
-            <ArrowRight
-              size={16}
-              className="relative z-10 transform  group-hover:translate-x-0.5 group-hover:translate-y-[-2px] transition-transform duration-300"
-            />
-            </Link>
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-black opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </button>
+         <button className="btn btn-ghost btn-primary" onClick={()=>navigate("/login")}>Login</button>
+        
         </nav>
       </header>
 
@@ -325,7 +311,7 @@ const LandingPage = () => {
           ref={HomeRef}
           className="relative min-h-screen overflow-hidden
              pb-20 px-4 sm:px-6 text-center
-             bg-gradient-to-b from-blue-100 via-blue-50 to-white"
+             "
         >
           {/* Decorative blurs */}
           <div className="absolute top-24 left-24 w-32 h-32 bg-blue-300 rounded-full blur-3xl opacity-40 animate-pulse"></div>
@@ -337,8 +323,11 @@ const LandingPage = () => {
             className="absolute bottom-16 left-1/3 w-28 h-28 bg-purple-300 rounded-full blur-3xl opacity-30 animate-pulse"
             style={{ animationDelay: "2s" }}
           ></div>
-
-          <div className="flex justify-center items-center gap-10 lg:gap-20 pt-[100px]">
+          
+          
+          <div className="flex justify-center items-center gap-10 lg:gap-20 mt-[100px]">
+            <div className="flex flex-col items-center gap-[-20px]">
+            <img src={GoogleSimilar} alt="Logo" className="w-[200px] h-auto" />
             <div className="pt-20 z-10 max-w-4xl mx-auto">
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-tight mb-6 flex flex-col items-center">
                 {/* Scroll Animation applied to "Manage Patients" */}
@@ -417,29 +406,18 @@ const LandingPage = () => {
                 <span>Get Started</span>
               </button>
             </div>
-            <div className="hidden lg:flex items-center justify-center w-1/4 relative">
-              <img
-                src={house}
-                alt="Medical equipment"
-                className="absolute w-[300px] rounded-2xl shadow-2xl
-                 transform rotate-[-45deg] -left-20 h-[400px] top-[100px]
-                 hover:rotate-[-8deg] transition-transform duration-300"
-              />
-              <img
-                src={syringe}
-                alt="Healthcare"
-                className="absolute w-[300px] rounded-2xl shadow-2xl
-                 transform rotate-[35deg] left-6 top-[100px]
-                 hover:rotate-[2deg] hover:left-[30px] transition-transform duration-300"
-              />
-              <img
-                src={stethoscope}
-                alt="Medical care"
-                className="relative w-[300px] rounded-2xl shadow-2xl z-10 transform rotate-[45deg] top-[100px]
-                 hover:-translate-y-5 transition-transform duration-300"
-              />
+            </div>
+           <div className="hidden lg:flex items-center justify-center w-1/4 relative">
+             <video
+                src={LandingVid}
+                autoPlay
+                loop
+                muted
+                className="w-[400px] h-[500px] rounded-3xl shadow-lg object-cover"
+              ></video>
             </div>
           </div>
+          
         </section>
 
         <div
@@ -463,7 +441,7 @@ const LandingPage = () => {
         >
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
             <div className="max-w-2xl text-center md:text-left">
-              <h2 className="text-4xl sm:text-5xl text-black font-poppins tracking-tight mb-4">
+              <h2 className="text-5xl  sm:text-5xl text-black font-poppins tracking-tight mb-4">
                 Why Choose Us
               </h2>
               <p className="text-lg text-gray-600 leading-relaxed">
