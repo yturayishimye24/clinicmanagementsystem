@@ -14,8 +14,23 @@ import emailRouter from "./routes/getEmail.js";
 import router from "./routes/verifyRoute.js";
 import reportRouter from "./routes/reportRoute.js";
 import path from "path";
+// Setting up GraphQL server
+// import { createHandler } from 'graphql-http/lib/use/express';
+// import { buildSchema } from 'graphql';
 
-dotenv.config();
+// const schema = buildSchema(`
+//   type Query{
+//     serverStatus: String,
+//     userCount: Int
+//   }`);
+
+//   const rootValue = {
+//     serverStatus: () => "Graphql server is safe and running",
+//     userCount: async () => {
+//       return await User.countDocuments();
+//     }
+//   }
+  dotenv.config();
 
 const port = process.env.PORT || 4000;
 
@@ -24,6 +39,7 @@ const allowedOrigins = [
    "https://asyvvillageclinic.vercel.app",
   process.env.CORS_ORIGIN 
 ].filter(Boolean); 
+
 const app = express();
 
 app.use(
@@ -87,6 +103,14 @@ io.on('connection', (socket) => {
 connectDB();
 seed();
 
+
+// Register GraphQL routes after `app` is created
+// app.get("/playground", (req, res) => {
+//   res.type("html");
+//   res.end("<html><body><h2>GraphQL endpoint available at /graphql</h2></body></html>");
+// });
+
+// app.all("/graphql", createHandler({ schema, rootValue }));
 
 server.listen(port, () => {
   console.log(`API and Socket.io server listening on port ${port}`);

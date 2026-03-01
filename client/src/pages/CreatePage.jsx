@@ -33,6 +33,7 @@ import {
   Moon,
   ArrowUpRight,
 } from "lucide-react";
+import {SignedIn, UserButton} from "@clerk/clerk-react"
 
 // --- CUSTOM STYLES & FONTS ---
 const FontStyles = () => (
@@ -505,71 +506,127 @@ export default function NursePage() {
       <div className="flex-1 flex flex-col ml-25">
         {/* --- NAVBAR --- */}
         <div className="navbar bg-base-200/50 rounded-box p-3 shadow-sm flex justify-between">
-  
-  {/* --- LEFT: Search Bar --- */}
-  <div className="flex-1">
-    <label className="input flex items-center gap-2 rounded-full bg-base-100 border-none shadow-sm h-11 w-full max-w-xs px-4">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-5 h-5 opacity-50">
-        <path fillRule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clipRule="evenodd" />
-      </svg>
-      <input type="text" className="grow text-sm placeholder:text-base-content/40" placeholder="Search task" />
-      <div className="flex gap-1">
-        <kbd className="kbd kbd-sm bg-base-200/70 border-none text-base-content/60 font-sans">⌘</kbd>
-        <kbd className="kbd kbd-sm bg-base-200/70 border-none text-base-content/60 font-sans">F</kbd>
-      </div>
-    </label>
-  </div>
+          {/* --- LEFT: Search Bar --- */}
+          <div className="flex-1">
+            <label className="input flex items-center gap-2 rounded-full bg-base-100 border-none shadow-sm h-11 w-full max-w-xs px-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                className="w-5 h-5 opacity-50"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <input
+                type="text"
+                className="grow text-sm placeholder:text-base-content/40"
+                placeholder="Search task"
+              />
+              <div className="flex gap-1">
+                <kbd className="kbd kbd-sm bg-base-200/70 border-none text-base-content/60 font-sans">
+                  ⌘
+                </kbd>
+                <kbd className="kbd kbd-sm bg-base-200/70 border-none text-base-content/60 font-sans">
+                  F
+                </kbd>
+              </div>
+            </label>
+          </div>
 
-  {/* --- RIGHT: Actions & Profile --- */}
-  <div className="flex-none flex items-center gap-3">
-    
-    {/* Mail Button */}
-    <button className="btn btn-circle bg-base-100 border-none shadow-sm hover:bg-base-200 h-11 w-11 min-h-0">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-base-content/70">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-      </svg>
-    </button>
+          {/* --- RIGHT: Actions & Profile --- */}
+          <div className="flex-none flex items-center gap-3">
+            {/* Mail Button */}
+            <button className="btn btn-circle bg-base-100 border-none shadow-sm hover:bg-base-200 h-11 w-11 min-h-0">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-5 h-5 text-base-content/70"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+                />
+              </svg>
+            </button>
 
-    {/* Notification Button */}
-    <button className="btn btn-circle bg-base-100 border-none shadow-sm hover:bg-base-200 h-11 w-11 min-h-0">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-base-content/70">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-      </svg>
-    </button>
+            {/* Notification Button */}
+            <button className="btn btn-circle bg-base-100 border-none shadow-sm hover:bg-base-200 h-11 w-11 min-h-0">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-5 h-5 text-base-content/70"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+                />
+              </svg>
+            </button>
 
-    {/* Profile Dropdown */}
-    <div className="dropdown dropdown-end ml-1">
-      <div tabIndex={0} role="button" className="btn btn-ghost hover:bg-base-200/50 h-auto min-h-0 py-1 px-2 rounded-full flex items-center gap-3 border-none shadow-none">
-        
-        {/* Avatar */}
-        <div className="avatar">
-          <div className="w-10 rounded-full bg-rose-200">
-            <img alt="User avatar" src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+            {/* Profile Dropdown */}
+            <div className="dropdown dropdown-end ml-1">
+              <div
+                tabIndex={0}
+                role="button"
+                className="btn btn-ghost hover:bg-base-200/50 h-auto min-h-0 py-1 px-2 rounded-full flex items-center gap-3 border-none shadow-none"
+              >
+                {/* Avatar */}
+                <SignedIn>
+                  <UserButton/>
+                </SignedIn>
+                <div className="avatar">
+                  <div className="w-10 rounded-full bg-rose-200">
+                    <img
+                      alt="User avatar"
+                      src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                    />
+                  </div>
+                </div>
+
+                {/* User Info (Hidden on very small screens) */}
+                <div className="hidden sm:flex flex-col items-start text-left pr-2">
+                  <span className="text-sm font-bold text-base-content leading-tight">
+                    Totok Michael
+                  </span>
+                  <span className="text-xs text-base-content/60 font-normal mt-0.5">
+                    tmichael20@mail.com
+                  </span>
+                </div>
+              </div>
+
+              {/* Dropdown Menu */}
+              <ul
+                tabIndex="-1"
+                className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow-lg border border-base-200"
+              >
+                <li>
+                  <a className="justify-between">
+                    Profile
+                    <span className="badge badge-sm badge-primary">New</span>
+                  </a>
+                </li>
+                <li>
+                  <a>Settings</a>
+                </li>
+                <li className="text-error" onClick={() => handleLogout()}>
+                  <a>Logout</a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
-        
-        {/* User Info (Hidden on very small screens) */}
-        <div className="hidden sm:flex flex-col items-start text-left pr-2">
-          <span className="text-sm font-bold text-base-content leading-tight">Totok Michael</span>
-          <span className="text-xs text-base-content/60 font-normal mt-0.5">tmichael20@mail.com</span>
-        </div>
-        
-      </div>
-      
-      {/* Dropdown Menu */}
-      <ul tabIndex="-1" className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow-lg border border-base-200">
-        <li>
-          <a className="justify-between">
-            Profile
-            <span className="badge badge-sm badge-primary">New</span>
-          </a>
-        </li>
-        <li><a>Settings</a></li>
-        <li className="text-error" onClick={()=>handleLogout()}><a>Logout</a></li>
-      </ul>
-    </div>
-  </div>
-</div>
 
         {/* --- MAIN CONTENT --- */}
         <main className="flex-1 pt-4 px-6 lg:px-10 pb-10 overflow-y-auto">

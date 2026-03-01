@@ -24,12 +24,10 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
-import { useNavigate,Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import techImage from "../../public/images/techImage.png";
-import stethoscope from "../../public/images/stethoscope.png";
-import syringe from "../../public/images/syringe.png";
-import house from "../../public/images/house.png";
+
 import FAQ from "../components/Faqs.jsx";
 import TEAM from "../components/teamSection.jsx";
 import drake from "../../public/images/asyvlogo.png";
@@ -42,8 +40,8 @@ import monOrange from "../../public/images/MonOrange.jpg";
 import monPink from "../../public/images/MonPink.jpg";
 import monLightPurple from "../../public/images/MonLightPurple.jpg";
 import LoginBg from "../../public/images/LoginBg.jpg";
-import GoogleSimilar from "../../public/images/GoogleSimilar.jpg"
-import LandingVid from "../../public/images/LandingVid.mp4"
+import GoogleSimilar from "../../public/images/GoogleSimilar.jpg";
+import LandingVid from "../../public/images/LandingVid.mp4";
 import {
   Footer,
   FooterBrand,
@@ -52,6 +50,13 @@ import {
   FooterLink,
   FooterLinkGroup,
 } from "flowbite-react";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  UserButton,
+} from "@clerk/clerk-react";
+
 import { useAuth } from "../../context/authContext.jsx";
 
 const LandingPage = () => {
@@ -109,7 +114,7 @@ const LandingPage = () => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const activeSection = sections.find(
-              (sec) => sec.ref.current === entry.target
+              (sec) => sec.ref.current === entry.target,
             );
             if (activeSection) {
               setActiveTab(activeSection.name);
@@ -117,7 +122,7 @@ const LandingPage = () => {
           }
         });
       },
-      { threshold: 0.5 }
+      { threshold: 0.5 },
     );
 
     sections.forEach((sec) => {
@@ -135,7 +140,7 @@ const LandingPage = () => {
           }
         });
       },
-      { threshold: 0.1 } // Triggers slightly before element is fully in view
+      { threshold: 0.1 }, // Triggers slightly before element is fully in view
     );
 
     const animatedElements = document.querySelectorAll(".animate-on-scroll");
@@ -301,8 +306,10 @@ const LandingPage = () => {
           </ul>
 
           {/* CTA */}
-         <button className="btn btn-ghost btn-primary" onClick={()=>navigate("/login")}>Login</button>
-        
+          {SignedIn ? <UserButton/> : <SignInButton mode="modal"><button className="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-700 transition-colors">Sign In</button></SignInButton>}
+          <SignedOut>
+            <SignInButton mode="modal"><button className="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-700 transition-colors">Sign In</button></SignInButton>
+          </SignedOut>
         </nav>
       </header>
 
@@ -323,43 +330,46 @@ const LandingPage = () => {
             className="absolute bottom-16 left-1/3 w-28 h-28 bg-purple-300 rounded-full blur-3xl opacity-30 animate-pulse"
             style={{ animationDelay: "2s" }}
           ></div>
-          
-          
+
           <div className="flex justify-center items-center gap-10 lg:gap-20 mt-[100px]">
             <div className="flex flex-col items-center gap-[-20px]">
-            <img src={GoogleSimilar} alt="Logo" className="w-[200px] h-auto" />
-            <div className="pt-20 z-10 max-w-4xl mx-auto">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-tight mb-6 flex flex-col items-center">
-                {/* Scroll Animation applied to "Manage Patients" */}
-                <span className="animate-on-scroll opacity-0 -translate-x-[200px] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:translate-x-0">
-                  Manage Patients
-                </span>
-                
-                {/* Scroll Animation applied to "Better Communication" */}
-                <span className="animate-on-scroll opacity-0 translate-x-[100%] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:translate-x-0 text-6xl font-extrabold bg-gradient-to-r from-green-500 via-orange-500 to-tan-500 bg-clip-text text-transparent transition-transform">
-                  Better Communication
-                </span>
-              </h1>
+              <img
+                src={GoogleSimilar}
+                alt="Logo"
+                className="w-[200px] h-auto"
+              />
+              <div className="pt-20 z-10 max-w-4xl mx-auto">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-tight mb-6 flex flex-col items-center">
+                  {/* Scroll Animation applied to "Manage Patients" */}
+                  <span className="animate-on-scroll opacity-0 -translate-x-[200px] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:translate-x-0">
+                    Manage Patients
+                  </span>
 
-              {/* Scroll Animation applied to paragraph */}
-              <p className="animate-on-scroll opacity-0 -translate-y-[100%] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:translate-y-0 text-gray-600 text-base sm:text-lg md:text-xl max-w-3xl mx-auto mb-10">
-                Join a community where every patient feels understood and
-                receives the desired service. Experience seamless healthcare
-                management with our comprehensive platform.
-              </p>
+                  {/* Scroll Animation applied to "Better Communication" */}
+                  <span className="animate-on-scroll opacity-0 translate-x-[100%] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:translate-x-0 text-6xl font-extrabold bg-gradient-to-r from-green-500 via-orange-500 to-tan-500 bg-clip-text text-transparent transition-transform">
+                    Better Communication
+                  </span>
+                </h1>
 
-              <button
-                onClick={openLoginModal}
-                type="submit"
-                className="group inline-flex items-center gap-3
+                {/* Scroll Animation applied to paragraph */}
+                <p className="animate-on-scroll opacity-0 -translate-y-[100%] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:translate-y-0 text-gray-600 text-base sm:text-lg md:text-xl max-w-3xl mx-auto mb-10">
+                  Join a community where every patient feels understood and
+                  receives the desired service. Experience seamless healthcare
+                  management with our comprehensive platform.
+                </p>
+
+                <SignInButton mode="modal">
+                  <button
+                    type="submit"
+                    className="group inline-flex items-center gap-3
          bg-black text-white font-semibold
          px-6 py-3 pl-5
          rounded-full whitespace-nowrap overflow-hidden
          transition-colors duration-300
          hover:bg-white hover:text-black"
-              >
-                <span
-                  className="relative flex-shrink-0
+                  >
+                    <span
+                      className="relative flex-shrink-0
            w-[25px] h-[25px]
            grid place-items-center
            rounded-full
@@ -367,48 +377,49 @@ const LandingPage = () => {
            overflow-hidden
            transition-colors duration-300
            group-hover:bg-black group-hover:text-white"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="button1__icon-svg absolute w-4 h-4
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="button1__icon-svg absolute w-4 h-4
              transition-transform duration-300 ease-in-out
              group-hover:translate-x-[150%] group-hover:-translate-y-[150%]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 5v14M5 12h14"
-                    />
-                  </svg>
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 5v14M5 12h14"
+                        />
+                      </svg>
 
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="absolute w-4 h-4
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="absolute w-4 h-4
              translate-x-[-150%] translate-y-[150%]
              transition-transform duration-300 ease-in-out delay-100
              group-hover:translate-x-0 group-hover:translate-y-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 5v14M5 12h14"
-                    />
-                  </svg>
-                </span>
-                <span>Get Started</span>
-              </button>
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 5v14M5 12h14"
+                        />
+                      </svg>
+                    </span>
+                    <span>Get Started</span>
+                  </button>
+                </SignInButton>
+              </div>
             </div>
-            </div>
-           <div className="hidden lg:flex items-center justify-center w-1/4 relative">
-             <video
+            <div className="hidden lg:flex items-center justify-center w-1/4 relative">
+              <video
                 src={LandingVid}
                 autoPlay
                 loop
@@ -417,7 +428,6 @@ const LandingPage = () => {
               ></video>
             </div>
           </div>
-          
         </section>
 
         <div
@@ -453,7 +463,6 @@ const LandingPage = () => {
 
           <div className="max-w-7xl mx-auto">
             <div className="flex overflow-x-auto gap-6 pb-12 pt-4 snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-              
               {/* Card 1 - Added 3d Transform / Scale Scroll Animation */}
               <div className="animate-on-scroll opacity-0 [transform:translate3d(-200px,0,0)_scale(0.6)] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:[transform:translate3d(0,0,0)_scale(1)] bg-white rounded-[2rem] p-8 border border-gray-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 flex flex-col justify-between min-h-[320px] w-[85vw] sm:w-[400px] flex-shrink-0 snap-center group">
                 <div>
@@ -479,7 +488,7 @@ const LandingPage = () => {
                       </span>
                       <span className="absolute bottom-0 left-0 w-full h-full transition-all duration-500 ease-in-out delay-200 -translate-x-full bg-indigo-600 rounded-md group-hover:translate-x-0"></span>
                       <span className="relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-white">
-                       Learn more
+                        Learn more
                       </span>
                     </button>
                   </span>
@@ -700,7 +709,14 @@ const LandingPage = () => {
             onClick={closeLoginModal}
           ></div>
 
-          <div className="relative flex flex-col z-[10000] rounded-md shadow-[0_24px_38px_3px_rgba(0,0,0,0.14),0_9px_46px_8px_rgba(0,0,0,0.12),0_11px_15px_-7px_rgba(0,0,0,0.2)] max-w-[450px] w-full mx-4 animate-modalSlideIn overflow-hidden p-10" style={{backgroundImage: `url(${LoginBg})`, backgroundSize: 'cover', backgroundPosition: 'center'}}>
+          <div
+            className="relative flex flex-col z-[10000] rounded-md shadow-[0_24px_38px_3px_rgba(0,0,0,0.14),0_9px_46px_8px_rgba(0,0,0,0.12),0_11px_15px_-7px_rgba(0,0,0,0.2)] max-w-[450px] w-full mx-4 animate-modalSlideIn overflow-hidden p-10"
+            style={{
+              backgroundImage: `url(${LoginBg})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
             <button
               onClick={closeLoginModal}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 hover:bg-red-100 p-2 rounded-md transition-colors"
