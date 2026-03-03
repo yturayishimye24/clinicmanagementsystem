@@ -114,7 +114,7 @@ const LandingPage = () => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const activeSection = sections.find(
-              (sec) => sec.ref.current === entry.target,
+              (sec) => sec.ref.current === entry.target
             );
             if (activeSection) {
               setActiveTab(activeSection.name);
@@ -122,7 +122,7 @@ const LandingPage = () => {
           }
         });
       },
-      { threshold: 0.5 },
+      { threshold: 0.5 }
     );
 
     sections.forEach((sec) => {
@@ -140,7 +140,7 @@ const LandingPage = () => {
           }
         });
       },
-      { threshold: 0.1 }, // Triggers slightly before element is fully in view
+      { threshold: 0.1 } // Triggers slightly before element is fully in view
     );
 
     const animatedElements = document.querySelectorAll(".animate-on-scroll");
@@ -306,9 +306,21 @@ const LandingPage = () => {
           </ul>
 
           {/* CTA */}
-          {SignedIn ? <UserButton/> : <SignInButton mode="modal"><button className="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-700 transition-colors">Sign In</button></SignInButton>}
+          {SignedIn ? (
+            <UserButton />
+          ) : (
+            <SignInButton mode="modal">
+              <button className="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-700 transition-colors">
+                Sign In
+              </button>
+            </SignInButton>
+          )}
           <SignedOut>
-            <SignInButton mode="modal"><button className="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-700 transition-colors">Sign In</button></SignInButton>
+            <SignInButton mode="modal">
+              <button className="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-700 transition-colors">
+                Sign In
+              </button>
+            </SignInButton>
           </SignedOut>
         </nav>
       </header>
@@ -331,45 +343,32 @@ const LandingPage = () => {
             style={{ animationDelay: "2s" }}
           ></div>
 
-          <div className="flex justify-center items-center gap-10 lg:gap-20 mt-[100px]">
-            <div className="flex flex-col items-center gap-[-20px]">
+          <div className="flex justify-center items-center gap-10 lg:gap-20 mt-[180px]">
+            <div>
               <img
                 src={GoogleSimilar}
                 alt="Logo"
-                className="w-[200px] h-auto"
+                className="w-[100px] h-auto flex items-center justify-center ml-[200px]"
               />
-              <div className="pt-20 z-10 max-w-4xl mx-auto">
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-tight mb-6 flex flex-col items-center">
-                  {/* Scroll Animation applied to "Manage Patients" */}
-                  <span className="animate-on-scroll opacity-0 -translate-x-[200px] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:translate-x-0">
-                    Manage Patients
-                  </span>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-poppins text-gray-900 leading-tight mb-6">
+                The system that<br></br>
+              </h1>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-poppins text-gray-900 leading-right mb-10">
+                gets everything done
+              </h1>
 
-                  {/* Scroll Animation applied to "Better Communication" */}
-                  <span className="animate-on-scroll opacity-0 translate-x-[100%] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:translate-x-0 text-6xl font-extrabold bg-gradient-to-r from-green-500 via-orange-500 to-tan-500 bg-clip-text text-transparent transition-transform">
-                    Better Communication
-                  </span>
-                </h1>
-
-                {/* Scroll Animation applied to paragraph */}
-                <p className="animate-on-scroll opacity-0 -translate-y-[100%] transition-all duration-[600ms] delay-[300ms] [&.is-visible]:opacity-100 [&.is-visible]:translate-y-0 text-gray-600 text-base sm:text-lg md:text-xl max-w-3xl mx-auto mb-10">
-                  Join a community where every patient feels understood and
-                  receives the desired service. Experience seamless healthcare
-                  management with our comprehensive platform.
-                </p>
-
-                <SignInButton mode="modal">
-                  <button
-                    type="submit"
-                    className="group inline-flex items-center gap-3
+              <SignInButton mode="modal">
+                <button
+                  type="submit"
+                  className="group inline-flex items-center gap-3
          bg-black text-white font-semibold
          px-6 py-3 pl-5
          rounded-full whitespace-nowrap overflow-hidden
          transition-colors duration-300
          hover:bg-white hover:text-black"
-                  >
-                    <span
-                      className="relative flex-shrink-0
+                >
+                  <span
+                    className="relative flex-shrink-0
            w-[25px] h-[25px]
            grid place-items-center
            rounded-full
@@ -377,46 +376,45 @@ const LandingPage = () => {
            overflow-hidden
            transition-colors duration-300
            group-hover:bg-black group-hover:text-white"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="button1__icon-svg absolute w-4 h-4
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="button1__icon-svg absolute w-4 h-4
              transition-transform duration-300 ease-in-out
              group-hover:translate-x-[150%] group-hover:-translate-y-[150%]"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M12 5v14M5 12h14"
-                        />
-                      </svg>
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 5v14M5 12h14"
+                      />
+                    </svg>
 
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="absolute w-4 h-4
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="absolute w-4 h-4
              translate-x-[-150%] translate-y-[150%]
              transition-transform duration-300 ease-in-out delay-100
              group-hover:translate-x-0 group-hover:translate-y-0"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M12 5v14M5 12h14"
-                        />
-                      </svg>
-                    </span>
-                    <span>Get Started</span>
-                  </button>
-                </SignInButton>
-              </div>
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 5v14M5 12h14"
+                      />
+                    </svg>
+                  </span>
+                  <span>Get Started</span>
+                </button>
+              </SignInButton>
             </div>
             <div className="hidden lg:flex items-center justify-center w-1/4 relative">
               <video
@@ -424,7 +422,7 @@ const LandingPage = () => {
                 autoPlay
                 loop
                 muted
-                className="w-[400px] h-[500px] rounded-3xl shadow-lg object-cover"
+                className="w-[400px] h-[400px] rounded-3xl shadow-lg object-cover"
               ></video>
             </div>
           </div>
@@ -436,10 +434,10 @@ const LandingPage = () => {
         >
           <div className="absolute inset-0 bg-black/40"></div>
           <div className="text-center text-white px-4 relative z-10">
-            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-2 sm:mb-4">
+            <h2 className="text-6xl sm:text-3xl md:text-5xl font-poppins mb-2 sm:mb-4">
               Modern Healthcare Technology
             </h2>
-            <p className="text-base sm:text-lg md:text-xl opacity-90">
+            <p className="text-3xl sm:text-lg md:text-xl opacity-90">
               Built for efficiency, designed for care
             </p>
           </div>
@@ -450,14 +448,10 @@ const LandingPage = () => {
           className="py-16 sm:py-24 px-4 sm:px-6 bg-white overflow-hidden"
         >
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
-            <div className="max-w-2xl text-center md:text-left">
-              <h2 className="text-5xl  sm:text-5xl text-black font-poppins tracking-tight mb-4">
+            <div>
+              <h2 className="text-6xl text-black font-poppins tracking-tight mb-4 ml-[450px]">
                 Why Choose Us
               </h2>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                Experience healthcare management designed with precision,
-                security, and the modern professional in mind.
-              </p>
             </div>
           </div>
 
