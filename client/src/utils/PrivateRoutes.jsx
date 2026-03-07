@@ -5,7 +5,9 @@ import {Navigate} from "react-router-dom"
 const PrivateRoutes = ({children}) => {
     const {user,loading} = useAuth();
  if(loading){
-    <div>Loading....</div>
+    return <div>
+      <OrbitProgress variant="track-disc" dense color={["","","",""]} size="medium" text="" textColor="" />
+    </div>
  }
  return user?children:<Navigate to="/"/>
 }

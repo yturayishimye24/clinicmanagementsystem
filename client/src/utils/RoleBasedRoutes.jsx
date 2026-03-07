@@ -5,12 +5,19 @@ import React from 'react'
 const RoleBasedRoutes = ({children,requiredRole}) => {
     const {user,loading} = useAuth()
 if(loading){
-    <div>Loading....</div>
+    return <div>
+        
+        <OrbitProgress variant="track-disc" dense color="#32cd32" size="medium" text="" textColor="" />
+        
+    </div>
+}
+if(!user){
+    return <Navigate to="/login"/>
 }
 if(!requiredRole.includes(user.role)){
-    <Navigate to="/unauthorized"/>
+    return <Navigate to="/unauthorized"/>
 }
- return user?children:<Navigate to="/home"/>
+ return children
 }
 
 export default RoleBasedRoutes

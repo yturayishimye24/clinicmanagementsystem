@@ -8,6 +8,7 @@ import {
   Label,
   TextInput,
 } from "flowbite-react";
+import {useFirebase} from "../ContextFireBase/contextFire.jsx";
 
 import {
   Activity,
@@ -42,6 +43,15 @@ import monLightPurple from "../../public/images/MonLightPurple.jpg";
 import LoginBg from "../../public/images/LoginBg.jpg";
 import GoogleSimilar from "../../public/images/GoogleSimilar.jpg";
 import LandingVid from "../../public/images/LandingVid.mp4";
+import Loading from "../components/Loading.jsx";
+import Navbar from '../components/landingPageNavbar.jsx'
+import HeroSection from "../components/HeroSection.jsx";
+import LoginSelectionModal  from "../components/SelectionLoginModal.jsx"
+
+
+import {OrbitProgress} from "react-loading-indicators"
+import Aos from "aos"
+import "aos/dist/aos.css"
 import {
   Footer,
   FooterBrand,
@@ -50,14 +60,9 @@ import {
   FooterLink,
   FooterLinkGroup,
 } from "flowbite-react";
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  UserButton,
-} from "@clerk/clerk-react";
 
-import { useAuth } from "../../context/authContext.jsx";
+
+// import { useFirebase } from "../ContextFireBase/contextFire.jsx";
 
 const LandingPage = () => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -69,6 +74,10 @@ const LandingPage = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
   const [toggleBg, setToggleBg] = useState(false);
+  
+  //Selecting to login as nurse or as doctor
+  const [selectionOpen,setSelectionOpen] = useState(false);
+  const [loadingSelection,setLoadingSelection] = useState(false);
 
   const teamRef = useRef(null);
   const faqRef = useRef(null);
@@ -76,8 +85,24 @@ const LandingPage = () => {
   const servicesRef = useRef(null);
   const whyChooseUsRef = useRef(null);
   const contactUsRef = useRef(null);
-  const { login } = useAuth();
+  const {user, googleSignIn,authLoading} = useFirebase();
 
+ 
+  const handleGoogleSignIn = async () =>{
+    try{
+    await googleSignIn();
+    }catch(error){
+      console.log("Error Signing in with Google", error.message);
+    }
+  }
+ 
+  
+    if(user !=null){
+      navigate("/home")
+    }
+  
+    
+  
   const handleToggleBg = () => {
     setToggleBg(!toggleBg);
   };
@@ -99,7 +124,7 @@ const LandingPage = () => {
     contactUsRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // INTERSECTION OBSERVERS FOR SECTIONS AND ANIMATIONS
+  
   useEffect(() => {
     const sections = [
       { ref: HomeRef, name: "home" },
@@ -107,51 +132,8 @@ const LandingPage = () => {
       { ref: teamRef, name: "team" },
       { ref: contactUsRef, name: "contact" },
     ];
-
-    // Observer for Active Navigation Tabs
-    const tabObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const activeSection = sections.find(
-              (sec) => sec.ref.current === entry.target
-            );
-            if (activeSection) {
-              setActiveTab(activeSection.name);
-            }
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    sections.forEach((sec) => {
-      if (sec.ref.current) {
-        tabObserver.observe(sec.ref.current);
-      }
-    });
-
-    // Observer for Scroll Animations
-    const animationObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-visible");
-          }
-        });
-      },
-      { threshold: 0.1 } // Triggers slightly before element is fully in view
-    );
-
-    const animatedElements = document.querySelectorAll(".animate-on-scroll");
-    animatedElements.forEach((el) => animationObserver.observe(el));
-
-    return () => {
-      tabObserver.disconnect();
-      animationObserver.disconnect();
-    };
-  }, []);
-
+  }),[]
+  
   const openLoginModal = () => setShowLoginModal(true);
   const closeLoginModal = () => {
     setShowLoginModal(false);
@@ -248,186 +230,29 @@ const LandingPage = () => {
       backgroundImageServiceCards: `url(${monPink})`,
     },
   ];
-
+  
+  
+  {loadingSelection &&(
+    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-white/80 backdrop-blur-md">
+      <OrbitProgress variant="track-disc" speedPlus="1" dense color={["#FBBC05","#FFBB00","#EA4335","#F65314","#34A853","#7CBB00","#4286F4","#00A1F1"]} easing="ease-in-out" size={60} />
+      <p className="mt-4 text-orange-600 font-semibld animate-pulse">
+        Loading login page...
+      </p>
+    </div>
+  )}
+  useEffect(()=>{
+    Aos.init()
+  },[])
   return (
     <div className="font-sans min-h-screen bg-white">
       <header className="absolute mb-20 top-0 left-0 w-full z-50 ">
-        <nav
-          className="mx-auto mt-6 max-w-6xl
-               backdrop-blur-lg
-               bg-transparent
-               border border-white/40
-               rounded-full shadow-md
-               px-6 py-2.5
-               flex items-center justify-between"
-        >
-          <div
-            onClick={goToHome}
-            className="flex items-center gap-2 cursor-pointer"
-          >
-            <div className="w-9 h-9">
-              <img src={GoogleSimilar} alt="Logo" className="w-auto h-auto" />
-            </div>
-            <span className="text-sm font-semibold text-gray-900">
-              Clinic Workspace
-            </span>
-          </div>
-
-          {/* Nav */}
-          <ul className="hidden md:flex items-center gap-6 text-sm font-poppins text-gray-700">
-            <li
-              onClick={() => {
-                goToHome();
-              }}
-              className={`hover:text-black cursor-pointer transition-colors bg-gray-100 px-10 py-3 rounded-full ${
-                activeTab === "home" ? "bg-gray-100 text-gray-900" : ""
-              }`}
-            >
-              Home
-            </li>
-            <li
-              onClick={scrollToServices}
-              className="hover:text-black cursor-pointer hover:bg-gray-100 transition-colors px-10 py-3 rounded-full"
-            >
-              Services
-            </li>
-            <li
-              onClick={scrollToTeam}
-              className="hover:text-black hover:bg-gray-100 cursor-pointer transition-colors px-10 py-3 rounded-full"
-            >
-              Team
-            </li>
-            <li
-              onClick={scrollToContactUs}
-              className="hover:text-black hover:bg-gray-100 cursor-pointer transition-colors px-10 py-3 rounded-full"
-            >
-              Contact Us
-            </li>
-          </ul>
-
-          {/* CTA */}
-          {SignedIn ? (
-            <UserButton />
-          ) : (
-            <SignInButton mode="modal">
-              <button className="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-700 transition-colors">
-                Sign In
-              </button>
-            </SignInButton>
-          )}
-          <SignedOut>
-            <SignInButton mode="modal">
-              <button className="bg-gray-900 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-700 transition-colors">
-                Sign In
-              </button>
-            </SignInButton>
-          </SignedOut>
-        </nav>
+       <Navbar onGetStarted={()=>setSelectionOpen(true)}/>
       </header>
 
       <main className="min-h-screen">
-        <section
-          ref={HomeRef}
-          className="relative min-h-screen overflow-hidden
-             pb-20 px-4 sm:px-6 text-center
-             "
-        >
-          {/* Decorative blurs */}
-          <div className="absolute top-24 left-24 w-32 h-32 bg-blue-300 rounded-full blur-3xl opacity-40 animate-pulse"></div>
-          <div
-            className="absolute top-40 right-32 w-36 h-36 bg-green-300 rounded-full blur-3xl opacity-40 animate-pulse"
-            style={{ animationDelay: "1s" }}
-          ></div>
-          <div
-            className="absolute bottom-16 left-1/3 w-28 h-28 bg-purple-300 rounded-full blur-3xl opacity-30 animate-pulse"
-            style={{ animationDelay: "2s" }}
-          ></div>
 
-          <div className="flex justify-center items-center gap-10 lg:gap-20 mt-[180px]">
-            <div>
-              <img
-                src={GoogleSimilar}
-                alt="Logo"
-                className="w-[100px] h-auto flex items-center justify-center ml-[200px]"
-              />
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-poppins text-gray-900 leading-tight mb-6">
-                The system that<br></br>
-              </h1>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-poppins text-gray-900 leading-right mb-10">
-                gets everything done
-              </h1>
-
-              <SignInButton mode="modal">
-                <button
-                  type="submit"
-                  className="group inline-flex items-center gap-3
-         bg-black text-white font-semibold
-         px-6 py-3 pl-5
-         rounded-full whitespace-nowrap overflow-hidden
-         transition-colors duration-300
-         hover:bg-white hover:text-black"
-                >
-                  <span
-                    className="relative flex-shrink-0
-           w-[25px] h-[25px]
-           grid place-items-center
-           rounded-full
-           bg-white text-black
-           overflow-hidden
-           transition-colors duration-300
-           group-hover:bg-black group-hover:text-white"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="button1__icon-svg absolute w-4 h-4
-             transition-transform duration-300 ease-in-out
-             group-hover:translate-x-[150%] group-hover:-translate-y-[150%]"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 5v14M5 12h14"
-                      />
-                    </svg>
-
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="absolute w-4 h-4
-             translate-x-[-150%] translate-y-[150%]
-             transition-transform duration-300 ease-in-out delay-100
-             group-hover:translate-x-0 group-hover:translate-y-0"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 5v14M5 12h14"
-                      />
-                    </svg>
-                  </span>
-                  <span>Get Started</span>
-                </button>
-              </SignInButton>
-            </div>
-            <div className="hidden lg:flex items-center justify-center w-1/4 relative">
-              <video
-                src={LandingVid}
-                autoPlay
-                loop
-                muted
-                className="w-[400px] h-[400px] rounded-3xl shadow-lg object-cover"
-              ></video>
-            </div>
-          </div>
-        </section>
-
+        <HeroSection onGetStarted={()=>setSelectionOpen(true)}/>
+        <LoginSelectionModal isOpen={selectionOpen} isClosed={()=>setSelectionOpen(false)}/>
         <div
           className="bg-fixed bg-cover bg-center w-full h-64 sm:h-80 md:h-96 lg:h-[500px] relative shadow-inner flex items-center justify-center"
           style={{ backgroundImage: `url(${techImage})` }}
@@ -569,6 +394,7 @@ const LandingPage = () => {
         </div>
 
         {/* Our Services Section */}
+     
         <div
           ref={servicesRef}
           className="py-16 sm:py-24 px-4 sm:px-6 bg-gray-50/50 overflow-hidden"
@@ -695,7 +521,7 @@ const LandingPage = () => {
           <FAQ />
         </div>
       </main>
-
+      {loading && <Loading />}
       {showLoginModal && (
         <div className="fixed inset-0 z-[9999] flex justify-center items-center">
           <div

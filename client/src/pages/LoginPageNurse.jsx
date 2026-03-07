@@ -1,0 +1,127 @@
+import React from 'react';
+import GoogleButton from "react-google-button";
+import usFlag from "../../public/images/usFlag.png"
+import RwandaFlag from "../../public/images/RwandaFlag.png"
+import {Link,useNavigate} from "react-router-dom";
+import { useFirebase } from '../ContextFireBase/contextFire.jsx';
+import {House} from "lucide-react";
+
+const LoginPageNurse = () => {
+    const { googleSignIn } = useFirebase();
+    const navigate = useNavigate();
+    const handleGoogleSignIn = async () => {
+       try {
+        await googleSignIn();
+       } catch (error) {
+        console.log("Error during Google Sign-In:", error);
+       }
+    }
+  return (
+    <div className="flex min-h-screen w-full font-sans text-gray-700">
+      {/* Left Sidebar */}
+      <div className="hidden w-[400px] flex-col bg-[#E7F5EE] px-10 py-8 lg:flex">
+        <div className="mb-12 flex items-center text-3xl font-black cursor-pointer text-[#0F9D58]">
+          Clinic<span className="text-xl font-normal text-[#0F9D58]">Auth</span>
+        </div>
+
+        <div>
+           
+          <div className="text-center text-sm text-blue-400 font-medium">
+             <img src={"/public/images/LoginImage.svg"}/>
+          </div>
+        </div>
+
+        <div>
+          <h2 className="mb-4 text-xl font-poppins text-[#235b8e]">
+            Prepare Your Students for Their Future
+          </h2>
+          <p className="text-md leading-relaxed font-poppins text-[#3f5c77]">
+            Manage, track, and report on student progress quickly and easily. 
+            Unlimited students, unlimited classes, unlimited teachers, unlimited 
+            schools. Typing.com is completely FREE!
+          </p>
+        </div>
+      </div>
+
+      {/* Right Content */}
+      <div className="relative flex flex-1 flex-col bg-white">
+        
+        {/* Top Navigation */}
+        <span className="flex absolute mt-6 gap-5 font-poppins text-[#0F9D58] cursor-pointer items-center" onClick={()=>navigate("/")}><House size={30} color={"green"} className="ml-10"/> <h2>Back home</h2></span>
+        <div className="absolute right-6 top-6 flex items-center gap-4 text-sm">
+          <button className="flex items-center gap-1 text-gray-500 hover:text-gray-700">
+            <select>
+              <option>Us English</option>
+              <option>Kinyarwanda</option>
+            </select>
+          </button>
+          <div className="h-6 w-px bg-gray-300"></div>
+          <span className="text-gray-500">Not a nurse?</span>
+          <Link to={"/doctorLogin"}>
+          <button className="rounded-md bg-[#87CEAB] px-4 py-2 font-semibold text-white hover:bg-[#57BA8A] shadow-sm">
+            Doctor login
+          </button>
+          </Link>
+        </div>
+
+        {/* Main Form */}
+        <div className="mx-auto mt-32 flex w-full max-w-[600px] flex-col items-center px-8">
+          <h1 className="mb-2 text-4xl font-semibold text-[#4a5568]">
+            Nurse Login
+          </h1>
+          <p className="mb-8 text-[#718096]">
+            Don't have an account? <a href="#" className="text-green-500 hover:underline">Sign up here</a>
+          </p>
+
+          <p className="mb-4 text-sm text-gray-500">Log in with:</p>
+
+          {/* SSO Buttons */}
+          <div className="w-full gap-3 flex align-items-center justify-center">
+            <GoogleButton style={{backgroundColor:"#87CEAB"}} onClick={handleGoogleSignIn}/>
+          </div>
+
+          {/* Divider */}
+          <div className="my-8 flex w-full items-center">
+            <div className="h-px flex-1 bg-gray-200"></div>
+            <span className="mx-4 flex h-8 w-8 items-center justify-center rounded-full bg-[#f1f5f9] text-xs font-semibold text-gray-400">
+              OR
+            </span>
+            <div className="h-px flex-1 bg-gray-200"></div>
+          </div>
+
+          {/* Email Input */}
+          <div className="w-full">
+            <label className="mb-1 block text-sm font-medium text-gray-600">
+              Email <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              className="w-full rounded-md border border-[#E7F5EE] px-4 py-2 outline-none focus:border-green-400 focus:ring-1 focus:ring-blue-400"
+            />
+            <div className="mt-2 text-right">
+              <a href="#" className="text-sm text-gray-500 hover:underline">
+                Forgot your login info?
+              </a>
+            </div>
+          </div>
+
+          <div className="my-8 w-full border-t border-gray-100"></div>
+
+          {/* Footer Actions */}
+          <div className="flex w-full items-center justify-between">
+            <div className="flex gap-2">
+              <div className="h-3 w-3 rounded-full bg-[#87CEAB]"></div>
+              <div className="h-3 w-3 rounded-full bg-gray-200"></div>
+            </div>
+            <button className="rounded-md bg-[#87CEAB] px-6 py-2 font-semibold text-white hover:bg-[#57BA8A] shadow-sm">
+              Next »
+            </button>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default LoginPageNurse;

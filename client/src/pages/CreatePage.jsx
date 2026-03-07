@@ -33,7 +33,7 @@ import {
   Moon,
   ArrowUpRight,
 } from "lucide-react";
-import {SignedIn, UserButton} from "@clerk/clerk-react"
+
 
 // --- CUSTOM STYLES & FONTS ---
 const FontStyles = () => (
@@ -582,10 +582,6 @@ export default function NursePage() {
                 role="button"
                 className="btn btn-ghost hover:bg-base-200/50 h-auto min-h-0 py-1 px-2 rounded-full flex items-center gap-3 border-none shadow-none"
               >
-                {/* Avatar */}
-                <SignedIn>
-                  <UserButton/>
-                </SignedIn>
                 <div className="avatar">
                   <div className="w-10 rounded-full bg-rose-200">
                     <img

@@ -6,6 +6,7 @@ const userContext = createContext(null);
 export const AuthContext = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading,setLoading] = useState(false);
+
    useEffect(()=>{
     const verifyUser = async()=>{
       const token = localStorage.getItem('token')
@@ -18,16 +19,18 @@ export const AuthContext = ({ children }) => {
          }
        })
        if(response.data.success){
-        setLoading(true);
         setUser(response.data.user)
+        setLoading(false);
        }
       }else{
         setUser(null)
+        setLoading(false);
       }
       }catch(error){
         if(error.response && !error.response.data.error){
           setUser(null)
         }
+        setLoading(false);
       }
     }
     verifyUser();
